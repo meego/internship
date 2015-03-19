@@ -1,0 +1,42 @@
+\section{Problèmes} \label{sec:problem}
+
+  À présent, nous allons voir quels sont les problèmes apportés par les choix
+  architecturaux, tant matériels que logiciels.
+
+  \subsection{Partage de structures}
+
+    Comme nous l'avons vu en section~\ref{sec:fork}, un processus père partage
+    avec son fils différentes structures. Les \texttt{struct vfs\_file\_s}
+    (l'équivalent ALMOS des \texttt{struct file} de Linux) par exemple, mais
+    aussi les régions virtuelles crées en mode \textbf{shared}, que l'on utilise
+    dans les IPC~\cite{ipc}. Cette structure doivent se retrouver dans chaque
+    fils crée depuis ce père, et doivent en permanence être cohérente entre tout
+    ces processus. Chaque modification de l'un d'entre eux et visibles par les
+    autres. Dans un contexte de machine non clusterisée, cette cohérence est
+    implicite puisque la mémoire n'est pas découpée entre clusters. On profite
+    ainsi de pouvoir accéder à n'importe quelle adresse mémoire (sauf les
+    adresses noyau) depuis n'importe quel processus. La cohérence est donc
+    intrinsèquement garantie, grâce au modèle architectural de la machine. Dans
+    le cas de ALMOS, cette propriété n'est pas garantie.
+
+
+  \subsection{Architecture clusterisée}
+
+    On rappelle ici que l'architecture de travail est une architecture cc-NUMA
+    clusterisée, et que ces derniers sont autonomes. Ils exécutent chacun le
+    code noyau, chacun possédant sa pile d'exécution, ses données, et surtout
+    son banc mémoire de 4Go. Ainsi, dans le cas d'une création à distance, il
+    faudra répliquer les structures de données du père dans la mémoire du
+    cluster où sera placée le fils. Cela nous amène à deux problèmes conséquents
+    \benumline \item cette réplication aura un surcoût mémoire potentiellement
+    important, du aux échanges de messages entre les clusters pour l'allocation
+  de la mémoire et la copie des informations \item il faudra obligatoirement
+    mettre en place un mécanisme de maintient de la cohérence entre ces deux
+  structures représentant la même chose mais étant à deux endroits différents en
+mémoire physique \item il faudra que ce mécanisme de cohérence passe à
+  l'échelle, à minima, de l'architecutre TSA, puisque c'est cette dernière qui
+  est considérée comme étant la plateforme de base pour exécuter
+  ALMOS\eenumline.
+
+
+  \subsection{}

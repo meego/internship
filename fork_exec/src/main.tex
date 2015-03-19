@@ -1,0 +1,90 @@
+\documentclass[a4paper, 10pt, onecolumn]{article}
+
+%% Layout related
+\usepackage{hyperref}
+\usepackage{lscape}
+
+%% Encode
+\usepackage[utf8]{inputenc}
+
+%% Graphic related
+\usepackage{xcolor}
+\usepackage{graphicx}
+\graphicspath{{include/img/}}
+\DeclareGraphicsExtensions{.jpeg,.jpg,.png}
+
+%% Listing related
+\usepackage{enumerate}
+\usepackage{paralist} %% enumerate several elements on a single line like (i)
+                      %% this is an example, (ii) this is a second example
+\newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
+\newcommand{\eenumline}{\end{inparaenum}}
+\usepackage{listings}
+%% All the code below is from
+%% https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{lightgray}{gray}{0.9}
+\lstset{ %
+  backgroundcolor=\color{white},
+  basicstyle=\footnotesize\ttfamily,     
+  belowcaptionskip=1\baselineskip,
+  breakatwhitespace=false,      
+  breaklines=true,              
+  captionpos=b,                 
+  commentstyle=\color{mygreen}, 
+  extendedchars=true,           
+  frame=single, 
+  keepspaces=true,
+  keywordstyle=\color{blue},    
+  language=C,                   
+  %numbers=none,                 
+  numbersep=5pt,                
+  numberstyle=\tiny\color{mygray},
+  rulecolor=\color{black},        
+  showspaces=false,               
+  showstringspaces=false,         
+  showtabs=false,                 
+  stepnumber=2,                   
+  stringstyle=\color{mymauve},    
+  tabsize=4,
+  title=\lstname
+  xleftmargin=\parindent,
+}
+
+\lstdefinestyle{almos}{
+  backgroundcolor=\color{lightgray},
+  keywordstyle=\bfseries\color{mygreen},
+  commentstyle=\itshape\color{mymauve},
+  identifierstyle=\color{black},
+  stringstyle=\color{orange},
+  morekeywords={pid_t, uid_t, gid_t,
+    uint_t, uint16_t, uint32_t, uint64_t, spinlock_t, mcs_lock_t, atomic_t,
+    bool_t, error_t, task_s, thread_s, cluster_s, cpu_s, list_entry, page_s,
+    sig_mgr_s, event_s, rwlock_s, vmm_s, pmm_s, vfs_node_s, vfs_file_s,
+    fd_info_s, metafs_s, wait_queue_s, mapper_s, vfs_stat_s, vfs_context_s,
+    vfs_node_s, vfs_file_s, vfs_node_op_s}, }
+
+%% Shortcuts
+\newcommand{\todo}[1]{\textbf{\color{red}#1\newline}}
+
+%% Firt page related
+\author{Pierre-Yves Péneau} \date{\today} \title{Processus, fork() et exec() sur le noyau ALMOS}
+
+\begin{document}
+
+	\maketitle
+	\tableofcontents
+	  
+  \input{src/intro}
+  \input{src/task}
+  \input{src/fork}
+  \input{src/problem}
+  %\input{src/solution}
+  \input{src/bib}
+  \newpage
+  \input{src/annexes}
+ 
+
+\end{document}

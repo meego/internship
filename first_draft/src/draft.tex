@@ -1,0 +1,41 @@
+\documentclass[a4paper, 10pt, onecolumn]{article}
+
+%% Layout related
+\usepackage{hyperref}
+
+%% Encode
+\usepackage[utf8]{inputenc}
+
+%% Graphic related
+\usepackage{color}
+\usepackage{graphicx}
+\graphicspath{{include/img/}}
+\DeclareGraphicsExtensions{.jpeg,.jpg,.png}
+
+%% Lists related
+\usepackage{enumerate}
+\usepackage{paralist} %% enumerate several elements on a single line like (i)
+                      %% this is an example, (ii) this is a second example
+\newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
+\newcommand{\eenumline}{\end{inparaenum}}
+
+%% Shortcuts
+\newcommand{\todo}[1]{\textbf{\color{red}#1\newline}}
+
+%% Firt page related
+\author{Pierre-Yves Péneau}
+\date{5 Mars 2015}
+\title{Migration de processus sur une architecture massivement multi-coeurs
+  cc-NUMA}
+
+\begin{document}
+
+  \maketitle
+  %% \tableofcontents
+
+  \input{src/intro}
+  \input{src/create}
+  \input{src/migrate}
+  \input{src/bib}
+
+\end{document}

@@ -1,0 +1,41 @@
+\section*{Annexes}
+
+  \subsection*{La structure task\_s}
+  
+    \lstinputlisting[firstline=47, lastline=97, style=almos,
+      caption=\texttt{struct task}.Cette structure représente la notion la plus
+      haut-niveau possible pour le système d'exploitation: les tâches qu'il doit
+      ordonnancer. Chaque tâche est un ensemble de structure permettant de la
+      définir.On trouve principalement tout ce qui concerne les zones mémoire de
+      la tâche  sa localisation sur la machine (en terme de numéro de cluster et
+      de cpu) et tout ce qui conserne les fichiers tout les threads de cette
+    tâche. Lors d'un \texttt{fork()} c'est cette structure qui est dupliquée
+  puis modifiée.]{include/code/task.h} \label{lst:task}
+    
+  \subsection*{La structure fork\_info}
+
+  \lstinputlisting[style=almos, firstline=47, lastline=56,
+  caption=\texttt{struct fork\_info\_t}. \label{lst:fork_info_t} Cette structure
+est utilisée tout au long du fork pour passer les informations vitales entre
+toutes les fonctions.]{include/code/task.c}
+    
+    \newpage
+
+  \subsection*{Le VFS}
+
+    \subsubsection*{La structure node}
+
+      \lstinputlisting[style=almos, firstline=78, lastline=103,
+      caption=\texttt{struct vfs\_node\_s}.]{include/code/vfs.h}
+      \label{lst:vfs_node}
+  
+    \subsubsection*{La structure file}
+   
+      \lstinputlisting[style=almos, firstline=105, lastline=117,
+      caption=\texttt{struct vfs\_file\_s}.]{include/code/vfs.h}
+      \label{lst:vfs_file}
+  
+      %Cette structure est l'équivalent de la \texttt{struct file} du noyau
+      %Linux.  Ce niveau d'abstraction permet quant à lui de représenter la
+      %manipulation de l'information: \texttt{read(), write()}, les offsets des
+      %têtes de lecture\ldots

@@ -1,0 +1,129 @@
+\section{L'appel système fork()} \label{sec:fork}
+
+  \subsection{Rappels}
+
+    Nous allons maintenant nous intéresser à ce qu'est un \texttt{fork()} dans
+    un système UNIX. Avant de se plonger dans le code, il est important d'avoir
+    un certain recul pour analyser cette fonction. On peut distinguer trois
+    opérations de nature différente lors de cet appel:
+
+    \begin{enumerate}[1-]
+
+      \item[1-] allocation mémoire pour le processus fils que l'on va créer
+
+      \item[2-] copie du père dans cette zone mémoire mémoire
+
+      \item[3-] modification des quelques champs du processus fils (\texttt{pid,
+        ppid, *parent}), etc\ldots
+
+    \end{enumerate}
+
+    Une fois ces étapes terminées, on a à l'adresse mémoire allouée à l'étape 1
+    le nouveau processus, qui est une copie de son père, excepté les points
+    suivants (liste non exhaustive pour l'instant): 
+
+    \begin{enumerate}[1-]
+
+      \item le \texttt{pid}
+
+      \item le pointeur vers la struct \texttt{task\_s} représentant le parent
+
+      \item la région virtuelle
+
+      \item la région physique associée
+
+    \end{enumerate}
+
+    Bien que simple en apparence, cette opération est une des plus complexe sur
+    un système UNIX. En effet, un processus est décrit par une multitude
+    d'attributs, qui doivent tous êtres géré lors de ce dédoublement. Nous
+    allons maintenant voir en détail comment fonctionne cette fonction, quels
+    sont les structures de données impactées, et lesquels seront un problèmes
+    pour nous.
+
+
+  \subsection{Implémentation}
+
+    Dans cette section, nous détaillerons le plus précisément possibles le
+    fonctionnement de la fonction \texttt{fork()}. Les détails d'implémentations
+    \textbf{spécifique à ALMOS}, bien que les principes fondamentaux restent les
+    mêmes sur tout système UNIX.
+
+    \subsubsection{La phase d'initialisation}
+
+      Cette partie est très simple. Elle consiste à initialiser une structure
+      \texttt{fork\_info\_t} (donnée en annexe) qui servira tout au long du
+      \texttt{fork()}, sauvegarder le contexte d'exécution du processus père, et
+      élire une paire $<cluster, cpu>$ pour le placement du
+      thread\footnote{Actuellement, on se contente d'un placement par défaut. La
+      DQDT\cite{almos-phd} est désactivée.}.
+    
+
+    \subsubsection{La phase de copie}
+
+      Ici, on va allouer de la mémoire, copier toutes les informations partagées
+      entre le père et le fils, et mettre les informations spécifiques du fils
+      aux bons endroits.
+
+      On va faire trois demandes de mémoire différentes \benumline \item
+      \texttt{KMEM\_TASK} pour allouer les pages nécessaires pour stocker le
+      nouveau processus (sa \texttt{struct task\_s}) \item \texttt{KMEM\_FDINFO}
+      pour la structure contenant les descripteurs de fichiers ouverts
+      \texttt{KMEM\_PAGE} pour la tables des pages. \todo{(demander plus de
+      détails à Mohamed sur \texttt{task\_fd\_init()} parce que je suis pas sûr
+      d'avoir tout compris)} \eenumline. Les deux informations les plus
+      importantes sont \textbf{la table des descripteurs de fichiers ouverts} et
+      \textbf{la table des pages}. En effet, les \texttt{struct vfs\_file\_s}
+      pointées par les descripteurs de fichiers sont \textbf{partagées} par le
+      père et le fils, et doivent par conséquent être cohérentes en permanence.
+      Une autre structure partagée entre eux sont les régions virtuelles. Si le
+      processus père a crée une région vituelle \textbf{partagée}, alors tout
+      ses fils devront etre en mesure d'y accéder, tant en lecture qu'en
+      écriture. Cette propriété est fondamentale pour la suite de notre exposé,
+      et nous y reviendrons plus en détail dans la section~\ref{sec:problem}.
+
+      Ensuite, on rempli le nouveau processus avec les informations qui lui sont
+      spécifiques: son \texttt{pid}, le cluster où il va s'exécuter, le
+      processeur sur lequel il va s'exécuter, son nombre de threads (\texttt{0}
+      pour l'instant), son nombre de threads maximum son état
+      (\texttt{TASK\_CREATE}), son nombre de fils, son nombre maximal de fils,
+      et le binaire qu'il exécute. 
+
+      On initialise le gestionnaire de signaux, et on place le processus dans le
+      gestionnaire de tâches.
+
+      Ensuite, on va commencer la copie depuis le processus père, via la
+      fonction \texttt{task\_dup()}. On fait une demande d'allocation mémoire
+      sur le cluster élu pour le placement, et on appelle cette fonction. Cette
+      dernière va se charger de copier la table des descripteurs de fichiers
+      ouverts dans celle que l'on a allouée juste avant.
+
+
+    \subsubsection{L'allocation mémoire}
+
+      Cette allocation se fait \textbf{sur le cluster élu}. En effet, la
+      fonction \texttt{task\_dup()} récupère dans un premier temps le thread
+      noyau du cluster élu, et c'est lui qui fera l'allocation mémoire. On
+      demande dans un premier une région virtuelle \texttt{KMEM\_VM\_REGION},
+      que l'on initialise à zéro. On met également l'arbre des régions à
+      \texttt{NULL}. On demande ensuite une allocation de \textbf{pages
+      physiques}. Une fois la page obtenue, on va copier le contenu la partie
+      noyau de la table des pages du père dans le fils. Cette étape permet au
+      processus fils de savoir ou sauter en cas d'appel système, et donc
+      d'exécution de code noyau. Une fois cette étape terminée, on a
+      correctement initialisé le processus fils depuis le père.  Il ne reste
+      qu'à créer le premier \textbf{thread} pour ce processus.
+
+
+    \subsubsection{Création du premier thread et début d'exécution}
+
+      Cette opération est très simple et très rapide. On initialise une
+      structure \texttt{thread\_s} via la fonction \texttt{thread\_dup()}, puis
+      on place les bons flags sur le thread, on augmente le nombre de threads du
+      processus, on passe son état à \texttt{READY}, on fait pointer le fils sur
+      son père, et on ajoute son premier thread dans la liste des threads du
+      processus créé plus haut (via \texttt{sched\_register()}. Enfin, on ajoute
+      le nouveau processus dans la liste des fils du processus père.
+
+      À ce moment là, on ressort de la fonction \texttt{sys\_fork()}, et un
+      nouveau processus vient d'être crée, à partir de son père.

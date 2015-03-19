@@ -1,0 +1,48 @@
+\begin{paragraph}{Remarque:}
+
+  \textit{On suppose ici que le lecteur possède un minimum de connaissance sur
+          les systèmes d'exploitation. Il est en particulier nécessaire de
+                  comprendre ce qu'est un \textbf{appel système}, un
+                  \textbf{processus}, une \textbf{table des pages} et un
+                  \textbf{descripteur de fichier}. Il faut également avoir lu le
+                  papier de Ghassan Almaless sur ALMOS\cite{almos-cfse}. Avoir
+                  lu la thèse de Ghassan Almaless est évidemment
+                  conseillé\cite{almos-phd}.}
+
+\end{paragraph}
+
+
+\section{Introduction}
+
+  Cette documentation est relative à la version 40 bits de
+  ALMOS\footnote{Version utilisée lors de la rédaction de cette documentation:
+          \textbf{commit \#662 sur la branche de Mohamed}}.
+
+  On s'intéresse ici à la notion de processus, de threads, aux services rendus
+  par la table des pages et au fonctionnement de l'appel système
+  \texttt{fork()}. Cet appel système, normalisé POSIX\cite{posix}, est la seule
+  et unique manière de créer des processus sur un système UNIX. Il est en
+  général suivi par un appel à l'une des fonction de la famille \texttt{exec()}.
+
+  On rappelle que l'on considère l'architecture TSAR\cite{tsar} comme étant
+  l'architecture matérielle sous-jacente à notre noyau. De plus, nous utilions
+  la version de Mohamed Karaoui compatible avec ALMOS 40 bits.
+
+  \begin{paragraph}{Objectifs}
+    \begin{itemize}
+  
+        \item identifier de manière précise ce qu'est un processus
+  
+        \item comprendre les mécanismes du \texttt{fork()} et du
+        \texttt{exec()\footnote{\todo{09.03.2015: le \texttt{exec()} est mis de
+                côté pour l'instant}}}
+          
+        \item identifier les structures de données manipulées lors d'une telle
+        opération
+          
+        \item comprendre les difficultés relatives à la manipulation de ces
+        structures sur une architecture clusterisée comme ALMOS
+          
+    \end{itemize}
+  \end{paragraph}
+

@@ -1,0 +1,211 @@
+\section{Création de processus}
+\label{sec:creation}
+
+  Nous voulons nous détacher un peu du fonctionnement cloisonné et indépendants
+  des clusters, en proposant un mécanisme de création à distance d'un processus,
+  i.e. lors de l'appel à \texttt{fork()} par un processus $P$ sur un cluster
+  $i$, le noyau pourra prendre la décision de créer le fils $P'$ sur un cluster
+  cible $j$. A l'heure actuelle, il n'a pas été spécifié si la création à
+  distance pourrait être explicite au programmeur, ou si c'est le noyau qui
+  prendra tout seul les décisions.
+
+  Dans un premier temps, nous détaillerons la procédure lors d'un appel à la
+  fonction \texttt{fork()} dans un noyau monolithique ``standard''. Les noyaux
+  considérés ici sont celui de
+  xv6\footnote{\href{http://pdos.csail.mit.edu/6.828/2014/xv6.html}{``Xv6, a
+      simple Unix-like teaching operating system'' : un clone de l'UNIX v6
+      légèrement modifié à des fins éducatives}} et d'ALMOS. Ensuite, nous
+  donnerons le fonctionnement de la procédure de création à distance pour le
+  noyau ALMOS . Enfin, nous verrons les défis soulevés par une telle procédure.
+
+
+  \subsection{Création d'un processus: fork()}
+  \label{subsec:fork}
+
+    La création d'un processus est une des opérations les plus délicates et les
+    plus lourdes dans un système UNIX. Celle-ci est réalisée par l'appel système
+    \texttt{fork()}. Cet appel système est la seul et unique manière de créer
+    des processus. Le \texttt{fork()} permet de créer une copie ``exacte'' du
+    processus qui l'invoque (avec quelques exceptions), puis l'appel à
+    \texttt{fork()} est suivit de l'appel à une fonction de la famille
+    \texttt{exec()}\footnote{Voir la remqarque en \ref{par:remarque}},
+    permettant de réécrire totalement le code et les données du processus fils
+    (entre autres). Ainsi, on a créé un nouveau processus, en dupliqunt le père
+    puis en changeant le segment de code qu'il doit exécuter.
+
+    D'une manière simplifíée, voici la procédure qui doit être respectée lors de
+    la création d'un processus fils:
+    \begin{enumerate}
+      \item vérifier qu'il reste assez de mémoire pour allouer un nouveau
+        processus. Si oui, vérifier que la priorité du processus lui permet
+        d'allouer de la mémoire\footnote{si le système est dans un état
+          critique, les processus non prioritaires, i.e. ne permettant pas de
+          sortir de cet état, verront leur appel à \texttt{fork()}
+            échouer.}, puis faire l'allocation
+      \item copier \textbf{la table des pages} du processus père dans le
+        processus fils
+      \item mettre à jour le pointeur vers la \texttt{struct proc}\footnote{le
+        nom est repris de l'UNIX v6} du père dans le procesus fils
+      \item restaurer le \textbf{contexte d'exécution} du fils (le cadre de pile
+        de l'appel système). Le processus doit forcément commencer son exécution
+        quelque part, il reprend donc là où est son père, dans l'appel système
+        \texttt{fork()}
+      \item changer la valeur de retour du \texttt{fork()} pour le fils
+      \item copier \textbf{la table des descripteurs de fichiers} du
+        père vers les fils
+      \item changer les valeurs du \textbf{pid} et du \textbf{ppid}
+        (respectivement les identifiants du processus et selon de son père)
+      \item changer l'état du processus fils à \textbf{prêt}
+    \end{enumerate}
+
+    Ce fonctionnement est valable dans les systèmes d'exploitation classiques
+    comme *BSD ou GNU/Linux. Ici, nous travaillons avec un noyau comportant des
+    éléments inexistants dans de tels OS, comme la DQDT par exemple. Il y aura
+    donc des opérations spécifiques à ALMOS lors de l'appel à
+    \texttt{fork()}. On peut entre autre citer \benumline \item la mise à jour
+    de la DQDT, avec l'incrémentation du nombre de processus en cours
+    d'exécution sur le core sélectionné \item TODO \eenumline.
+
+
+  \subsection{Création distante: remote\_fork()}
+  \label{subsec:principes}
+
+    Nous allons maintenant voir ce que nous appellons ``création à distance'',
+    On rappelle que les clusters sont ignorants matériellement de l'existance de
+    leur voisins, et que c'est le noyau qui assure cette connaissance. Notre
+    objectif est de pouvoir créer un processus fils sur un cluster différent de
+    celui où se situe son père. Pour cela, nous avons à ce jour identifié deux
+    types de méthodes possibles \benumline \item la création du processus fils
+    est locale, puis on déplace les données sur le cluster cible \item la
+    création du fils est distante, et on doit alors donner au cluster cible les
+    informations nécessaires à la création de processus fils\eenumline.
+
+    Si l'on se place dans le cadre de l'hypothèse \benumline \item \eenumline,
+    il y a deux possibilités:
+    \begin{enumerate}[a)]
+      \item l'initiateur demande au cluster cible de lui allouer un espace
+        mémoire, et ce dernier va pouvoir faire un \texttt{memcpy()} du
+        processus fils qu'il vient de créer dans cet espace mémoire distant
+      \item l'initiateur envoie un message au cluster cible lui indiquant qu'un
+        processus fils est en attente de migration. Le cluster cible viendra
+        alors faire un \texttt{remote\_memcpy()} depuis la mémoire du cluster
+        initiateur vers sa mémoire locale
+    \end{enumerate}
+    Une fois les données copiées dans le cluster cible, l'initiateur libère
+    la mémoire locale utilisée pour créer le fils.
+
+    Si l'on se place dans le cadre de l'hypothèse
+    \benumline\setcounter{enumi}{1}\item\eenumline, on fait également face à
+    deux possibilités:
+    \begin{enumerate}[a)]
+      \item le cluster initiateur envoie au cluster cible une adresse
+        \textbf{physique} pointant sur son banc mémoire. Celui-ci viendra alors
+        lire les données nécessaires à la création du processus fils
+      \item le cluster initiateur demande un accès en écriture sur une zone
+        mémoire du cluster cible, et une fois cet accès obtenu, ira écrire les
+        informations nécessaires via un \texttt{memcpy()}
+    \end{enumerate}
+    La création se fera ensuite sur le cluster distant.
+
+
+
+
+
+  \subsection{Mesures et évaluations des solutions proposées}
+  \label{subsec:eval}
+
+    Nous allons ici présenter les différents critères que nous avons retenus
+    afin de mesurer l'efficacité des solutions présentées en section
+    \ref{subsec:principes}.
+
+    Toutes ces propositions ont en commun certaines opérations dont le coût à
+    payer est obligatoire: \benumline \item le temps d'exécution de
+    \texttt{fork()}\item le temps d'exécution de l'allocation mémoire et \item
+    le temps pour la copie distante (\texttt{remote\_memcpy()})
+    \eenumline. Ainsi, les différences réelles entre nos proposition se verront
+    dans la quantités de messages envoyés entre les clusters, et leur
+    taille. Notre but étant la meilleur performance possible, il faut alors
+    trouver la solution permettant de minimiser ce coût jusqu'à une limite dite
+    ``acceptable'', pour que l'aspect NUMA de la machine soit les plus invisible
+    possible au programmeur.
+
+    \subsubsection{Création par le cluster distant}
+    \label{subsubsec:remote-create}
+
+      Il a été décidé de ne pas explorer cette voie. Nous avons fait ce choix en
+      nous basant sur deux propriétés, dont une spécifique à notre noyau:
+      \benumline \item ALMOS dispose d'un système de fichier scalable et
+      cohérent pour tous les clusters et \item l'appel à \texttt{fork()} est
+      \textbf{dans la grande majorité des cas} suivit d'un appel à
+      \texttt{exec()}\eenumline.
+
+      \begin{paragraph}{Remarque:}
+      \label{par:remarque}
+        l'hypothèse selon laquelle \texttt{fork()} est suivit d'\texttt{exec()}
+        est une hypothèse très forte et pas toujours vérifée. Exemple concret,
+        les naviguateurs web, qui avaient tendances à gérer un thread par
+        onglet, ont maintenant changé leur méthode de gestion mémoire et préfère
+        utiliser un processus par onglet. De même, la commande \texttt{ssh -f},
+        qui permet de lancer ssh en arrière plan, ne fait pas d'appel à
+        \texttt{exec()} après le \texttt{fork()}. Il faudra dans un futur
+        travail faire une synthèse de ce fonctionnement. Néanmoins, cela veut
+        simplement dire que les processus comme \textbf{ssh} ou \textbf{firefox}
+        ne pourront être migrés entre différents clusters. Cet inconvénient est
+        à moindre coût, puisqu'ici nous visons des applications massivement
+        parallèles et non des applications de travail.
+      \end{paragraph}
+
+    \subsubsection{Création par le cluster local}
+    \label{subsubsec:local-create}
+
+      Nous avons précédemment que nous allons nous affranchir du processus de
+      création sur le cluster distant. Il nous reste donc deux propositions à
+      évaluer. Nous nous basons sur les deux propriétés citées en
+      \ref{subsubsec:remote-create}.
+
+      Ainsi, la création à distance d'un processus peut se résumer à un
+      \texttt{fork()} sur le cluster initiateur, à la migration de ce processus
+      sur le cluster cible, puis à l'envoi d'un message sur le cluster cible du
+      type \texttt{execute(void* func, void* arg)}, avec comme fonction
+      \texttt{exec()} et comme argument le chemin vers le binaire. Le système de
+      fichier étant cohérent pour tous les clusters, on est assuré de
+      l'exécution du binaire. Le processus sera donc lancé sur le cluster cible,
+      en mémoire distante par rapport au cluster l'ayant créé.
+      
+      \begin{paragraph}{Remarque:}
+        Afin de déterminer quelle est la bonne solution pour la copie mémoire
+        lors de la migration, nous devons implémenter les deux fonctionnalités,
+        puis faire de tests. À l'issu de ces derniers, nous serons à même de
+        savoir quelle est la solution que nous devons retenir, voire
+        éventuellement conserver les deux si les deux s'avèrent être tout autant
+        efficace selon les cas de figure.
+      \end{paragraph}
+
+
+  \subsection{Problème liés à l'aspect clusterisé de l'architecture}
+  \label{subsec:problemes}
+
+    \todo{TODO: le problème des pointeurs}\\
+    \todo{TODO: le problème de cohérence des structures de données}
+    
+
+  %%   \begin{enumerate}
+  %%     \item on va payer le coup de la demande 
+  %%     \item la vérification et l'allocation mémoire ne peuvent être faite que
+  %%       localement, puisque les clusters n'ont pas accès à la mémoire des autres
+  %%     \item  
+
+
+  %%     \item la copie de la table des pages sera couteuse
+  %%   \end{enumerate}
+
+  %%   \subsubsection{Création locale}
+  %%   \label{subsubsec:local}
+    
+  %%     La proposition a) visant a obtenir du cluster distant un espace mémoire
+  %%     implique les \benumline \item une fois que le cluster initiateur
+  %%     aura copié le processus fils dans la mémoire du cluster cible, il faudra
+  %%     que ce dernier soit ajouté dans la liste des processus gérés par le
+  %%     \textbf{scheduler} du cluster, et cela implique une prise de verrou \item 
+  %%     \eenumline. De plus, quelque soit le mécanisme retenu, il faudra
+  %%     maintenire la \textbf{cohérence} entre

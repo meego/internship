@@ -1,0 +1,122 @@
+@startuml
+
+actor libc
+libc -> sys_fork : fork()
+
+|||
+== Initialisation ==
+
+sys_fork -> sys_fork : ajout de 1 dans le compteur\nde fils de la tâche appelante
+sys_fork -> sys_fork : remplissage de la struct fd_info
+sys_fork -> sys_fork : désactivation et réactivation\nimmédiate des IRQ (TODO: find why)
+sys_fork -> sys_fork : sauvegarde du contexte du FPU\n(voir la remarque sur le FPU)
+sys_fork -> sys_fork : on applique la politique de placement\npar défaut (cluster+1, cpu+1)
+
+
+|||
+== Copie des structures ==
+
+sys_fork -> do_fork  : do_fork(struct fork_info *info)
+
+do_fork -> do_fork   : on créé la variable child_task
+do_fork -> do_fork   : on récupère l'id du cluster et\ndu cpu choisi
+do_fork -> task_create      : task_create(struct task_s *chil_task,\nstruct fork_info *info,\nCPU_USR_MODE)
+
+task_create -> task_create  : on vérifie qu'on créé bien\nun thread utilisateur
+task_create -> task_create  : on cherche un pid pour la\nnouvelle tâche
+task_create -> task_create  : on alloue une page mémoire\npour le processus (type KMEM_TASK)
+task_create -> task_create  : on initialise le gestionnaire\nde signaux du processus
+task_create -> task_create  : on alloue la mémoire pour la table\ndes threads
+create task_fd_init
+task_create -> task_fd_init : task_fd_init(struct task_s *task)
+
+task_fd_init -> task_fd_init: on fait une allocation mémoire\n pour une structure fd_info_s (type KMEM_FDINFO)
+task_fd_init -> task_fd_init: on fait une allocation mémoire\n(type KMEM_PAGE) pour la tables des descripteurs\nde fichiers ouverts et la table des pages
+task_fd_init --> task_create
+
+task_create -> task_create  : on met tout la région virtuelle\ndu processus à 0
+task_create -> task_create  : on rempli les champs du processus:\npid, cluster, cpu, nombre de threads,\nétat courant, etc...
+task_create -> task_create  : on met dans le tableau du gestionnaire\nde tâches la nouvelle\ntâche (le tableau est indexé par le pid\ndes tâches)
+task_create --> do_fork
+
+do_fork -> do_fork          : on alloue une page sur le cluster élu\nlors du placement
+create task_dup
+do_fork -> task_dup         : task_dup(struct task_s *child,\nstruct task_s *father)
+
+task_dup -> task_dup        : on bloque le CWD du père
+task_dup -> task_dup        : on ajoute 1 aux compteur de références\ndes fichiers représentant le cwd et la racine
+task_dup -> task_dup        : on fait pointer child->cwd et child->root sur ceux du père
+task_dup -> task_dup        : on relâche le verrou
+create task_fd_fork
+task_dup -> task_fd_fork    : task_fd_fork(struct task_s *child,\nstruct task_s *father)
+
+task_fd_fork -> task_fd_fork: on bloque la structure contenant\nles descripteurs de fichiers du père
+loop
+task_fd_fork -> task_fd_fork: récupèrer la struct vfs_file_s du fichier
+task_fd_fork -> task_fd_fork: faire un atomic_add(1) sur le compteur\nde référence de ce fichier
+task_fd_fork -> task_fd_fork: mettre la struct vfs_file_s dans la\ntable des descripteurs de fichiers\nouverts du processus fils
+end
+task_fd_fork -> task_fd_fork: on relâche le verrou
+task_fd_fork --> task_dup
+
+task_dup -> task_dup : on met le pointeur du binaire\ndu fils sur celui du père (TODO: regarder la variable *bin)
+task_dup --> do_fork
+
+
+|||
+== Allocations mémoire (virtuelle et physique) ==
+create vmm_dup
+do_fork -> vmm_dup   : vmm_dup(struct vmm_s child->vmm, current->vmm)
+
+vmm_dup -> vmm_dup   : on récupère le thread noyau du cluster élu
+vmm_dup -> vmm_dup   : on demande l'allocation d'une région virtuelle\npour le fils
+vmm_dup -> vmm_dup   : on copie le contenu de la région\nvirtuelle du thread noyau dans celle\ndu fils
+create vmm_init
+vmm_dup -> vmm_init  : vmm_init(struct vmm_s dst)
+
+vmm_init -> vmm_init : toutes les variables composant la vmm\nsont mises à zéro
+vmm_init -> vmm_init : l'arbre des régions virtuelles est mis à NULL
+vmm_init --> vmm_dup
+
+create pmm_init
+vmm_dup -> pmm_init  : pmm_init(struct pmm_s *pmm,\nstruct cluster_s *cluster)
+
+pmm_init -> pmm_init : on copie le contenu de la partie noyau de la\ntable des pages dans le processus fils\n(cela permet au processus de savoir ou sauter en cas\nd'appel système)
+loop
+pmm_init -> pmm_init : TODO: j'ai pas compris le foreach
+end
+pmm_init --> vmm_dup
+
+vmm_dup --> do_fork
+
+
+|||
+== Allocation du premier thread du nouveau processus ==
+create thread_dup
+do_fork -> thread_dup : thread_dup(struct task_s *child,\nstruct thread_s *child_thread,\nstruct fork_info_t *infos)
+
+thread_dup -> thread_dup : on met toutes les variables composant un thread à 0 (ou leur valeurs d'initialisation)
+thread_dup -> thread_dup : on met l'arbre des régions virtuelles à NULL
+thread_dup --> do_fork
+
+do_fork -> do_fork      : si il y a des flags à mettre, on les met\n(priorité mémoire, stratégie d'allocation mémoire...)
+do_fork -> do_fork      : on ajoute le thread à la liste des threads du processus
+do_fork -> do_fork      : on met le compteur de référence à 1 et l'autre\n compteur on fait ++ (TODO: find the difference\nbetween thoses counters)
+do_fork -> do_fork      : on change l'état du processus à READY
+do_fork -> do_fork      : on affecte le pointeur *parent vers la\nstruct task_s du père 
+create sched_register
+do_fork -> sched_register       : sched_register(struct thread_s *child_thread)
+
+sched_register -> sched_register        : on ajoute le thread dans la liste des\nthreads ordonnancables
+sched_register --> do_fork
+
+do_fork -> do_fork      : on initialise le contexte sur le cpu
+do_fork --> sys_fork
+
+sys_fork -> sys_fork    : on bloque le processus père
+sys_fork -> sys_fork    : on lui ajoute sa tâche fils dans sa liste
+sys_fork -> sys_fork    : on débloque le processus père
+
+sys_fork --> libc
+
+@enduml
