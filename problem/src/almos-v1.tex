@@ -1,0 +1,38 @@
+\section{ALMOS version Ghassan}
+
+\begin{itemize}
+
+\item On a un seul kernel pour toutes la machine (les réplica ne
+                sont pas considérés comme des noyaux indépendants).
+
+         \item Le noyau fonctionn en mémoire virtuelle
+
+         \item But d'ALMOS à ce moment là: avoir un noyau scalable, ce qui
+         implique la prise en compte de la localité des accès mémoire, et ce de
+         manière intrinsèque pour le noyau.
+        
+        \item Le but de Ghassan n'était pas de supporter 1To de mémoire, c'était
+        d'avoir un système d'exploitation qui passe à l'échelle des
+        architectures many-core. Pour cela, il a introduit les clusters
+        managers, qui contiennent et gèrent localement les clusters de la
+        machine, et notamment \benumline \item le réplica noyau \item les
+        processeurs (les évènements du type interruptions, messages etc\ldots,
+                        et l'ordonnancement) \item le gestionnaire mémoire
+        (capable d'allouer trois types d'objets: des pages, des objets noyau de
+         taille fixe, des structures de données temporaires mais dont la taille
+         est relativement petite par rapport à celle d'une page) \eenumline
+
+
+                        \item ca ca marche, ca permet de gérer 256 clusters de 4
+                        processeurs chacun et de manière décentralisée. MAIS ca
+                        ne prend absolument pas en compte la mémoire disponible
+
+\item \todo{Problème:} On a des processeurs 32 bits, 1To de mémoire, et un
+noyau capable de gérer tous les processeurs de l'architecture. On veut
+maintenant pouvoir gérer toute la mémoire.
+
+le noyau fonctionne en espace virtuel. Il peut donc adresser au maximum 4Go de
+mémoire. Sur ces 4Go octets, il s'en réserve 2Go pour son fonctionnement, ce qui
+ne laisse que 2Go à l'utilisateur. On a donc 1To de mémoire physique, et on ne
+peut en utiliser que 2Go pour les applications.  \end{itemize}
+

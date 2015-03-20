@@ -1,0 +1,33 @@
+\documentclass[a4paper, 10pt, onecolumn]{article}
+
+%% Encode
+\usepackage[utf8]{inputenc}
+
+%% Graphic related
+\usepackage{color}
+\usepackage{graphicx}
+\graphicspath{{include/img/}}
+\DeclareGraphicsExtensions{.jpeg,.jpg,.png}
+
+%% Lists related
+\usepackage{paralist} %% enumerate several elements on a single line like (i)
+                      %% this is an example, (ii) this is a second example
+\newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
+\newcommand{\eenumline}{\end{inparaenum}}
+
+%% Shortcuts
+\newcommand{\todo}[1]{\textbf{\color{red}#1\newline}}
+
+%% Firt page related
+\author{Pierre-Yves Péneau}
+\date{\today}
+\title{Définition du problème}
+
+\begin{document}
+
+  \maketitle
+
+  \input{src/almos-v1}
+  \input{src/almos-v2}
+
+\end{document}
