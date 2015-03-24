@@ -11,7 +11,7 @@ TEX=pdflatex
 PROJECT=main
 REPORT=reunion_tsar
 
-all: folder
+all: folder svg
 
 	BUILDTEX= $(TEX) -output-directory $(BIN) \
 					-jobname $(REPORT) $(SRC)/$(PROJECT).tex
