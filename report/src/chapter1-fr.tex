@@ -1,0 +1,197 @@
+\chapter{État de l’art}
+
+  La problématique du passage à l’échelle des noyaux n’est pas nouvelle. En
+  effet, dès les années 90, ~\citet{unrau1995hierarchical}
+  posent la question et apportent des réponses avec le noyau Hurricane. D’autres
+  ont également essayé avec le micro-noyau L4~\citep{}. Mais ce fut finalement
+  Linux qui s’imposa comme le modèle de référence, et les travaux focalisèrent
+  alors sur ce dernier.
+
+  Mais, aux alentours des années 2004-2005, un changement radical a été opéré de
+  la part des construc- teurs tels qu’Intel ou AMD. Plutôt que de continuer à
+  augmenter la fréquence des processeurs, ce qui devenait contre productif vu la
+  quantité d’énergie nécessaire, ils ont préféré augmenter le nombre de coeurs
+  et le nombre de processeurs sur les puces. C’est ainsi que l’ère du
+  parallélisme massif commenca~\citep{patterson2011parallel}, et que la
+  problématique du passage à l’échelle du noyau Linux fût soulevée.
+
+  En plus de cette problématique, il nous paraît important de mettre l’accent
+  sur un phénomène rare en informatique, et qui est au cœur de étude ici. En
+  effet, le mélange de l’architecture TSAR et du noyau ALMOS fait que nous nous
+  retrouvons ici à devoir gérer un espace d’adressage physique plus grand que
+  l’espace d’adressage virtuel offert par le noyau.
+
+  Enfin, le passage d’ALMOS au mode multi-noyau nous permettra de voir comment
+  les différentes solutions existantes maintiennent cohérentes des structures de
+  données vitales au fonctionnement du noyau
+
+
+  \section{Passage à l’échelle des noyaux}
+
+    \subsection{Scalabilité du noyau Linux}
+
+      Il apparait évident dans un premier temps de vouloir adapter le noyau
+      Linux à des architectures massivement multi-coeurs. En effet, changer de
+      noyau, alors que ce dernier s’est imposé partout, est un pari très risqué,
+      et très difficile. Pour imposer un nouveau noyau, il faudrait que ce
+      dernier soit en adéquation parfaite avec l’API proposée par Linux, et ce
+      pour que le fonctionnement des applications actuelles, et le développement
+      de futures application, soit le plus transparent possible pour
+      l’utilisateur ou le développeur. À cet effet, ~\citet{boyd2010analysis}
+      ont étudié la scalabilité de Linux sur une machine
+      48 coeurs, et utilisant le benchmark MOSBENCH. Ils ont pu tirer plusieurs
+      conclusion de cet études.  Premièrement, il existe trois type de problème
+      liés au passage à l’échelle :
+      \begin{itemize}
+        \item l’implémentation du noyau
+        \item l’implémentation de l’application utilisateur
+        \item la manière dont l’application utilise les services noyau
+      \end{itemize}
+      Grâce à cela, ils sont parvenus à résoudre les problèmes liés aux
+      applications relatives à MOSBENCH, et ce en utilisant des techniques
+      basique de programmation parallèle. De plus, la grande majorité de leurs
+      contributions sur le noyau ne sont que de petits changements, et très
+      localisés. À l’exception faite des \textit{sloppy counters}, aucun concept
+      clé de Linux n'a été touché
+
+      Ainsi, ils sont parvenus à identifier les problèmes du noyau, comme par
+      exemple la gestion du cache des dentry, les goulots formés par les sytèmes
+      de fichiers montés, etc\ldots, et à les résoudres pour obtenir des
+      performances acceptables.
+
+      Néanmoins, nous pouvons aujourd’hui adresser trois critiques à ceus
+      travaux :
+      \begin{itemize}
+        \item le noyau utilisé est ancien (2.6.35-rc5, 12 Juillet 2010). Les
+          mécanismes de prémption venaient d’être ajoutés et n’étaient pas aussi
+          performants que maintenant.
+        \item la machine considérée est composée de seulement 48 coeurs, ce qui
+          est peu par rapport à la puissance des machines d’aujourd’hui
+        \item leur propre conclusion indique qu’il ne faut pas changer le design
+          des sytèmes d’exploitation `` pour l’instant''
+      \end{itemize}
+      Nous pensons qu’à présent, il est nécessaire de revoir cette organisation.
+
+      
+    \subsection{Popcorn Linux}
+
+      Le projet Popcorn Linux~\citep{barbalacepopcorn} part du même constat évoqué précédement, mais
+      en essayant tout de même de conserver le noyau Linux comme base de
+      travail. Avec un noyau plus actuel que précédement (3.2), ils ont en
+      partie adopté les principes du multi-noyau~\citep{} mais en ont rejetés certain.
+
+      Popcorn Linux permet de lancer plusieurs noyau Linux en même temps sur la
+      même machine, Le matériel est attribué de manière logicielle entre les :
+      différentes instances du noyau, et ces dernières communiquent uniquement
+      par passage de messages. Afin de garantir à l’utilisateur l’illusion d’un
+      seul système en exécution, ils ont utilisé les mécanismes de \textit{namespace}
+      offert par Linux pour construire ce qu’ils appellent `` l’image disque
+      unique'' (\textit{Single System Image}).
+
+      Le partitionnement des ressources est fait selon la configuration donnée
+      au boot du noyau. Le premier noyau qui est lancé, appelé `` noyau
+      maître'', lance un processus de reconnaissance du matériel. Ensuite, on
+      précise au noyau via des paramètres au boot, les ressources dont il peut
+      disposer, en fonction de celle trouvées par le noyau maître. Une fois les
+      noyaux lancés, ils ne partagent aucune données, exception faite de la
+      table contenant les adresse d’écriture des buffers des autres noyaux,
+      utilisés pour le passage de messages. Ces buffers sont de types `` MWSR'',
+      ou \textit{Multi Writer Single Reader}, et utilisent un système de ticket
+      pour les écritures. Les lectures utilisent un mélange de deux
+      techniques:\benumline \item le lecteur vient consulter de manière
+      régulière le contenu de son buffer (\textit{polling}) \item il ira lire le
+      buffer sur réception d’une IPI (\textit{Inter-Processor Interruption}) du
+      coeur ayant initié l’écriture\eenumline.
+
+      Ces communications permettent de donner l’illusion qu’il n’y a qu’un seul
+      noyau en cours d’exécu- tion, mais aussi de pouvoir migrer des tâches
+      entre les différentes instances de noyaux de manière transparente.
+
+      \subsubsection{La migration de tâches}
+
+        TODO
+
+    \subsection{Hurricane}
+
+    \subsection{Hive}
+
+    \subsection{Corey}
+
+      Avant leurs travaux sur Linux,~\citet{boyd2008corey}. ont proposé le
+      système d’exploitation Corey. Dans ce dernier, la gestion du partage des
+      ressources est laissé aux applications utilisateurs.
+
+      En donnant le contrôle aux programmeurs des applications utilisateur,
+      Corey permet en effet de per- sonnaliser le comportement du noyau selon
+      les besoins et les spécificités d’une application. Les inconvénients
+      majeurs de cette approche sont: \benumline \item lier fortement l’application au
+      système qui l’exécute, ce qui élimine complètement ou partiellement la
+      portabilité des applications et complique sérieusement la réutilisation du
+      code existant;\item augmenter la complexité de programmation et
+      nécessiter d’avantage d’efforts de la part des programmeurs d’applications
+      (gestion explicite des régions virtuelles, placement et partage des
+      structures de données noyau, etc.); et \item  générer des conflits entre
+      les choix propres de chaque application dans le contexte de l’exécution
+      dynamique de plusieurs applications simultanées\eenumline.
+
+
+    \subsection{Barrelfish}
+      
+      L’ETH Zurich, en collaboration avec Microsoft Research, a engagé des
+      travaux de recherches dans le domaines des architectures du futures en
+      2008. Leur équipes sont arrivées à établir un nouveau modèle d’élaboration
+      des systèmes d’exploitation : le multi-noyau. Ce paradigme part de
+      plusieurs postulats\benumline \item les architectures du futures seront très
+      hétérogènes\item les noyaux actuels ne profite pas de l’hétérogénéité
+      offertes par le matériel et au contraire essaye de la masquer un maximum
+      \item les machines sont construites comme des systèmes distribués, pourquoi
+      ne pas appliquer le même modèle aux systèmes d’exploitation\eenumline.
+
+      
+  \section{Gestion d’un espace d’adressage physique supérieur à l’espace virtuel}
+
+    \subsection{Linux, OpenBSD et NetBSD}
+  
+      Un des problèmes des espaces physiques de grande taille est la tables des
+      descripteurs de pages physiques\footnote{L’utilisation du mot “table” est
+        un abus de langage : dans les systèmes modernes, c’est en réalité une
+        liste doublement chainée}. En effet, lors de l’initialisation du
+      système, ce dernier crée tous les descripteurs de pages nécessaires pour
+      décrire toute la mémoire physique de la
+      machine~\citep{bsdvm,linuxvm}. Lorsque l’on dispose d’une grosse quantité
+      de mémoire, la taille de cette table est énorme. A titre d’exemple, ALMOS
+      à besoin de 14Go pour décrire les 1To de mémoire offerts par TSAR. Cette
+      valeur, bien qu’élevée, est largement supérieure dans les noyaux Linux,
+      OpenBSD et NetBSD, car les structures représentant les pages dans ces
+      noyaux sont plus volumineuses en mémoire que celle d’ALMOS.
+
+      Du fait de la taille énorme de ces descripeurs, le problème apparaît
+      rapidement : comment stocker 14Go de données lorsque l’on a que 1Go
+      d’espace virtuel ?  La réponse est simple : on ne peut pas.  Ainsi, les
+      noyaux cités précédemment ne peuvent pas gérer plus de 4Go de mémoire dans
+      leur versions 32 bits.
+
+
+    \subsection{Le cas FreeBSD}
+
+      Selon la documentation, il apparaît que le noyau de FreeBSD soit le seul
+      capable de gérer une telle situation. Les développeurs indiquent que le
+      noyau peut gérer jusqu’à 8To de mémoire, le tout en utilisant des tailles
+      d’adresses de 32 bits~\citep{freebsd2015, mckenzie1994}.
+
+      \todo{Trouver une doc pour comprendre comment ils font.}
+      
+      \todo{Regarder directement le code ?}
+
+
+  \section{Partage et maintient de cohérence de structures noyaux}
+
+    \subsection{Hare}
+
+    \subsection{Barrelfish}
+
+      passage de message
+
+    \subsection{DragonFly BSD}
+
+      multi-noyau, passage de message, HAMMER
