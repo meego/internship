@@ -17,7 +17,7 @@ out:
 	BUILDTEX= $(TEX) -output-directory $(BIN) \
 		-jobname $(REPORT) $(SRC)/$(PROJECT)
 
-bib:
+bib: out
 	$(LN) $(SRC)/references.bib $(BIN)
 	@cd $(BIN)
 	$(BIB) $(BIN)/$(REPORT)
