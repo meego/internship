@@ -1,7 +1,7 @@
 %!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
 
-\documentclass[twoside]{report}
+\documentclass[twocolumn]{article}
 
 
 %% LANGUAGE (english by default)
@@ -33,7 +33,6 @@
 \usepackage[official]{eurosym}
 \usepackage{fancyhdr}
 \usepackage[sort&compress, authoryear]{natbib}
-
 \usepackage{paralist} %% enumerate several elements on a single line like (i)
 %% this is an example, (ii) this is a second example
 
@@ -73,7 +72,7 @@
 \newcommand{\horrule}[1]{\rule{\linewidth}{#1}}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
-\bibpunct{[}{]}{;}{n}{,}{,}
+\bibpunct{[}{]}{,}{n}{,}{,}
 %% 1/ The symbol for the opening bracket.
 %% 2/ The symbol for the closing bracket.
 
@@ -90,20 +89,26 @@
 %% common author. e.g., (Chomsky 1956, 1957). If you want an extra space, then
 %% you need {,~}.
 
+%% Misc
+\graphicspath{{include/img/},{include/pdf/}}
+\DeclareGraphicsExtensions{.jpeg,.jpg,.png}
+
 \begin{document}
 
   \maketitle
-  \tableofcontents
-  \onehalfspacing
+  %% \tableofcontents
+  %% \onehalfspacing
  
   \ifr{ %% FRENCH PART HERE
     \input{src/introduction-fr}
     \input{src/chapter1-fr}
+    \input{src/chapter2-fr}
+    \input{src/conclusion-fr}
   }
   {
     %% ENGLISH PART HERE
   }
-  
+
   \bibliographystyle{plainnat}
   \bibliography{src/references}
   \ifr {\addcontentsline{toc}{chapter}{Bibliographie}}

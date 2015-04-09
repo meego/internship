@@ -1,31 +1,33 @@
-\chapter{Introduction}
+\section{Contexte de travail}
+\label{sec:context}
 
-  Depuis une dizaine d’années, les fabricants des processeurs haute-performance
-  ont atteint des limitations physiques concernant la dissipation thermique et
-  l'augmentation de la fréquence d'horloge. Ils se sont tournés vers les
-  architectures multi-coeurs à mémoire partagée cohérente garantie par
-  matériel. De nos jours, des processeurs à mémoire partagée cohérente ayant
-  jusqu’à 100 coeurs intégrés sur la même puce sont une réalité et des
-  processeurs multi-c\oe urs ayant plusieurs centaines, voire, un millier de
-  coeurs sont à prévoir prochainement.
+  %% Depuis une dizaine d’années, les fabricants des processeurs
+  %% haute-performance ont atteint des limitations physiques concernant la
+  %% dissipation thermique et l'augmentation de la fréquence d'horloge. Ils se
+  %% sont tournés vers les architectures multi-coeurs à mémoire partagée
+  %% cohérente garantie par matériel. De nos jours, des processeurs à mémoire
+  %% partagée cohérente ayant jusqu’à 100 coeurs intégrés sur la même puce sont
+  %% une réalité et des processeurs multi-c\oe urs ayant plusieurs centaines,
+  %% voire, un millier de coeurs sont à prévoir prochainement.
   
-  Dans les architectures multi-c\oe urs à mémoire partagée cohérente, les coeurs
-  sont typiquement regroupés dans des tuiles/clusters et le cache du dernier
-  niveau est physiquement distribué sur ces derniers. Les tuiles/clusters sont
-  reliés entre-eux par un NoC (Network-On-Chip). Par conséquent, la latence des
-  accès mémoire liés aux miss des caches L1 est variable selon la distance
-  séparant le coeurs demandeur du tuile/cluster contenant le cache L2
-  responsable des lignes demandées. Dans ces architectures, la question de la
-  localité du trafic généré par les miss de caches L1 (data, instruction et TLB)
-  est primordiale à la fois pour passer à l’échelle et pour réduire la
-  consommation électrique (énergie consommée par bit transféré).
+  %% Dans les architectures multi-c\oe urs à mémoire partagée cohérente, les
+  %% coeurs sont typiquement regroupés dans des tuiles/clusters et le cache du
+  %% dernier niveau est physiquement distribué sur ces derniers. Les
+  %% tuiles/clusters sont reliés entre-eux par un NoC (Network-On-Chip). Par
+  %% conséquent, la latence des accès mémoire liés aux miss des caches L1 est
+  %% variable selon la distance séparant le coeurs demandeur du tuile/cluster
+  %% contenant le cache L2 responsable des lignes demandées. Dans ces
+  %% architectures, la question de la localité du trafic généré par les miss de
+  %% caches L1 (data, instruction et TLB) est primordiale à la fois pour passer
+  %% à l’échelle et pour réduire la consommation électrique (énergie consommée
+  %% par bit transféré).
 
   Pour répondre à cet enjeux de passage à l'échelle et de consommation
   énergétique, l'équipe ALSOC du LIP6 participe à deux projets d'envergures:
   SHARP~\cite{sharp2012} et TSAR~\cite{tsar2008}. Ce dernier a pour but de
   fournir une architecture matérielle passant à l'échelle de plusieurs centaines
   de coeurs, tandis que l'autre se veut être capable de fournir un système
-  d'exploitation pour exploiter efficacement cette nouvelle architecture.
+  d'exploitation pour gérer efficacement cette nouvelle architecture.
 
   Notre travail portera sur le multi-noyau ALMOS, et plus particulièrement sur
   la migration de tâches entre différentes instances du noyau. Nous allons dans
@@ -36,7 +38,8 @@
   stage.
   
 
-  \section{L'architecture TSAR}
+  \subsection{L'architecture TSAR}
+  \label{sec:tsar}
 
     TSAR est l'architecture d’un processeur multi-c\oe urs cc-NUMA homogène
     pouvant intégrer jusqu’à 4096 c\oe urs~\cite{greiner2009tsar}. Cette
@@ -55,12 +58,14 @@
     TSAR~\cite{tsar2008web}.
 
     \begin{figure}[!h]
-      \centering \includegraphics[scale=0.2]{include/img/tsar.png}
+      \centering
+      \includegraphics[scale=0.16]{include/img/tsar.png}
       \caption{Schéma global de l'architecture TSAR.~\cite{greiner2009tsar}}
       \label{fig:tsar}
     \end{figure}
   
-  \section{Le noyau ALMOS}
+  \subsection{Le noyau ALMOS}
+  \label{sec:almos}
 
     Le noyau ALMOS~\cite{almaless2011almos} est un noyau monolithique
     expérimental developpé au LIP6 par l'équipe ALSOC depuis 2011. Sujet de
@@ -68,8 +73,9 @@
     Mohamed Karaoui (système de fichiers) et Clément Devigne (exécution de
     machines virtuelles). Le but d'ALMOS est de répondre à la problématique
     évoquée plus haut, à savoir la localité des accès mémoires dans les machines
-    cc-NUMA. Une des particularité dans les choix architecturaux d'ALMOS est
-    d'avoir choisit de développer un noyau monolithique.
+    cc-NUMA\todo{il faut en parler quelque part}. Une des particularité dans les
+    choix architecturaux d'ALMOS est d'avoir choisi de développer un noyau
+    monolithique.
 
     ALMOS est un noyau monolithique respectant la norme POSIX~\cite{posix2013}
     et implémentant différentes libraires: \texttt{libpthread, mpi,
@@ -80,7 +86,7 @@
     mémoire (Auto-Next-Touch) \eenumline.
 
     
-    \subsection{Les cluster-manager}
+    \subsubsection{Les cluster-manager}
 
       L'organisation distribuée du noyau d’ALMOS s’appuie sur les objets nommés
       gestionnaires de clusters (cluster-manager). L’objectif est d’une part, de
@@ -100,7 +106,8 @@
       gestionnaire dédié (events-manager).
 
       \begin{figure}[!h]
-        \centering \includegraphics[scale=0.2]{include/img/cluster_manager}
+        \centering
+        \includegraphics[scale=0.16]{include/img/cluster_manager}
         \caption{Un cluster manager est un gestionnaire de ressources d'un n\oe
           ud cc-NUMA. Il est physiquement placé dans le banc mémoire du n\oe ud
           correspondant.}
@@ -108,7 +115,7 @@
       \end{figure}
 
       
-    \subsection{Les réplica noyau}
+    \subsubsection{Les réplica noyau}
 
       Comme nous l'avons vu précédemment, l'architecture TSAR offre au système
       d'exploitation la notion de cluster. Ces clusters sont ainsi composés de
@@ -117,7 +124,8 @@
       ICU, NIC, etc\ldots) (voir figure~\ref{fig:tsar_cluster}).
       
       \begin{figure}[!h]
-        \centering \includegraphics[scale=0.3]{include/img/tsar_clusters.png}
+        \centering
+        \includegraphics[scale=0.17]{include/img/tsar_clusters.png}
         \caption{Représentation de l'architecture TSAR avec un NoC 2D et un
           cluster~\cite{almaless2014universite}}
         \label{fig:tsar_cluster}
@@ -140,13 +148,13 @@
       représentant le noyau correspondront aux pages physiques de son cluster.
 
 
-  \section{\todo{L'allocation mémoire ?}}
+  \subsection{\todo{L'allocation mémoire ?}}
 
 
 
-  \section{Évolution du projet}
+  \subsection{Évolution du projet}
 
-    \subsection{Limitations de la version initiale}
+    \subsubsection{Limitations de la version initiale}
     \label{subsec:unsolved}
     
       Développé initialement pour une architecture 32 bits, le noyau ne peut pas
@@ -166,7 +174,7 @@
         affirmation ? L'enlever ?}
 
       
-    \subsection{Contributions de Francois Guerret}
+    \subsubsection{Contributions de Francois Guerret}
       
       La gestion d'une telle quantité de mémoire fut le sujet de stage de
       Francois Guerret en 2014. Ce dernier
@@ -209,7 +217,7 @@
 
       \begin{figure}[!h]
         \centering
-        \includegraphics[scale=0.3]{include/img/almos-guerret}
+        \includegraphics[scale=0.17]{include/img/almos-guerret}
         \caption{}
         \label{almos-guerret}
       \end{figure}
@@ -222,7 +230,7 @@
       \end{paragraph}
 
       
-  \section{Passage au mode multi-noyau}
+  \subsection{Passage au mode multi-noyau}
       
     La version actuelle de ALMOS proposée par Mohamed Karaoui et Franck Wajsbürt
     supprime totalement l'espace virtuel du noyau. Ce dernier fonctionne
@@ -246,7 +254,7 @@
     processus/threads entre les clusters (la migration entre processeurs du même
     cluster est elle toujours fonctionnelle).
 
-    \subsection{Traduction d'adresses}
+    \subsubsection{Traduction d'adresses}
 
       Si les processus utilisateurs utilisent toujours la mémoire virtuelle, ce
       n'est plus le cas du noyau. Nous allons voir comment celui-ci peut
@@ -263,7 +271,7 @@
         
         \begin{figure}
           \centering
-          \includegraphics[scale=0.4]{include/img/pages_table_levels.png}
+          \includegraphics[scale=0.35]{include/img/pages_table_levels.png}
           \caption{La table des pages et sa hiérarchie (source: \textit{Greiner
               et al.}~\cite{tsar2008web})}
           \label{fig:page-table}
@@ -282,7 +290,7 @@
       \end{paragraph}
 
       
-  \section{Contributions}
+  \subsection{Contributions}
 
     La problématique soulevée en~\ref{subsec:unsolved} est celle à laquelle nous
     allons répondre dans la suite de ce document. Plus précisément, il s'agit de
@@ -299,7 +307,7 @@
     \end{itemize}
 
     
-    %% \subsection{Difficultés}
+    %% \subsubsection{Difficultés}
 
     %%   Le problème majeur de ces deux premiers objectifs est les structures de
     %%   données partagées entre des processus (notion de père/fils), ou des

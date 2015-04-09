@@ -1,0 +1,35 @@
+\section{Introduction}
+
+  \hspace{1cm}Depuis le début des années 2000, une des plus anciennes loi de
+  l'informatique commence à montrer ses limites: la loi de Moore. En effet, les
+  constructeurs de matériels ont cessé d'augmenter la fréquence des processeurs,
+  principalement pour des raisons énergétiques et non techniques, et ont fait le
+  choix d'augmenter le nombre de c\oe urs par processeur, ainsi que le nombre de
+  processeurs. De nos jours, des architectures avec une cinquantaine de c\oe urs
+  sont courantes, et d'autre comportants plusieurs centaines voire milliers de
+  c\oe eurs sont à prévoir.\newline
+  
+  \hspace{1cm}Ces architectures représentent un défi de taille pour les systèmes
+  d'exploitation. En effet, elle adressent la problématique de la gestion d'une
+  multitude de ressources hétérogènes de manière performante. Les unités de
+  traitement en sont un bon exemple: on dispose aujourd'hui de CPU (CISC ou
+  RISC) de FPU, et de GPU. Tous les trois sont des unités d'exécution
+  d'instruction, mais sont radicalement différents dans leur mode de
+  fonctionnement. Pourtant, les architectures massivement multi-c\oe urs
+  embarquent tout ces différents équipements, faisant de leur gestion un élément
+  central pour un système d'exploitation.  Un second autre problème soulevé par
+  ces architectures est la gestion de mémoire, de plus en plus grande. Il a
+  majoritairement été résolu par l'avènement des processeurs 64 bits, ou par les
+  mécanismes d'extension d'adresses sur les processeurs 32 bits. Néanmoins, nous
+  nous trouvons dans le cdare dans ce stage dans une situation ou nous ne
+  pouvons utiliser aucune de ces deux solutions.\newline
+  
+  \hspace{1cm}Ce document est organisé de la manière suivante: en
+  section~\ref{sec:scalability} nous présentons les différents travaux de
+  recherche adressant la problématique du passage à l'échelle des systèmes
+  d'exploitation. La section~\ref{sec:consistency} est relative aux problèmes de
+  cohérence mémoire pour les structures de données dans ces noyaux large
+  échelle. En section~\ref{sec:memory} nous nous intéressons à la gestion de
+  grande quantité de mémoire sur des architectures 32 bits. La présentation du
+  contexte de travail sera fait en section~\ref{sec:context}. Enfin nous
+  concluons ensuite en section~\ref{sec:conclusion}.
