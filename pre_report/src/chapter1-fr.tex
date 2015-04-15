@@ -1,30 +1,34 @@
 \section{État de l’art}
 
-  La problématique du passage à l’échelle des noyaux n’est pas nouvelle. En
-  effet, dès les années 90, ~\citeauthor{unrau1995hierarchical} posent la
-  question et apportent des réponses avec le noyau Hurricane. D’autres ont
-  également essayé avec le micro-noyau L4. Mais ce fut finalement Linux qui
-  s’imposa comme le modèle de référence, et les travaux focalisèrent alors sur
-  ce dernier.
+  La problématique du passage à l’échelle des noyaux n’est pas nouvelle. En Dès
+  les années 90, ~\citeauthor{unrau1995hierarchical} posent la question et
+  apportent des réponses avec le noyau Hurricane (détaillé en section
+  \ref{subsec:others}). D’autres ont également essayé avec le modèle des
+  micro-noyaux, comme Minix, L4 ou Mach. Mais ce fut finalement Linux qui
+  s’imposa comme le modèle de référence, et les travaux se focalisèrent alors
+  sur ce dernier.
 
-  Mais, aux alentours des années 2004-2005, un changement radical a été opéré de
-  la part des construc- teurs tels qu’Intel ou AMD. Plutôt que de continuer à
+  Mais, aux alentours des années 2004/2005, un changement radical a été opéré de
+  la part des constructeurs tels qu’Intel ou AMD. Plutôt que de continuer à
   augmenter la fréquence des processeurs, ce qui devenait contre productif vu la
   quantité d’énergie nécessaire, ils ont préféré augmenter le nombre de coeurs
   et le nombre de processeurs sur les puces. C’est ainsi que l’ère du
   parallélisme massif commenca~\citep{patterson2011parallel}, et que la
   problématique du passage à l’échelle du noyau Linux fût soulevée.
 
-  En plus de cette problématique, il nous paraît important de mettre l’accent
-  sur un phénomène rare en informatique, et qui est au c\oe ur de notre
-  étude. En effet, le mélange de l’architecture TSAR et du noyau ALMOS fait que
-  nous nous retrouvons ici à devoir gérer un espace d’adressage physique plus
-  grand que l’espace d’adressage virtuel offert par le noyau.
-
-  Enfin, le passage d’ALMOS au mode multi-noyau nous permettra de voir comment
-  les différentes solutions existantes maintiennent cohérentes des structures de
-  données vitales au fonctionnement du noyau
-
+  Cet état de l'art se concentrera sur cette problématique, mais abordera
+  également une autre thématique. En effet, le mélange de l'architecture TSAR et
+  du noyau ALMOS (voir~\ref{} et~\ref{}) fait que nous nous retrouvons ici à
+  devoir gérer un espace d'adressage physique considérablement plus grand que
+  l'espace virtuel (4Go), le tout avec des processeurs 32 bits. Cette situation,
+  inédite, apporte le challenge de la gestion de ces espaces, en utilisant une
+  architecture qui n'a pas été pensé pour cela.
+  
+  Enfin, le passage d’ALMOS au mode multi-noyau nous permettra de nous
+  intéresser aux problème soulevés par le maintient de la cohérence des données
+  systèmes sur une machine lorsque l'on a plusieurs noyaux en cours d'exécution,
+  ces derniers devant partager un minimum de ressources vitales à leur bon
+  fonctionnement.
 
   \subsection{Passage à l’échelle des noyaux}
   \label{sec:scalability}
@@ -34,38 +38,35 @@
       Il apparait évident dans un premier temps de vouloir adapter le noyau
       Linux à des architectures massivement multi-coeurs. En effet, changer de
       noyau, alors que ce dernier s’est imposé partout, est un pari très risqué,
-      et très difficile. Pour imposer un nouveau noyau, il faudrait que ce
-      dernier soit en adéquation parfaite avec l’API proposée par Linux, et ce
-      pour que le fonctionnement des applications actuelles, et le développement
-      de futures application, soit le plus transparent possible pour
-      l’utilisateur ou le développeur. À cet effet, ~\citet{boyd2010analysis}
-      ont étudié la scalabilité de Linux sur une machine
-      48 coeurs, et utilisant le benchmark MOSBENCH. Ils ont pu tirer plusieurs
-      conclusion de cet études.  Premièrement, il existe trois type de problème
-      liés au passage à l’échelle :
+      et très difficile. À cet effet, ~\citet{boyd2010analysis} ont étudié la
+      scalabilité de Linux sur une machine 48 c\oe urs, et utilisant le
+      benchmark MOSBENCH. Ils ont pu tirer plusieurs conclusions de cette étude.
+      Premièrement, il existe troiss type de problèmes liés au passage à
+      l’échelle :
       \begin{itemize}
         \item l’implémentation du noyau
         \item l’implémentation de l’application utilisateur
-        \item la manière dont l’application utilise les services noyau
+        \item la faćon dont l’application utilise les services du noyau
       \end{itemize}
-      Grâce à cela, ils sont parvenus à résoudre les problèmes liés aux
-      applications relatives à MOSBENCH, et ce en utilisant des techniques
-      basique de programmation parallèle. De plus, la grande majorité de leurs
-      contributions sur le noyau ne sont que de petits changements, et très
-      localisés. À l’exception faite des \textit{sloppy counters}, aucun concept
-      clé de Linux n'a été touché
+      Grâce à cela,~\citeauthor{boyd2010analysis} sont parvenus à résoudre les
+      problèmes liés aux applications de MOSBENCH, et ce en utilisant des
+      techniques basiques de programmation parallèle. De plus, la grande
+      majorité de leurs contributions sur le noyau ne sont que de petits
+      changements très localisés. À l’exception du mécanisme \textit{sloppy
+        counters} qu'ils ont introduit, aucun concept clé de Linux n'a été
+      touché. \todo{Je détaille les sloppy counters ?}
 
       Ainsi, ils sont parvenus à identifier les problèmes du noyau, comme par
-      exemple la gestion du cache des dentry, les goulots formés par les sytèmes
-      de fichiers montés, etc\ldots, et à les résoudres pour obtenir des
-      performances acceptables.
+      exemple la gestion du cache des \texttt{dentry}, les goulots formés par
+      les sytèmes de fichiers montés, etc\ldots, et à les résoudre pour obtenir
+      des performances acceptables.
 
-      Néanmoins, nous pouvons aujourd’hui adresser trois critiques à ceus
-      travaux :
+      Néanmoins, nous pouvons aujourd’hui adresser trois critiques à ces travaux
+      :
       \begin{itemize}
         \item le noyau utilisé est ancien (2.6.35-rc5, 12 Juillet 2010). Les
-          mécanismes de prémption venaient d’être ajoutés et n’étaient pas aussi
-          performants que maintenant.
+          mécanismes de préemption venaient d’être ajoutés et n’étaient pas
+          aussi performants qu'aujourd'hui
         \item la machine considérée est composée de seulement 48 coeurs, ce qui
           est peu par rapport à la puissance des machines d’aujourd’hui
         \item leur propre conclusion indique qu’il ne faut pas changer le design
@@ -78,29 +79,29 @@
 
       Le projet Popcorn Linux~\citep{barbalacepopcorn} part du même constat
       évoqué précédement, mais en essayant tout de même de conserver le noyau
-      Linux comme base de travail. Avec un noyau plus actuel que précédement
-      (3.2), ils ont en partie adopté les principes du multi-noyau mais en ont
-      rejetés certain.
+      Linux comme base de travail. Avec un noyau plus récent que l'étude
+      précédente (3.2), ils ont en partie adopté les principes du multi-noyau
+      mais en ont rejeté certains.
 
-      Popcorn Linux permet de lancer plusieurs noyau Linux en même temps sur la
-      même machine, Le matériel est attribué de manière logicielle entre les :
+      Popcorn Linux permet de lancer plusieurs noyaux Linux en même temps sur la
+      même machine. Le matériel est attribué de manière logicielle entre les
       différentes instances du noyau, et ces dernières communiquent uniquement
       par passage de messages. Afin de garantir à l’utilisateur l’illusion d’un
-      seul système en exécution, ils ont utilisé les mécanismes de
-      \textit{namespace} offert par Linux pour construire ce qu’ils appellent ``
+      seul système en cours d'exécution, ils ont utilisé les mécanismes de
+      \textit{namespace} offert par Linux pour construire ce qu’ils nomment ``
       l’image disque unique'' (\textit{Single System Image}).
 
       Le partitionnement des ressources est fait selon la configuration donnée
       au boot du noyau. Le premier noyau qui est lancé, appelé `` noyau
       maître'', lance un processus de reconnaissance du matériel. Ensuite, on
-      précise au noyau via des paramètres au boot, les ressources dont il peut
+      précise au noyau via des paramètres au boot les ressources dont il peut
       disposer, en fonction de celle trouvées par le noyau maître. Une fois les
       noyaux lancés, ils ne partagent aucune données, exception faite de la
-      table contenant les adresse d’écriture des buffers des autres noyaux,
+      table contenant les adresses d’écriture des buffers des autres noyaux,
       utilisés pour le passage de messages. Ces buffers sont de types `` MWSR'',
       ou \textit{Multi Writer Single Reader}, et utilisent un système de ticket
       pour les écritures. Les lectures utilisent un mélange de deux
-      techniques:\benumline \item le lecteur vient consulter de manière
+      techniques:\benumline \item le lecteur viendra consulter de manière
       régulière le contenu de son buffer (\textit{polling}) \item il ira lire le
       buffer sur réception d’une IPI (\textit{Inter-Processor Interruption}) du
       coeur ayant initié l’écriture\eenumline.
@@ -109,95 +110,37 @@
       noyau en cours d’exécution, mais aussi de pouvoir migrer des tâches entre
       les différentes instances de noyaux de manière transparente.
 
-      
-    \subsubsection{Hurricane}
+      Les tests de performances effectués sur Popcorn Linux se sont montrés
+      décevants. D'une part parce que la machine considérées ne contient que
+      48
+      coeurs et 64Go de mémoire, et d'autre part parce que les résultats des
+      tests n'ont pas montrés d'améliorations significatives des
+      performances. Au contraire, il apparaît que Popcorn Linux est dans
+      quelques rares cas plus efficace que Linux, mais il reste majoritairement
+      moins efficace (de peu).
 
-      Parmi les premiers travaux sur la scalabilité des systèmes d’exploitation
-      se trouve la thèse d’Unrau Celui-ci a formulé trois grands principes pour
-      une conception scalable d’un système d’exploitation qui sont :
-      \benumline \item préserver le parallélisme \item borner le surcoût des
-      services et \item préserver la
-      localité\eenumline. \citet{unrau1995hierarchical} ont proposé le système
-      d’exploitation Hurricane à base de micro-noyau avec une approche de
-      conception nommée Hierarchical Clustering.
-
-      Selon cette approche, le système d’exploitation est vu en tant qu’une
-      collection de clusters. Un cluster est un système d’exploitation complet
-      à base de micro-noyau prenant en charge un faible nombre de
-      processeurs. Il existe donc autant d’instances du système d’exploitation
-      que de clusters. Les serveurs systèmes (en mode utilisateur) de chaque
-      cluster coopèrent entre- eux pour donner aux applications une vision
-      globale d’un seul système d’exploitation. Étant donné que chaque cluster
-      propose l’ensemble des services système via des serveurs dédiés,
-      l’existence de plusieurs clusters constitue une réplication des mêmes
-      services et augmente la disponibilité du système. La dimension (en nombre
-      de processeurs) d’un cluster est un compromis entre le coût des accès
-      intra-cluster et inter-clusters.
-      %%
-      %% La figure~\ref{fig:hurricane} illustre l’organisation de plusieurs
-      %% clusters pour constituer un système distribué fortement couplé.
-
-      %% \begin{figure}[h]
-      %%   \centering
-      %%   \includegraphics[scale=0.3]{hurricane}
-      %%   \caption{Un système multi-cluster}
-      %%   \label{fig:hurricane}
-      %% \end{figure}
-      %%
-      Dans Hurricane, chaque cluster dispose de son propre ordonnanceur qui
-      assure localement l’équilibrage de charge et l'ordonnancement des
-      processus, tandis que l’équilibrage de charge inter-clusters est assuré
-      par un ordonnanceur global. Les communications dans Hurricane peuvent être
-      réalisées par l’envoi de messages ou par l’utilisation de Protected
-      Procedure Calls (PPC).
-
-      Un envoi de message est réalisé par l’interruption du cluster cible
-      pour\benumline \item l’allocation d’un tampon mémoire pour réceptionner le
-      message \item copier le message et les informations de contrôle depuis le
-      processus émetteur du cluster source et \item attacher le tampon à la file
-      d’attente du processus destinataire du message\eenumline.
-
-      Quant un client demande un service, il change son espace d’adresse pour
-      celui du serveur et invoque un thread de traitement associé à sa requête
-      avant de retrouver son espace d’adressage initial.
-
-
-    \subsubsection{Corey}
-
-      Avant leurs travaux sur Linux,~\citet{boyd2008corey}. ont proposé le
-      système d’exploitation Corey. Dans ce dernier, la gestion du partage des
-      ressources est laissé aux applications utilisateurs.
-
-      En donnant le contrôle aux programmeurs des applications utilisateur,
-      Corey permet en effet de per- sonnaliser le comportement du noyau selon
-      les besoins et les spécificités d’une application. Les inconvénients
-      majeurs de cette approche sont: \benumline \item lier fortement l’application au
-      système qui l’exécute, ce qui élimine complètement ou partiellement la
-      portabilité des applications et complique sérieusement la réutilisation du
-      code existant \item augmenter la complexité de programmation et
-      nécessiter d’avantage d’efforts de la part des programmeurs d’applications
-      (gestion explicite des régions virtuelles, placement et partage des
-      structures de données noyau, etc.) et \item  générer des conflits entre
-      les choix propres de chaque application dans le contexte de l’exécution
-      dynamique de plusieurs applications simultanées\eenumline.
+      Ce résultat est à relativiser, car une seul suite de benchmark a été
+      utilisée ici. En revanche, ce projet ne s'attaque pas à la problématique
+      des espaces d'adressages physiques très grands sur des architectures 32
+      bits.
 
 
     \subsubsection{Barrelfish}
       
       L’ETH Zurich, en collaboration avec Microsoft Research, a engagé des
-      travaux de recherches dans le domaines des architectures du futures en
-      2008. Leur équipes sont arrivées à établir un nouveau modèle d’élaboration
-      des systèmes d’exploitation : le
+      travaux de recherche dans le domaine des architectures du futur en
+      2008. Leurs équipes sont arrivées à établir un nouveau modèle
+      d’élaboration des systèmes d’exploitation : le
       multi-noyau~\citep{schupbach2008embracing}. Ce paradigme part de plusieurs
-      postulats\benumline \item les architectures du futures seront très
-      hétérogènes \item les noyaux actuels ne profite pas de l’hétérogénéité
-      offertes par le matériel et au contraire essaye de la masquer un maximum
-      \item les machines sont construites comme des systèmes distribués, pourquoi
-        ne pas appliquer le même modèle aux systèmes d’exploitation\eenumline.
+      postulats\benumline \item les architectures du futur seront très
+      hétérogènes \item les noyaux actuels ne profitent pas de l’hétérogénéité
+      offerte par le matériel et au contraire essayent de la masquer un maximum
+      \item les machines sont construites comme des systèmes distribués,
+        pourquoi ne pas appliquer le même modèle aux systèmes
+        d’exploitation\eenumline.
 
       \begin{figure}
-        \centering
-        \includegraphics[scale=0.3]{barrelfish}
+        \centering \includegraphics[scale=0.3]{barrelfish}
         \caption{L'architecture multi-noyau. Source:
           \citeauthor{schupbach2008embracing}}
         \label{fig:barrelfish}
@@ -206,92 +149,263 @@
       Selon l’approche multi-noyau (voir figure~\ref{fig:barrelfish}),
       l'environnement d’exécution des applications est une collection de n\oe
       uds où chaque n\oe ud est constitué d’un c\oe ur exécutant un OS à base
-      d’un micro-noyau. Les communications entre les différentes OS se font par
+      d’un micro-noyau. Les communications entre les différents OS se font par
       passage de messages : Barrelfish utilise une variante des Remote Procedure
       Calls au niveau utilisateur (URPC). chaque OS dispose d’un serveur système
-      en mode utilisateur appelé Monitor. L’ensemble des moniteurs coordonnent
+      en mode utilisateur appelé Monitor. L’ensemble des moniteurs coordonne
       collectivement l’accès à l’état global du système et maintient la
       cohérence des structures de données répliquées par c\oe ur (les tables
       d’allocation mémoire et les mappings des espaces d’adressages
-      virtuels). La notion d’un processus dans Barrelfish est différente de
-      celle d’un processus dans un noyau monolithique. Un processus est
-      représenté sous formes d’un ensemble de Dispatchers avec un Dispatcher par
-      c\oe ur où le processus peut être exécuté. Sur un c\oe ur, les Dispatchers
-      sont ordonnancés par un ordonnanceur, au niveau du micro-noyau de ce c\oe
-      ur, appelé CPU Driver. Ce dernier communique avec les Dispatchers (en mode
-      utilisateur) à travers des up-calls.\newline
-      
+      virtuels).\newline
 
+      %% La notion d’un processus dans Barrelfish est différente de celle d’un
+      %% processus dans un noyau monolithique. Un processus est représenté sous
+      %% formes d’un ensemble de Dispatchers avec un Dispatcher par c\oe ur où
+      %% le processus peut être exécuté. Sur un c\oe ur, les Dispatchers sont
+      %% ordonnancés par un ordonnanceur, au niveau du micro-noyau de ce c\oe
+      %% ur, appelé CPU Driver. Ce dernier communique avec les Dispatchers (en
+      %% mode utilisateur) à travers des up-calls.\newline
+
+
+            
+    \subsubsection{Autres travaux}
+    \label{subsec:others}
+    
+      \begin{paragraph}{Hurricane:}
+
+        Parmi les premiers travaux sur la scalabilité des systèmes
+        d’exploitation se trouve la thèse d’Unrau. Celui-ci a formulé trois
+        grands principes pour une conception scalable d’un système
+        d’exploitation qui sont : \benumline \item préserver le
+        parallélisme \item borner le surcoût des services et \item préserver la
+        localité\eenumline. \citet{unrau1995hierarchical} ont proposé le système
+        d’exploitation Hurricane à base de micro-noyau avec une approche de
+        conception nommée Hierarchical Clustering.
+
+        Selon cette approche, le système d’exploitation est vu en tant qu’une
+        collection de clusters. Un cluster est un système d’exploitation complet
+        à base de micro-noyau prenant en charge un faible nombre de
+        processeurs. Il existe donc autant d’instances du système d’exploitation
+        que de clusters. Les serveurs systèmes (en mode utilisateur) de chaque
+        cluster coopèrent entre eux pour donner aux applications une vision
+        globale d’un seul système d’exploitation. Étant donné que chaque cluster
+        propose l’ensemble des services système via des serveurs dédiés,
+        l’existence de plusieurs clusters constitue une réplication des mêmes
+        services et augmente la disponibilité du système. La dimension (en
+        nombre de processeurs) d’un cluster est un compromis entre le coût des
+        accès intra-cluster et inter-clusters. La figure~\ref{fig:hurricane}
+        illustre l’organisation de plusieurs clusters pour constituer un système
+        distribué fortement couplé.
+
+        \begin{figure}[h]
+          \centering \includegraphics[scale=0.2]{hurricane}
+          \caption{Un système multi-cluster. Source:
+            \citet{unrau1995hierarchical}}
+          \label{fig:hurricane}
+        \end{figure}
+
+        %% Dans Hurricane, chaque cluster dispose de son propre ordonnanceur qui
+        %% assure localement l’équilibrage de charge et l'ordonnancement des
+        %% processus, tandis que l’équilibrage de charge inter-clusters est
+        %% assuré par un ordonnanceur global. Les communications dans Hurricane
+        %% peuvent être réalisées par l’envoi de messages ou par l’utilisation
+        %% de Protected Procedure Calls (PPC).
+
+        Un envoi de message est réalisé par l’interruption du cluster cible
+        pour\benumline \item l’allocation d’un tampon mémoire pour réceptionner
+        le message \item copier le message et les informations de contrôle
+        depuis le processus émetteur du cluster source et \item attacher le
+        tampon à la file d’attente du processus destinataire du
+        message\eenumline.
+
+        Quand un client demande un service, il change son espace d’adressage
+        pour celui du serveur et invoque un thread de traitement associé à sa
+        requête avant de retrouver son espace d’adressage initial.
+
+      \end{paragraph}
+      
+      \begin{paragraph}{Corey:}
+
+        Avant leurs travaux sur Linux,~\citet{boyd2008corey}. ont proposé le
+        système d’exploitation Corey. Dans ce dernier, la gestion du partage des
+        ressources est laissée aux applications utilisateurs.
+
+        En donnant le contrôle aux programmeurs des applications utilisateur,
+        Corey permet en effet de personnaliser le comportement du noyau selon
+        les besoins et les spécificités d’une application. Les inconvénients
+        majeurs de cette approche sont: \benumline \item lier fortement
+        l’application au système qui l’exécute, ce qui élimine complètement ou
+        partiellement la portabilité des applications et complique sérieusement
+        la réutilisation du code existant \item augmenter la complexité de
+        programmation et nécessiter d’avantage d’efforts de la part des
+        programmeurs d’applications (gestion explicite des régions virtuelles,
+        placement et partage des structures de données noyau, etc.) et \item
+        générer des conflits entre les choix propres à chaque application dans
+        le cadre d'exécutions simultanées\eenumline.
+
+      \end{paragraph}
+      
     \subsubsection{Influences}
 
-      Bien que ces travaux n'apportent pas de réponses claires et définitives à
-      notre problématique, il nous permettent de mieux comprendre les choix qui
+      Bien que ces travaux n'apportent pas de réponse claire et définitive à
+      notre problématique, ils nous permettent de mieux comprendre les choix qui
       ont été fait dans le noyau ALMOS. Premièrement, les travaux sur Barrelfish
       ont apporté un nouveau modèle architectural pour la conception d'un
       noyau. Ce modèle semble cohérent et répond aux beoins des futures
       architectures. C'est donc le modèle qui a été retenu par
       ALMOS\footnote{Nous verrons plus en détail en section~\ref{sec:almos} le
         choix du multi-noyau.}. Néanmoins, Barrelfish ne respecte pas du tout
-      les standards POSIX. C'est un choix très fort qui a été pour ce projet, et
-      qui nous apparaît comme infondé.
+      les standards POSIX. C'est un choix très fort qui a été fait pour ce
+      projet, et qui nous apparaît comme infondé.
 
       Les travaux sur Popcorn Linux, basé lui aussi sur le modèle du
       multi-noyau, ont permis de montrer que le noyau Linux, qui se veut être
       \textit{POSIX compliant}, peut être adapté à des architectures massivement
       parallèles, tout en respectant les normes. Le projet ALMOS, tout comme
       Popcorn Linux, a fait le choix d'avoir un système respectant au maximum
-      les standards de conception des noyuax déja existants.
+      les standards de conception des noyaux déja existants.
 
       Pourtant, ces recherches ne répondent pas à un des problèmes majeurs de
       l'architecture TSAR. En partant du principe que les processeurs
       d'aujourd'hui manipulent des informations sur 64 bits, les problèmes de
-      gestion d'une grande quantité de mémoire ont été effacés. Nous allons tout
-      de même présenter en section~\ref{sec:memory} quelques solutions
-      permettant de contourner ce problème, mais toujours de manière incomplète.
+      gestion d'une grande quantité de mémoire ont été effacés. Néanmoins, nous
+      allons tout de même présenter en section~\ref{sec:memory} quelques
+      solutions permettant de contourner ce problème, mais toujours de manière
+      incomplète. Ces solutions seront une base de réflexion pour de futurs
+      travaux au laboratoire.
     
      
 
   \subsection{Gestion des espaces d'adressage}
   \label{sec:memory}    
 
-    \subsubsection{Les processeurs}
+    \subsubsection{Solutions matérielles}
 
-      MIPS registers\\
-      PAE Intel
+      Avant l'apparition des architectures 64 bits s'est posé la question de la
+      gestion d'espaces d'adressage supérieurs à 4Go avec des processeurs 32
+      bits. Les premiers travaux ont été menés par Intel et ont débouché sur la
+      technologie PAE (Physical Address
+      Extension)~\citep{patent6349380}. Celle-ci permet d'utiliser des adresses
+      physiques sur 36 bits au lieu de 32, et donc d'exploiter jusqu'à 64Go de
+      mémoire\footnote{Cette limite sera expliquée par la suite.}.
 
+      \begin{figure}[h]
+        \centering \includegraphics[scale=0.4]{paging-no-pae}
+        \caption{Exemple de traduction d'adresse par la MMU sans utiliser la
+          technologie PAE}
+        \label{fig:paging-no-pae}
+        \end{figure}
+      
+      Ce mécanisme fût introduit en 1995 dans les premiers Pentium Pro, et
+      foncionne de la manière suivante. Considérons une MMU classique
+      (figure~\ref{fig:paging-no-pae}) permettant de gérer des adresses de 32
+      bits. Celle-ci contient deux niveaux d'indirection, chacun ayant 1024
+      entrées de 4 octets. Lors d'une traduction, on utilise les MSB (Most
+      Significant Bits) d'une adresse pour trouver les entrées correspondantes
+      dans chacune des indirections, puis les LSD pour obtenir l'offset.
+
+      Chaque processus à dans son espace virtuel un pointeur vers une adresse
+      physique. À cette adresse se trouve le \textit{Page Directory}. Les
+      entrées de ce tableau (appelées PDE pour \textit{Page Directory Entry})
+      sont indexées par les 10 premiers bits de l'adresse virtuelle que l'on
+      veut accéder. Elles sont stockées sur 32 bits, et le \textit{Page
+        Directory} contient 1024 entrées ($2^{10} = 1024$). Les PDE contiennent
+      le numéro de la page mémoire ou est située \textit{Page Table} du
+      processus. Ce numéro est appelé PFN, pour \textit{Page Frame
+        Number}. Comme le \textit{Page Directory} la \textit{Page Table} est
+      indexée par 10 bits, elle a donc une profondeur de 1024, et les entrées
+      (PTE) sont stockées sur 32 bits. Ces PTE contiennent le PFN de la page
+      contennant la donnée que l'on cherche a accéder. À partir de ce PFN, on
+      peut retrouver l'adresse physique correspondante, puis on utilise les 12
+      bits d'offset restant pour se déplacer et obtenir ce que l'on veut.
+      
+      L'activation du mode PAE dans la MMU permet de rajouter un troisième
+      niveau d'indirection, en diminuant le nombre de MSB utilisés
+      précédement. On voit sur la figure~\ref{fig:paging-pae} que les bits 30 et
+      31 sont maintenant réservés à une nouvelle table, la ( ``\textit{Page
+        Directory Pointer Table}''). Le mode PAE transforme également la taille
+      des entrées du ``\textit{Page Directory}'' et de la ``\textit{Page
+        Table}'' en entrées de 64 bits et non plus 32. Pour ce faire, on diminue
+      le nombre d'entrées possibles dans ces tables. En divisant par deux le
+      nombre d'entrées possibles, soit 512 au lieu de 1024, au multiplie par
+      deux la taille des données que l'ont peut stocker.
+
+      \begin{figure}[h]
+        \centering \includegraphics[scale=0.4]{paging-pae}
+        \caption{Exemple de traduction d'adresse par la MMU avec la technologie
+          PAE}
+        \label{fig:paging-pae}
+      \end{figure}
+      
+      Ce mécanisme permet donc à la MMU d'accéder à des adresses sur 64 bits, et
+      donc de dépasser les 4Go imposé par les espaces d'adressages de 32 bits.
+
+      \todo{Mettre l'explication de la limite des 64Go.}
+
+    \subsubsection{TODO: les processeurs AMD et les 52 bits adressables}
 
     \subsubsection{Linux, OpenBSD et NetBSD}
-  
-      Un des problèmes des espaces physiques de grande taille est la tables des
-      descripteurs de pages physiques\footnote{L’utilisation du mot “table” est
-        un abus de langage : dans les systèmes modernes, c’est en réalité une
-        liste doublement chainée}. En effet, lors de l’initialisation du
-      système, ce dernier crée tous les descripteurs de pages nécessaires pour
-      décrire toute la mémoire physique de la machine~\citep{cranor1999uvm,
-        gorman2004understanding}. Lorsque l’on dispose d’une grosse quantité de
-      mémoire, la taille de cette table est énorme. A titre d’exemple, ALMOS à
-      besoin de 14Go pour décrire les 1To de mémoire offerts par TSAR. Cette
-      valeur, bien qu’élevée, est largement supérieure dans les noyaux Linux,
-      OpenBSD et NetBSD, car les structures représentant les pages dans ces
-      noyaux sont plus volumineuses en mémoire que celle d’ALMOS.
 
-      Du fait de la taille énorme de ces descripeurs, le problème apparaît
-      rapidement : comment stocker 14Go de données lorsque l’on a que 1Go
-      d’espace virtuel ?  La réponse est simple : on ne peut pas.  Ainsi, les
-      noyaux cités précédemment ne peuvent pas gérer plus de 4Go de mémoire dans
-      leur versions 32 bits.
+      Les noyaux monolithiques ont expoité cette avancée matérielle en
+      supportant de manière logiciel le mode PAE. Pourtant, il existe des
+      contraintes très fortes lorsque l'on utilise ce mode d'adressage. Dans un
+      premier temps, on ne supporte que 64Go de RAM. Bien qu'énorme en 1998,
+      cette valeur nous parait aujourd'hui insignifiante compte tenu de la
+      puissance des machines de calcul.  Dans un second temps, cette
+      amélioration apporte un problème logiciel qui reste non résolu à ce
+      jour.\newline
+
+      La mémoire est découpée de manière abstraite en pages. Ces pages peuvent
+      être de grande taille (2Mo ou 4Mo selon les systèmes), ou de petite taille
+      (4Ko). Pour adresser la mémoire, le noyau doit construire cette
+      abstraction via les descripteurs de pages, puis toutes les opérations en
+      mémoire physique passeront par ces descripteurs. Pour connaitre en
+      permanence l'état global de la mémoire ou l'état d'une page en
+      particulier, le noyau doit décrire entièrement l'espace
+      adressable\footnote{\todo{Trouver si c'est une convention ou si c'est
+          POSIX}}.
+
+      Cette opération est effectuée au boot de la machine~\citep{cranor1999uvm,
+        gorman2004understanding, russinovich2012windows}. Lorsque l’on dispose
+      d’une grosse quantité de mémoire, la taille de ces descripteurs est
+      énorme. À titre d’exemple, ALMOS a besoin de 14Go pour décrire les 1To de
+      mémoire offerts par TSAR. Cette valeur, bien qu’élevée, est largement
+      supérieure dans les noyaux Linux, OpenBSD et NetBSD, car les structures
+      représentant les pages dans ces noyaux sont plus volumineuses en mémoire
+      que celle d’ALMOS. Sous Linux, un descripteur de pages fait 4Ko. Pour
+      décrire 1Go de mémoire, Linux a donc besoin de 11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko = 11Mo$} de
+      structure de données représentant ces pages. Si l'on pousse jusqu'a 16Go,
+      Linux a maintenant besoin de 176Mo pour décrire la mémoire. En sachant que
+      le noyau ne s'accorde que 1Go de mémoire, et qu'il a besoin de ce
+      giga-octet pour de multiple opérations, on ne peut pousser trop loin
+      l'utilisation de la technologie PAE sans risquer de prendre trop de place
+      en mémoire noyau et de voir des chutes de performances très significatives
+      dues au mécanisme de \texttt{swap}.
+
+      Le problème à résoudre est donc le suivant : comment stocker ces 14Go de
+      données lorsque l’on a que 1Go d’espace virtuel ?  Actuellement, il existe
+      deux réponses, toutes les deux complémentaires: \benumline \item on ne
+      peut pas et \item il faut acheter une machine 64
+      bits~\citep{gorman2004understanding} \eenumline.
+
+      Malgré les avancées matérielles, on voit que les systèmes d'exploitation
+      n'ont pas pu explorer cette voie à 100\%. Néanmoins, le noyau FreeBSD a
+      attiré notre attention.
 
 
-    \subsubsection{Le cas FreeBSD}
+      \subsubsection{Le cas FreeBSD}
 
-      Selon la documentation, il apparaît que le noyau de FreeBSD soit le seul
-      capable de gérer une telle situation. Les développeurs indiquent que le
-      noyau peut gérer jusqu’à 8To de mémoire, le tout en utilisant des tailles
-      d’adresses de 32 bits~\citep{kernelfreebsd, mckusick1996design}.
-
-      \todo{Je suis en train de voir ca sur une mailing-liste. Apparement il
-        manquerait simplement un support MIPS pour certaines choses mais sinon
-        ça devrait marcher (en tout cas pour la gestion d'1To de mémoire).}
+        Les dévelopeurs du noyau FreeBSD ont fait un choix très fort qui va à
+        l'encontre de Linux ou même Windows. En effet, le noyau ne décrit pas
+        tout l'espace physique de la machine mais seulement une
+        partie~\citep{kernelfreebsd, mckusick1996design}. Lorsque le besoin de
+        mémoire apparait, de nouveaux descripteurs de pages sont ajoutés, puis
+        retiré lorsqu'ils deviennent inutiles.
+      
+        \todo{Après différents échanges\footnote{Le fil de discussion:
+            \url{https://docs.freebsd.org/cgi/mid.cgi?db=irt&id=5526408F.1090005@asim.lip6.fr}}
+          sur la mailing-liste \texttt{freebsd-questions}, la situation n'est
+          toujours pas claire pour moi.}
 
       
   \subsection{Partage et maintient de cohérence de structures noyaux}
