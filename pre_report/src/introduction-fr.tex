@@ -6,24 +6,22 @@
   principalement pour des raisons énergétiques et non techniques, et ont fait le
   choix d'augmenter le nombre de c\oe urs par processeur, ainsi que le nombre de
   processeurs. De nos jours, des architectures avec une cinquantaine de c\oe urs
-  sont courantes, et d'autre comportants plusieurs centaines voire milliers de
-  c\oe eurs sont à prévoir.\newline
+  sont courantes, et d'autre comportant plusieurs centaines voire milliers de
+  c\oe urs sont à prévoir.\newline
   
   \hspace{1cm}Ces architectures représentent un défi de taille pour les systèmes
-  d'exploitation. En effet, elle adressent la problématique de la gestion d'une
+  d'exploitation. En effet, elles adressent la problématique de la gestion d'une
   multitude de ressources hétérogènes de manière performante. Les unités de
   traitement en sont un bon exemple: on dispose aujourd'hui de CPU (CISC ou
-  RISC) de FPU, et de GPU. Tous les trois sont des unités d'exécution
-  d'instruction, mais sont radicalement différents dans leur mode de
+  RISC), de FPU, et de GPU. Tous les trois sont des unités d'exécution
+  d'instructions, mais sont radicalement différents dans leur mode de
   fonctionnement. Pourtant, les architectures massivement multi-c\oe urs
-  embarquent tout ces différents équipements, faisant de leur gestion un élément
-  central pour un système d'exploitation.  Un second autre problème soulevé par
-  ces architectures est la gestion de mémoire, de plus en plus grande. Il a
+  embarquent tous ces différents équipements, faisant de leur gestion un élément
+  central pour un système d'exploitation.  Un second problème soulevé par
+  ces architectures est la gestion de la mémoire qui est de plus en plus grande. Il a
   majoritairement été résolu par l'avènement des processeurs 64 bits, ou par les
-  mécanismes d'extension d'adresses sur les processeurs 32 bits. Néanmoins, nous
-  nous trouvons dans le cdare dans ce stage dans une situation ou nous ne
-  pouvons utiliser aucune de ces deux solutions.\newline
-  
+  mécanismes d'extension d'adresses sur les processeurs 32 bits. Néanmoins, nous verrons que nous faisons face à une situation ou aucune de ces deux solutions ne peut être exploitée.\newline
+
   \hspace{1cm}Ce document est organisé de la manière suivante: en
   section~\ref{sec:scalability} nous présentons les différents travaux de
   recherche adressant la problématique du passage à l'échelle des systèmes

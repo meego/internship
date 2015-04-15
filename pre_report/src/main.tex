@@ -1,7 +1,7 @@
 %!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
 
-\documentclass[twocolumn]{article}
+\documentclass[onecolumn]{article}
 
 
 %% LANGUAGE (english by default)
@@ -64,7 +64,7 @@
 \fancyfoot[RO, LE] {\thepage}
 
 %% COMMANDS
-\newcommand{\todo}[1]{\textbf{\color{red}TODO: #1\newline}}
+\newcommand{\todo}[1]{\textbf{\color{red}TODO: #1}}
 \newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
 \newcommand{\eenumline}{\end{inparaenum}}
 \setlength\parindent{0pt}
@@ -96,8 +96,8 @@
 \begin{document}
 
   \maketitle
-  %% \tableofcontents
-  %% \onehalfspacing
+  \tableofcontents
+  \onehalfspacing
  
   \ifr{ %% FRENCH PART HERE
     \input{src/introduction-fr}
@@ -111,7 +111,7 @@
 
   \bibliographystyle{plainnat}
   \bibliography{src/references}
-  \ifr {\addcontentsline{toc}{chapter}{Bibliographie}}
-       {\addcontentsline{toc}{chapter}{References}}
+  \ifr {\addcontentsline{toc}{section}{Bibliographie}}
+       {\addcontentsline{toc}{section}{References}}
 
 \end{document}
