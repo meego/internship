@@ -95,10 +95,19 @@
 \begin{document}
 
   \maketitle
+
+  \pagestyle{headings}
+  \setcounter{page}{1}
+  \pagenumbering{roman}
   \onehalfspacing
+
   \tableofcontents
+  \listoffigures
   \newpage
- 
+
+  \setcounter{page}{1}
+  \pagenumbering{arabic}
+
   \ifr{ %% FRENCH PART HERE
     \input{src/introduction-fr}
     \input{src/chapter1-fr}
