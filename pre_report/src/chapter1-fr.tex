@@ -89,7 +89,17 @@
       par passage de messages. Afin de garantir à l’utilisateur l’illusion d’un
       seul système en cours d'exécution, ils ont utilisé les mécanismes de
       \textit{namespace} offert par Linux pour construire ce qu’ils nomment ``
-      l’image disque unique'' (\textit{Single System Image}).
+      l’image disque unique'' (\textit{Single System Image},
+      figure~\ref{fig:popcorn-layers}).
+
+      \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.44]{popcorn-layers}
+        \caption{Architecture logicielle du noyau Popcorn Linux. La couche de
+          communication assure à l'utilisateur l'illusion d'un unique noyau.
+          Source:~\citeauthor{barbalacepopcorn}}
+        \label{fig:popcorn-layers}
+      \end{figure}
 
       Le partitionnement des ressources est fait selon la configuration donnée
       au boot du noyau. Le premier noyau qui est lancé, appelé `` noyau
@@ -98,13 +108,23 @@
       disposer, en fonction de celle trouvées par le noyau maître. Une fois les
       noyaux lancés, ils ne partagent aucune données, exception faite de la
       table contenant les adresses d’écriture des buffers des autres noyaux,
-      utilisés pour le passage de messages. Ces buffers sont de types `` MWSR'',
-      ou \textit{Multi Writer Single Reader}, et utilisent un système de ticket
+      utilisés pour le passage de messages (voir
+      figure~\ref{fig:popcorn-buf}). Ces buffers sont de types `` MWSR'', ou
+      \textit{Multi Writer Single Reader}, et utilisent un système de ticket
       pour les écritures. Les lectures utilisent un mélange de deux
       techniques:\benumline \item le lecteur viendra consulter de manière
       régulière le contenu de son buffer (\textit{polling}) \item il ira lire le
       buffer sur réception d’une IPI (\textit{Inter-Processor Interruption}) du
       coeur ayant initié l’écriture\eenumline.
+
+      \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.3]{popcorn-buffers}
+        \caption{Les différents noyaux doivent impérativement mapper le tableau
+          \texttt{rkvirt} dans leur espace d'adressage pour pouvoir communiquer
+          avec les autres. Source:~\citeauthor{barbalacepopcorn}}
+        \label{fig:popcorn-buf}
+      \end{figure}
 
       Ces communications permettent de donner l’illusion qu’il n’y a qu’un seul
       noyau en cours d’exécution, mais aussi de pouvoir migrer des tâches entre
@@ -139,9 +159,9 @@
         pourquoi ne pas appliquer le même modèle aux systèmes
         d’exploitation\eenumline.
 
-      \begin{figure}
+      \begin{figure}[h]
         \centering \includegraphics[scale=0.3]{barrelfish}
-        \caption{L'architecture multi-noyau. Source:
+        \caption{L'architecture multi-noyau de Barrelfish. Source:
           \citeauthor{schupbach2008embracing}}
         \label{fig:barrelfish}
       \end{figure}
