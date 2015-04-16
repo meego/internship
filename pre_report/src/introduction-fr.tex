@@ -3,21 +3,22 @@
   \hspace{1cm}Depuis le début des années 2000, une des plus anciennes loi de
   l'informatique commence à montrer ses limites: la loi de Moore. En effet, les
   constructeurs de matériels ont cessé d'augmenter la fréquence des processeurs,
-  principalement pour des raisons énergétiques et techniques. En effet, cette
-  augmentation va de paire avec celle de la consommation électrique, qui
-  devient impossible à assurer. De plus, il devient de plus en plus difficile
-  de refroidir les machines sans introduire de nouvelles technologies comme le
-  water cooling, qui sont très coûteuses, et qui elles aussi sont consommatrices
-  d' énergie. Les entreprise ont fait le choix d'augmenter le nombre de c\oe urs
-  par processeur, ainsi que le nombre de processeurs pour pallier à ces
-  difficultés. De nos jours, des architectures avec une cinquantaine de c\oe urs
-  sont courantes, et d'autre comportant plusieurs centaines voire milliers de
-  c\oe urs sont à prévoir. L'augmentation des processeurs sur les puces entraine
-  inévitablement une augmentation de la mémoire, et ce pour des raisons
-  évidentes de performance. En plus de centaines de c\oe urs, les systèmes
-  doivent maintenant faire face à d'énormes quantités de mémoire (256Go ou 512Go
-  par exemple). Il est donc nécessaire de revoir ces systèmes et de les adapter
-  pour gérer efficacement ces ressources.\newline
+  principalement pour des raisons énergétiques et
+  techniques. En effet, cette augmentation va de paire
+  avec celle de la consommation électrique, qui devient impossible à assurer. De
+  plus, il devient de plus en plus difficile de refroidir les machines sans
+  introduire de nouvelles technologies comme le water
+  cooling~\citep{googleXXXXdatacenters}, qui sont très coûteuses, et qui elles
+  aussi sont consommatrices d' énergie. Les entreprise ont fait le choix
+  d'augmenter le nombre de c\oe urs par processeur, ainsi que le nombre de
+  processeurs pour pallier à ces difficultés. De nos jours, des architectures
+  avec une cinquantaine de c\oe urs sont courantes, et d'autre comportant
+  plusieurs centaines voire milliers de c\oe urs sont à prévoir. L'augmentation
+  des processeurs sur les puces entraine inévitablement une augmentation de la
+  mémoire, et ce pour des raisons évidentes de performance. En plus de centaines
+  de c\oe urs, les systèmes doivent maintenant faire face à d'énormes quantités
+  de mémoire~\citep{hp2012z820, puget2013z9pe}. Il est donc nécessaire de revoir
+  ces systèmes et de les adapter pour gérer efficacement ces ressources.\newline
   
   %% \hspace{1cm}Ces architectures représentent un défi de taille pour les
   %% systèmes d'exploitation. En effet, elles adressent la problématique de la
@@ -35,23 +36,24 @@
   %% situation ou aucune de ces deux solutions ne peut être exploitée.\newline
 
   \hspace{1cm}Dans le cadre de ce stage, nous faisons face à deux
-  problèmes. L'architecture matérielle considérée est l'architecture TSAR
-  développée au LIP6. Celle-ci offre notamment 1 téra-octet de mémoire
-  physique. Pour des raisons énergétiques, les processeurs de cette architecture
-  sont des processeurs 32 bits, qui sont donc limités à 4Go d'espace
-  adressable. Ainsi, le premier problème consiste à gérer, depuis le noyau, un
-  espace mémoire supérieur à l'espace mémoire adressable des processeurs. Notre
-  second problème est également une conséquence de l'architecture TSAR. Le
-  système d'exploitation ALMOS, développé pour cette architecture, est un noyau
-  monolithique. Afin de pouvoir gérer toute la mémoire, il a évolué vers le
-  principe du multi-noyau. Le passage de messages est donc la seule facon de
-  communiquer. Pourtant, il est nécessaire de maintenir certaines informations
-  cohérentes entre tous les noyaux en cours d'exécution. Notre second problème
-  est donc la gestion de cette cohérence, et particulièrement celle des
-  structures noyaux partagées par les processus, tel que les descripteurs de
-  fichiers ou les zones mémoires partagées. La résolution de ce problème nous
-  permet ensuite de mettre en place un système de migration de processus
-  inter-noyaux.\newline
+  problèmes. L'architecture matérielle considérée est l'architecture
+  TSAR~\citep{greiner2009tsar} développée au LIP6. Celle-ci offre notamment 1
+  téra-octet de mémoire physique. Pour des raisons énergétiques, les processeurs
+  de cette architecture sont des processeurs 32 bits, qui sont donc limités à
+  4Go d'espace adressable. Ainsi, le premier problème consiste à gérer, depuis
+  le noyau, un espace mémoire supérieur à l'espace mémoire adressable des
+  processeurs. Notre second problème est également une conséquence de
+  l'architecture TSAR. Le système d'exploitation
+  ALMOS~\citep{almaless2011almos}, développé pour cette architecture, est un
+  noyau monolithique. Afin de pouvoir gérer toute la mémoire, il a évolué vers
+  le principe du multi-noyau~\cite{schupbach2008embracing}. Le passage de
+  messages est donc la seule facon de communiquer. Pourtant, il est nécessaire
+  de maintenir certaines informations cohérentes entre tous les noyaux en cours
+  d'exécution. Notre second problème est donc la gestion de cette cohérence, et
+  particulièrement celle des structures noyaux partagées par les processus, tel
+  que les descripteurs de fichiers ou les zones mémoires partagées. La
+  résolution de ce problème nous permet ensuite de mettre en place un système de
+  création/migration de threads inter-noyaux.\newline
 
   \hspace{1cm}Ce document est organisé de la manière suivante: en
   section~\ref{sec:scalability} nous présentons les différents travaux de

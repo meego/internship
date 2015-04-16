@@ -389,22 +389,22 @@
       adressable.
 
       Cette opération est effectuée au boot de la machine~\citep{cranor1999uvm,
-        gorman2004understanding, russinovich2012windows}. Lorsque l’on dispose
-      d’une grosse quantité de mémoire, la taille de ces descripteurs est
-      énorme. À titre d’exemple, ALMOS a besoin de 14Go pour décrire les 1To de
-      mémoire offerts par TSAR. Cette valeur, bien qu’élevée, est largement
-      supérieure dans les noyaux Linux, OpenBSD et NetBSD, car les structures
-      représentant les pages dans ces noyaux sont plus volumineuses en mémoire
-      que celle d’ALMOS. Sous Linux, un descripteur de pages fait 4Ko. Pour
-      décrire 1Go de mémoire, Linux a donc besoin de
-      11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko = 11Mo$} de structure de données
-      représentant ces pages. Si l'on pousse jusqu'a 16Go, Linux a maintenant
-      besoin de 176Mo pour décrire la mémoire. En sachant que le noyau ne
-      s'accorde que 1Go de mémoire, et qu'il a besoin de ce giga-octet pour de
-      multiple opérations, on ne peut pousser trop loin l'utilisation de la
-      technologie PAE sans risquer de prendre trop de place en mémoire noyau et
-      de voir des chutes de performances très significatives dues au mécanisme
-      de \texttt{swap}.
+        gorman2004understanding, russinovich2012windows,
+        dillon2000design}. Lorsque l’on dispose d’une grosse quantité de
+      mémoire, la taille de ces descripteurs est énorme. À titre d’exemple,
+      ALMOS a besoin de 14Go pour décrire les 1To de mémoire offerts par
+      TSAR. Cette valeur, bien qu’élevée, est largement supérieure dans les
+      noyaux Linux et *BSD, car les structures représentant les pages
+      dans ces noyaux sont plus volumineuses en mémoire que celle d’ALMOS. Sous
+      Linux, un descripteur de pages fait 4Ko. Pour décrire 1Go de mémoire,
+      Linux a donc besoin de 11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko = 11Mo$}
+      de structure de données représentant ces pages. Si l'on pousse jusqu'a
+      16Go, Linux a maintenant besoin de 176Mo pour décrire la mémoire. En
+      sachant que le noyau ne s'accorde que 1Go de mémoire, et qu'il a besoin de
+      ce giga-octet pour de multiple opérations, on ne peut pousser trop loin
+      l'utilisation de la technologie PAE sans risquer de prendre trop de place
+      en mémoire noyau et de voir des chutes de performances très significatives
+      dues au mécanisme de \texttt{swap}.
 
       Le problème à résoudre est donc le suivant : comment stocker ces 14Go de
       données lorsque l’on a que 1Go d’espace virtuel ?  Actuellement, il existe
