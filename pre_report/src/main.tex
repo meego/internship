@@ -97,18 +97,24 @@
 
   \maketitle
   \tableofcontents
+  \newpage
   \onehalfspacing
  
   \ifr{ %% FRENCH PART HERE
     \input{src/introduction-fr}
+    \newpage
     \input{src/chapter1-fr}
+    \newpage
     \input{src/chapter2-fr}
+    %% \newpage
     \input{src/conclusion-fr}
+    %% \newpage
   }
   {
     %% ENGLISH PART HERE
   }
 
+  \newpage
   \bibliographystyle{plainnat}
   \bibliography{src/references}
   \ifr {\addcontentsline{toc}{section}{Bibliographie}}
