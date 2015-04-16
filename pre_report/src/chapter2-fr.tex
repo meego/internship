@@ -1,4 +1,4 @@
-\section{Contexte de travail}
+\chapter{Contexte de travail}
 \label{sec:context}
 
   %% Depuis une dizaine d’années, les fabricants des processeurs
@@ -38,7 +38,7 @@
   stage.
   
 
-  \subsection{L'architecture TSAR}
+  \section{L'architecture TSAR}
   \label{sec:tsar}
 
     TSAR est l'architecture d’un processeur multi-c\oe urs cc-NUMA homogène
@@ -63,7 +63,7 @@
       \label{fig:tsar}
     \end{figure}
   
-  \subsection{Le noyau ALMOS}
+  \section{Le noyau ALMOS}
   \label{sec:almos}
 
     Le noyau ALMOS~\cite{almaless2011almos} est un noyau monolithique
@@ -82,7 +82,7 @@
     nouvelle stratégie d'allocation mémoire (Auto-Next-Touch) \eenumline.
 
     
-    \subsubsection{Les cluster-manager}
+    \subsection{Les cluster-manager}
 
       L'organisation distribuée du noyau d’ALMOS s’appuie sur les objets nommés
       gestionnaires de clusters (cluster-manager). L’objectif est d’une part, de
@@ -111,7 +111,7 @@
       \end{figure}
 
       
-    \subsubsection{Les réplica noyau}
+    \subsection{Les réplica noyau}
 
       Comme nous l'avons vu précédemment, l'architecture TSAR offre au système
       d'exploitation la notion de cluster. Ceux-ci sont composés de quatre
@@ -144,9 +144,9 @@
       physiques de son cluster, à l'endroit où est copié le noyau.
 
 
-  \subsection{Évolution du projet}
+  \section{Évolution du projet}
 
-    \subsubsection{Limitations de la version initiale}
+    \subsection{Limitations de la version initiale}
     \label{subsec:unsolved}
     
       Développé initialement pour une architecture 32 bits, le noyau ne peut pas
@@ -165,7 +165,7 @@
       utilisateur.
 
       
-    \subsubsection{Contributions de Francois Guerret}
+    \subsection{Contributions de Francois Guerret}
       
       La gestion d'une telle quantité de mémoire fut le sujet de stage de
       Francois Guerret en 2014. Ce dernier
@@ -217,7 +217,7 @@
       \end{paragraph}
 
       
-  \subsection{Passage au mode multi-noyau}
+  \section{Passage au mode multi-noyau}
       
     La version actuelle d'ALMOS proposée par Mohamed Karaoui et Franck Wajsbürt
     supprime totalement l'espace virtuel du noyau. Ce dernier fonctionne
@@ -242,7 +242,7 @@
     processus/threads entre les clusters (la migration entre processeurs du même
     cluster est elle toujours fonctionnelle).
 
-    \subsubsection{Traduction d'adresses}
+    \subsection{Traduction d'adresses}
 
       Si les processus utilisateurs utilisent toujours la mémoire virtuelle, ce
       n'est plus le cas du noyau. Nous allons voir comment celui-ci peut
@@ -279,7 +279,7 @@
       \end{paragraph}
 
       
-  \subsection{Contributions}
+  \section{Contributions}
 
     La problématique soulevée en~\ref{subsec:unsolved} est celle à laquelle nous
     allons répondre dans la suite de ce document. Plus précisément, il s'agit de
@@ -296,7 +296,7 @@
     \end{itemize}
 
     
-    %% \subsubsection{Difficultés}
+    %% \subsection{Difficultés}
 
     %%   Le problème majeur de ces deux premiers objectifs est les structures de
     %%   données partagées entre des processus (notion de père/fils), ou des

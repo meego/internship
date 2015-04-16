@@ -1,8 +1,7 @@
 %!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
 
-\documentclass[onecolumn]{article}
-
+\documentclass[onecolumn]{report}
 
 %% LANGUAGE (english by default)
 \def\mlanguage french % TODO: remove this and use a cli parameter
@@ -96,28 +95,23 @@
 \begin{document}
 
   \maketitle
+  \onehalfspacing
   \tableofcontents
   \newpage
-  \onehalfspacing
  
   \ifr{ %% FRENCH PART HERE
     \input{src/introduction-fr}
-    \newpage
     \input{src/chapter1-fr}
-    \newpage
     \input{src/chapter2-fr}
-    %% \newpage
     \input{src/conclusion-fr}
-    %% \newpage
   }
   {
     %% ENGLISH PART HERE
   }
 
-  \newpage
   \bibliographystyle{plainnat}
   \bibliography{src/references}
-  \ifr {\addcontentsline{toc}{section}{Bibliographie}}
-       {\addcontentsline{toc}{section}{References}}
+  \ifr {\addcontentsline{toc}{chapter}{Bibliographie}}
+       {\addcontentsline{toc}{chapter}{References}}
 
 \end{document}

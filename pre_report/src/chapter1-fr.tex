@@ -1,4 +1,4 @@
-\section{État de l’art}
+\chapter{État de l’art}
 
   La problématique du passage à l’échelle des noyaux n’est pas nouvelle. Dès les
   années 90, ~\citeauthor{unrau1995hierarchical} posent la question et apportent
@@ -30,10 +30,10 @@
   ces derniers devant partager un minimum de ressources vitales à leur bon
   fonctionnement.
 
-  \subsection{Passage à l’échelle des noyaux}
+  \section{Passage à l’échelle des noyaux}
   \label{sec:scalability}
 
-    \subsubsection{Scalabilité du noyau Linux}
+    \subsection{Scalabilité du noyau Linux}
 
       Il apparait évident dans un premier temps de vouloir adapter le noyau
       Linux à des architectures massivement multi-coeurs. En effet, changer de
@@ -75,7 +75,7 @@
       Nous pensons qu’à présent, il est nécessaire de revoir cette organisation.
 
       
-    \subsubsection{Popcorn Linux}
+    \subsection{Popcorn Linux}
 
       Le projet Popcorn Linux~\citep{barbalacepopcorn} part du même constat
       évoqué précédement, mais en essayant tout de même de conserver le noyau
@@ -145,7 +145,7 @@
       bits.
 
 
-    \subsubsection{Barrelfish}
+    \subsection{Barrelfish}
       
       L’ETH Zurich, en collaboration avec Microsoft Research, a engagé des
       travaux de recherche dans le domaine des architectures du futur en
@@ -188,7 +188,7 @@
 
 
             
-    \subsubsection{Autres travaux}
+    \subsection{Autres travaux}
     \label{subsec:others}
     
       \begin{paragraph}{Hurricane:}
@@ -297,7 +297,7 @@
 
       \end{paragraph}
       
-    \subsubsection{Influences}
+    \subsection{Influences}
 
       Bien que ces travaux n'apportent pas de réponse claire et définitive à
       notre problématique, ils nous permettent de mieux comprendre les choix qui
@@ -328,10 +328,10 @@
     
      
 
-  \subsection{Gestion des espaces d'adressage}
+  \section{Gestion des espaces d'adressage}
   \label{sec:memory}    
 
-    \subsubsection{Physical Address Extension}
+    \subsection{Physical Address Extension}
 
       Avant l'apparition des architectures 64 bits s'est posé la question de la
       gestion d'espaces d'adressage supérieurs à 4Go avec des processeurs 32
@@ -409,10 +409,10 @@
       \end{paragraph}
 
 
-    \subsubsection{\todo{Large Physical Address Extension}}
+    \subsection{\todo{Large Physical Address Extension}}
 
 
-    %% \subsubsection{Les processeurs 64 bits}
+    %% \subsection{Les processeurs 64 bits}
 
     %%   Intel utilise 48 bits physique pour l'instant. Le reste est utilisé
     %%   pour des flags.\newline AMD utilise 48 bits aussi, sauf sur la dernière
@@ -420,7 +420,7 @@
     %%   processeurs\footnote{\url{http://developer.amd.com/wordpress/media/2012/10/24593_APM_v2.pdf}}.
 
 
-    \subsubsection{Les noyaux monolithiques classiques (UNIX et NT)}
+    \subsection{Les noyaux monolithiques classiques (UNIX et NT)}
 
       Les noyaux monolithiques ont expoité cette avancée matérielle en
       supportant de manière logiciel le mode PAE. Pourtant, il existe des
@@ -468,15 +468,15 @@
       n'ont pas pu explorer cette voie à 100\%.
 
 
-  \subsection{Partage et maintient de cohérence de structures noyaux}
+  \section{Partage et maintient de cohérence de structures noyaux}
   \label{sec:consistency}
   
-    %% \subsubsection{Hare}
+    %% \subsection{Hare}
 
-    %% \subsubsection{Barrelfish}
+    %% \subsection{Barrelfish}
 
     %%   passage de message
 
-    %% \subsubsection{DragonFly BSD}
+    %% \subsection{DragonFly BSD}
 
     %%   multi-noyau, passage de message, HAMMER
