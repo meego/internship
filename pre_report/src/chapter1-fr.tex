@@ -244,6 +244,38 @@
         le cadre d'exécutions simultanées\eenumline.
 
       \end{paragraph}
+
+      \begin{paragraph}{FoS:}
+
+        Des travaux de recherches similaires visant à repenser le système
+        d’exploitation sous forme d’une collection d’OS communicants par passage
+        de messages ont été menés par~\citet{wentzlaff2009factored} avec
+        FoS. L’objectif du projet FoS au MIT est de concevoir un système à la
+        fois pour processeurs many-cores et pour les infrastructures de Cloud
+        Computing. Comme dans le cas de Barrelfish, chaque c\oe ur exécute une
+        instance de l’OS complet à base de micro-noyau comme il est illustré par
+        la figure~\ref{fig:fos}.
+
+        \begin{figure}[h]
+          \centering
+          \includegraphics[scale=0.3]{fos}
+          \caption{Apercu de la structure interne du noyau FoS et du schéma de
+            communication}
+          \label{fig:fos}
+        \end{figure}
+
+        En se fondant sur le partitionnement spatial des ressources de calcul,
+        certaines instances de l’OS exécutent des serveurs systèmes, tandis que
+        d’autres exécutent les applications. À la différence de Barrelfish, FoS
+        se focalise sur la parallélisation des services systèmes pour faire face
+        à une demande massive et variable de services.
+
+        Concernant les évaluations expérimentales, les principales publications
+        autour du projet FoS~\citep{wentzlaff2009factored,
+          wentzlaff2010operating} n’incluent pas d'évaluations de scalabilité en
+        utilisant des benchmarks.
+
+      \end{paragraph}
       
     \subsubsection{Influences}
 
