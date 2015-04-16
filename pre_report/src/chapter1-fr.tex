@@ -12,17 +12,17 @@
   la part des constructeurs tels qu’Intel ou AMD. Plutôt que de continuer à
   augmenter la fréquence des processeurs, ce qui devenait contre productif vu la
   quantité d’énergie nécessaire, ils ont préféré augmenter le nombre de coeurs
-  et le nombre de processeurs sur les puces. C’est ainsi que l’ère du
-  parallélisme massif commenca~\citep{patterson2011parallel}, et que la
-  problématique du passage à l’échelle du noyau Linux fût soulevée.
+  et le nombre de processeurs sur les puces. C'est le début du parallélisme
+  massif~\citep{patterson2011parallel}, et c'est à ce moment là que la question
+  du passage à l’échelle du noyau Linux fût soulevée.
 
   Cet état de l'art se concentrera sur cette problématique, mais abordera
-  également une autre thématique. En effet, le mélange de l'architecture TSAR et
-  du noyau ALMOS (voir~\ref{} et~\ref{}) fait que nous nous retrouvons ici à
-  devoir gérer un espace d'adressage physique considérablement plus grand que
-  l'espace virtuel (4Go), le tout avec des processeurs 32 bits. Cette situation,
-  inédite, apporte le challenge de la gestion de ces espaces, en utilisant une
-  architecture qui n'a pas été pensé pour cela.
+  également une autre thématique.En effet, l'architecture TSAR
+  (voir~\ref{sec:tsar}) implique que nous nous retrouvons ici à devoir gérer un
+  espace d'adressage physique considérablement plus grand que l'espace virtuel
+  (4Go), à cause du choix des processeurs 32 bits. Cette situation, inédite,
+  apporte le challenge de la gestion de ces espaces par le noyau. Nous verrons
+  donc quels solutions existes pour nous permettre de réaliser cela.
   
   Enfin, le passage d’ALMOS au mode multi-noyau nous permettra de nous
   intéresser aux problème soulevés par le maintient de la cohérence des données
@@ -279,7 +279,7 @@
   \subsection{Gestion des espaces d'adressage}
   \label{sec:memory}    
 
-    \subsubsection{Solutions matérielles}
+    \subsubsection{Physical Address Extension}
 
       Avant l'apparition des architectures 64 bits s'est posé la question de la
       gestion d'espaces d'adressage supérieurs à 4Go avec des processeurs 32
@@ -287,7 +287,7 @@
       technologie PAE (Physical Address
       Extension)~\citep{patent6349380}. Celle-ci permet d'utiliser des adresses
       physiques sur 36 bits au lieu de 32, et donc d'exploiter jusqu'à 64Go de
-      mémoire\footnote{Cette limite sera expliquée par la suite.}.
+      mémoire.
 
       \begin{figure}[h]
         \centering \includegraphics[scale=0.4]{paging-no-pae}
@@ -310,7 +310,7 @@
       sont indexées par les 10 premiers bits de l'adresse virtuelle que l'on
       veut accéder. Elles sont stockées sur 32 bits, et le \textit{Page
         Directory} contient 1024 entrées ($2^{10} = 1024$). Les PDE contiennent
-      le numéro de la page mémoire ou est située \textit{Page Table} du
+      le numéro de la page mémoire ou est située la \textit{Page Table} du
       processus. Ce numéro est appelé PFN, pour \textit{Page Frame
         Number}. Comme le \textit{Page Directory} la \textit{Page Table} est
       indexée par 10 bits, elle a donc une profondeur de 1024, et les entrées
@@ -318,6 +318,13 @@
       contennant la donnée que l'on cherche a accéder. À partir de ce PFN, on
       peut retrouver l'adresse physique correspondante, puis on utilise les 12
       bits d'offset restant pour se déplacer et obtenir ce que l'on veut.
+
+      \begin{paragraph}{Remarque:}
+        Le noyau Linux utilise quatre niveaux d'abstraction dans sa version
+        actuelle. Néanmoins, ils sont purement logiciels. La MMU continue de
+        travailler avec deux niveaux d'indirection comme dans la
+        figure~\ref{fig:paging-no-pae}.\newline
+      \end{paragraph}
       
       L'activation du mode PAE dans la MMU permet de rajouter un troisième
       niveau d'indirection, en diminuant le nombre de MSB utilisés
@@ -337,14 +344,31 @@
         \label{fig:paging-pae}
       \end{figure}
       
-      Ce mécanisme permet donc à la MMU d'accéder à des adresses sur 64 bits, et
-      donc de dépasser les 4Go imposé par les espaces d'adressages de 32 bits.
+      Ce mécanisme permet donc à la MMU d'accéder à des stocker sur 64 bits, et
+      donc de dépasser les 4Go imposé par les espaces d'adressages de 32
+      bits. Néanmoins, l'adressage physique est lui restreint à 36 bits, ce qui
+      implique une limite à 64Go.
 
-      \todo{Mettre l'explication de la limite des 64Go.}
+      \begin{paragraph}{Remarque:}
+        Microsoft a pour sa part développé AWE~\citep{russinovich2012windows},
+        qui est une API utilisateur basée sur PAE. Cette API propose aux
+        développeurs d'applications d'exploiter eux aussi plus de 4Go de
+        mémoire.\newline
+      \end{paragraph}
 
-    \subsubsection{TODO: les processeurs AMD et les 52 bits adressables}
 
-    \subsubsection{Linux, OpenBSD et NetBSD}
+    \subsubsection{\todo{Large Physical Address Extension}}
+
+
+    %% \subsubsection{Les processeurs 64 bits}
+
+    %%   Intel utilise 48 bits physique pour l'instant. Le reste est utilisé
+    %%   pour des flags.\newline AMD utilise 48 bits aussi, sauf sur la dernière
+    %%   génération de
+    %%   processeurs\footnote{\url{http://developer.amd.com/wordpress/media/2012/10/24593_APM_v2.pdf}}.
+
+
+    \subsubsection{Les noyaux monolithiques classiques (UNIX et NT)}
 
       Les noyaux monolithiques ont expoité cette avancée matérielle en
       supportant de manière logiciel le mode PAE. Pourtant, il existe des
@@ -362,8 +386,7 @@
       mémoire physique passeront par ces descripteurs. Pour connaitre en
       permanence l'état global de la mémoire ou l'état d'une page en
       particulier, le noyau doit décrire entièrement l'espace
-      adressable\footnote{\todo{Trouver si c'est une convention ou si c'est
-          POSIX}}.
+      adressable.
 
       Cette opération est effectuée au boot de la machine~\citep{cranor1999uvm,
         gorman2004understanding, russinovich2012windows}. Lorsque l’on dispose
@@ -373,14 +396,15 @@
       supérieure dans les noyaux Linux, OpenBSD et NetBSD, car les structures
       représentant les pages dans ces noyaux sont plus volumineuses en mémoire
       que celle d’ALMOS. Sous Linux, un descripteur de pages fait 4Ko. Pour
-      décrire 1Go de mémoire, Linux a donc besoin de 11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko = 11Mo$} de
-      structure de données représentant ces pages. Si l'on pousse jusqu'a 16Go,
-      Linux a maintenant besoin de 176Mo pour décrire la mémoire. En sachant que
-      le noyau ne s'accorde que 1Go de mémoire, et qu'il a besoin de ce
-      giga-octet pour de multiple opérations, on ne peut pousser trop loin
-      l'utilisation de la technologie PAE sans risquer de prendre trop de place
-      en mémoire noyau et de voir des chutes de performances très significatives
-      dues au mécanisme de \texttt{swap}.
+      décrire 1Go de mémoire, Linux a donc besoin de
+      11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko = 11Mo$} de structure de données
+      représentant ces pages. Si l'on pousse jusqu'a 16Go, Linux a maintenant
+      besoin de 176Mo pour décrire la mémoire. En sachant que le noyau ne
+      s'accorde que 1Go de mémoire, et qu'il a besoin de ce giga-octet pour de
+      multiple opérations, on ne peut pousser trop loin l'utilisation de la
+      technologie PAE sans risquer de prendre trop de place en mémoire noyau et
+      de voir des chutes de performances très significatives dues au mécanisme
+      de \texttt{swap}.
 
       Le problème à résoudre est donc le suivant : comment stocker ces 14Go de
       données lorsque l’on a que 1Go d’espace virtuel ?  Actuellement, il existe
@@ -389,25 +413,9 @@
       bits~\citep{gorman2004understanding} \eenumline.
 
       Malgré les avancées matérielles, on voit que les systèmes d'exploitation
-      n'ont pas pu explorer cette voie à 100\%. Néanmoins, le noyau FreeBSD a
-      attiré notre attention.
+      n'ont pas pu explorer cette voie à 100\%.
 
 
-      \subsubsection{Le cas FreeBSD}
-
-        Les dévelopeurs du noyau FreeBSD ont fait un choix très fort qui va à
-        l'encontre de Linux ou même Windows. En effet, le noyau ne décrit pas
-        tout l'espace physique de la machine mais seulement une
-        partie~\citep{kernelfreebsd, mckusick1996design}. Lorsque le besoin de
-        mémoire apparait, de nouveaux descripteurs de pages sont ajoutés, puis
-        retiré lorsqu'ils deviennent inutiles.
-      
-        \todo{Après différents échanges\footnote{Le fil de discussion:
-            \url{https://docs.freebsd.org/cgi/mid.cgi?db=irt&id=5526408F.1090005@asim.lip6.fr}}
-          sur la mailing-liste \texttt{freebsd-questions}, la situation n'est
-          toujours pas claire pour moi.}
-
-      
   \subsection{Partage et maintient de cohérence de structures noyaux}
   \label{sec:consistency}
   
