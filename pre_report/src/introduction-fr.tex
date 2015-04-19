@@ -1,51 +1,35 @@
 \chapter{Introduction}
 
   \hspace{1cm}Depuis le début des années 2000, une des plus anciennes loi de
-  l'informatique commence à montrer ses limites: la loi de Moore. En effet, les
+  l'informatique commence à montrer ses limites: la loi de Moore. Les
   constructeurs de matériels ont cessé d'augmenter la fréquence des processeurs,
-  principalement pour des raisons énergétiques et
-  techniques. En effet, cette augmentation va de paire
-  avec celle de la consommation électrique, qui devient impossible à assurer. De
-  plus, il devient de plus en plus difficile de refroidir les machines sans
-  introduire de nouvelles technologies comme le water
-  cooling~\citep{googleXXXXdatacenters}, qui sont très coûteuses, et qui elles
-  aussi sont consommatrices d' énergie. Les entreprise ont fait le choix
-  d'augmenter le nombre de c\oe urs par processeur, ainsi que le nombre de
-  processeurs pour pallier à ces difficultés. De nos jours, des architectures
-  avec une cinquantaine de c\oe urs sont courantes, et d'autre comportant
-  plusieurs centaines voire milliers de c\oe urs sont à prévoir. L'augmentation
-  des processeurs sur les puces entraine inévitablement une augmentation de la
-  mémoire, et ce pour des raisons évidentes de performance. En plus de centaines
-  de c\oe urs, les systèmes doivent maintenant faire face à d'énormes quantités
-  de mémoire~\citep{hp2012z820, puget2013z9pe}. Il est donc nécessaire de revoir
+  principalement pour des raisons énergétiques et techniques. En effet, cette
+  augmentation va de pair avec celle de la consommation électrique, qui devient
+  impossible à assurer. De plus, il devient de plus en plus difficile de
+  refroidir les machines sans introduire de nouvelles technologies comme le
+  water cooling~\citep{googleXXXXdatacenters}, qui sont très coûteuses, et aussi
+  très énergivore. Les entreprise font le choix d'augmenter le nombre de c\oe
+  urs par processeur, ainsi que le nombre de processeurs pour faire face à ces
+  difficultés. De nos jours, des architectures avec une cinquantaine de c\oe urs
+  sont courantes, et d'autres comportant plusieurs centaines voire milliers de
+  c\oe urs sont à prévoir. L'augmentation des processeurs sur les puces entraine
+  inévitablement une augmentation de la mémoire, et ce pour des raisons
+  évidentes de performance. En plus de centaines de c\oe urs, les systèmes
+  doivent maintenant faire face à d'énormes quantités de
+  mémoire~\citep{hp2012z820, puget2013z9pe}. Il est donc nécessaire de revoir
   ces systèmes et de les adapter pour gérer efficacement ces ressources.\newline
   
-  %% \hspace{1cm}Ces architectures représentent un défi de taille pour les
-  %% systèmes d'exploitation. En effet, elles adressent la problématique de la
-  %% gestion d'une multitude de ressources hétérogènes de manière
-  %% performante. Les unités de traitement en sont un bon exemple: on dispose
-  %% aujourd'hui de CPU (CISC ou RISC), de FPU, et de GPU. Tous les trois sont
-  %% des unités d'exécution d'instructions, mais sont radicalement différents
-  %% dans leur mode de fonctionnement. Pourtant, les architectures massivement
-  %% multi-c\oe urs embarquent tous ces différents équipements, faisant de leur
-  %% gestion un élément central pour un système d'exploitation.  Un second
-  %% problème soulevé par ces architectures est la gestion de la mémoire qui est
-  %% de plus en plus grande. Il a majoritairement été résolu par l'avènement des
-  %% processeurs 64 bits, ou par les mécanismes d'extension d'adresses sur les
-  %% processeurs 32 bits. Néanmoins, nous verrons que nous faisons face à une
-  %% situation ou aucune de ces deux solutions ne peut être exploitée.\newline
-
   \hspace{1cm}Dans le cadre de ce stage, nous faisons face à deux
   problèmes. L'architecture matérielle considérée est l'architecture
-  TSAR~\citep{greiner2009tsar} développée au LIP6. Celle-ci offre notamment 1
-  téra-octet de mémoire physique. Pour des raisons énergétiques, les processeurs
-  de cette architecture sont des processeurs 32 bits, qui sont donc limités à
-  4Go d'espace adressable. Ainsi, le premier problème consiste à gérer, depuis
-  le noyau, un espace mémoire supérieur à l'espace mémoire adressable des
+  TSAR~\citep{greiner2009tsar} développée au LIP6. Celle-ci offre notamment 1To
+  de mémoire physique. Pour des raisons énergétiques, les processeurs de cette
+  architecture sont des processeurs 32 bits, qui sont donc limités à 4Go
+  d'espace adressable. Ainsi, le premier problème consiste à gérer, depuis le
+  noyau, un espace mémoire supérieur à l'espace mémoire adressable des
   processeurs. Notre second problème est également une conséquence de
   l'architecture TSAR. Le système d'exploitation
-  ALMOS~\citep{almaless2011almos}, développé pour cette architecture, est un
-  noyau monolithique. Afin de pouvoir gérer toute la mémoire, il a évolué vers
+  ALMOS~\citep{almaless2011almos}, développé pour celle-ci, est un noyau
+  monolithique. Afin de pouvoir mieux gérer toute la mémoire, il a évolué vers
   le principe du multi-noyau~\cite{schupbach2008embracing}. Le passage de
   messages est donc la seule facon de communiquer. Pourtant, il est nécessaire
   de maintenir certaines informations cohérentes entre tous les noyaux en cours
@@ -62,5 +46,5 @@
   de grande quantité de mémoire sur des architectures 32 bits. La
   section~\ref{sec:consistency} est relative aux problèmes de cohérence mémoire
   pour les structures de données des noyaux large échelle. La présentation du
-  contexte de travail sera fait en section~\ref{sec:context}. Enfin nous
-  conclurons en section~\ref{sec:conclusion}.
+  contexte de travail sera faite en section~\ref{sec:context}. Enfin nous
+  conclurons en section~\ref{sec:conclusion}.\newline
