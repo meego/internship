@@ -465,12 +465,10 @@
     \begin{itemize}
       \item 512Go de données (extensible à 544Go)
       \item 273Go pour les entrées/sorties
-      \item 204Go de réservés
+      \item 204Go de réservés\footnote{\todo{Pourquoi ces 204Go de réservés ?}}
       \item 1Go (le premier) pour la ROM, la RAM et les périphériques
         adressables
     \end{itemize}
-
-    \todo{Pourquoi ces 204Go de réservés ?}
 
     Les processeurs ARM étant des processeurs RISC 32 bits, ils remplissent
     parfaitement les pré-requis nécessaires de l'architecture TSAR. De plus, ils
@@ -533,7 +531,7 @@
       cette voie à 100\%.
 
 
-  \section{Partage et maintient de cohérence de structures noyaux}
+  \section{Partage et maintien de cohérence de structures noyaux}
   \label{sec:consistency}
   
     %% \subsection{Hare}
