@@ -24,7 +24,7 @@
   noyau. Nous verrons donc quelles solutions, matérielles comme logicielles,
   existent pour nous permettre de réaliser cela. Enfin, le passage d’ALMOS au
   mode multi-noyau nous permettra de nous intéresser aux problèmes soulevés par
-  le maintient de la cohérence des données systèmes sur une machine lorsque l'on
+  le maintien de la cohérence des données systèmes sur une machine lorsque l'on
   a plusieurs noyaux en cours d'exécution, ces derniers devant partager un
   minimum de ressources vitales à leur bon fonctionnement.
 
@@ -393,7 +393,7 @@
       Ce mécanisme permet donc à la MMU d'accéder à des stocker sur 64 bits, et
       donc de dépasser les 4Go imposé par les espaces d'adressages de 32
       bits. Néanmoins, l'adressage physique est lui restreint à 36 bits, ce qui
-      implique une limite à 64Go.
+      implique une limite à 64Go ($2^{36}$).
 
       \begin{paragraph}{Remarque:}
         \begin{itemize}
@@ -455,7 +455,7 @@
         \label{fig:arm-64-1024}
       \end{subfigure}
       \caption{Découpage de l'espace mémoire sur un processeur ARMv7 avec le
-        mécanisme LPAE. Source:~\citet{arm2012principles}}
+        mécanisme LPAE. Source:~\citeauthor{arm2012principles}.}
       \label{fig:arm-0-1024}
     \end{figure}
 
