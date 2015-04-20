@@ -28,6 +28,217 @@
   a plusieurs noyaux en cours d'exécution, ces derniers devant partager un
   minimum de ressources vitales à leur bon fonctionnement.
 
+
+  \section{Gestion des espaces d'adressage}
+  \label{sec:memory}    
+
+    \subsection{Physical Address Extension}
+
+      Avant l'apparition des architectures 64 bits s'est posé la question de la
+      gestion d'espaces d'adressage supérieurs à 4Go avec des processeurs 32
+      bits. Les premiers travaux ont été menés par Intel et ont débouché sur la
+      technologie PAE (\textit{Physical Address
+        Extension})~\citep{patent6349380}. Celle-ci permet d'utiliser des
+      adresses physiques sur 36 bits au lieu de 32, et donc d'exploiter jusqu'à
+      64Go de mémoire.
+
+      \begin{figure}[h]
+        \centering \includegraphics[scale=0.4]{paging-no-pae}
+        \caption{Exemple de traduction d'adresse par la MMU sans utiliser la
+          technologie PAE}
+        \label{fig:paging-no-pae}
+        \end{figure}
+      
+      Ce mécanisme fût introduit en 1995 dans les premiers Pentium Pro, et
+      foncionne de la manière suivante. Considérons une MMU classique
+      (figure~\ref{fig:paging-no-pae}) permettant de gérer des adresses de 32
+      bits. Celle-ci contient deux niveaux d'indirection, chacun ayant 1024
+      entrées de 4 octets. Lors d'une traduction, on utilise les MSB (Most
+      Significant Bits) d'une adresse pour trouver les entrées correspondantes
+      dans chacune des indirections, puis les LSB pour obtenir l'offset.
+
+      Chaque processus à dans son espace virtuel un pointeur vers une adresse
+      physique. À cette adresse se trouve le \textit{Page Directory}. Les
+      entrées de ce tableau (appelées PDE pour \textit{Page Directory Entry})
+      sont indexées par les 10 premiers bits de l'adresse virtuelle que l'on
+      veut accéder. Elles sont stockées sur 32 bits, et le \textit{Page
+        Directory} contient 1024 entrées ($2^{10} = 1024$). Les PDE contiennent
+      le numéro de la page mémoire où est située la \textit{Page Table} du
+      processus. Ce numéro est appelé PFN, pour \textit{Page Frame
+        Number}. Comme le \textit{Page Directory}, la \textit{Page Table} est
+      indexée par 10 bits. Elle a donc une profondeur de 1024, et les entrées
+      (PTE) sont stockées sur 32 bits. Ces PTE contiennent le PFN de la page
+      contennant la donnée que l'on cherche a accéder. À partir de ce PFN, on
+      peut retrouver l'adresse physique de la page correspondante, puis on
+      utilise les 12 bits d'offset restant pour se déplacer et obtenir la
+      donnée.
+
+      \begin{paragraph}{Remarque:}
+        Le noyau Linux utilise quatre niveaux d'abstraction dans sa version
+        actuelle. Néanmoins, ils sont purement logiciels. La MMU continue de
+        travailler avec deux niveaux d'indirection comme dans la
+        figure~\ref{fig:paging-no-pae}.\newline
+      \end{paragraph}
+      
+      L'activation du mode PAE dans la MMU permet de rajouter un troisième
+      niveau d'indirection, en diminuant le nombre de MSB utilisés
+      précédement. On voit sur la figure~\ref{fig:paging-pae} que les bits 30 et
+      31 sont maintenant réservés à une nouvelle table, la PDPT (\textit{Page
+        Directory Pointer Table}). Le mode PAE transforme également la taille
+      des entrées du \textit{Page Directory} et de la \textit{Page Table} en
+      entrées de 64 bits et non plus 32. Pour ce faire, on diminue le nombre
+      d'entrées possibles dans ces tables. En divisant par deux le nombre
+      d'entrées possibles, soit 512 au lieu de 1024, au multiplie par deux la
+      taille des données que l'ont peut stocker.
+
+      \begin{figure}[h]
+        \centering \includegraphics[scale=0.4]{paging-pae}
+        \caption{Exemple de traduction d'adresse par la MMU avec la technologie
+          PAE}
+        \label{fig:paging-pae}
+      \end{figure}
+      
+      Ce mécanisme permet donc à la MMU d'accéder à des stocker sur 64 bits, et
+      donc de dépasser les 4Go imposé par les espaces d'adressages de 32
+      bits. Néanmoins, l'adressage physique est lui restreint à 36 bits, ce qui
+      implique une limite à 64Go ($2^{36}$).
+
+      \begin{paragraph}{Remarque:}
+        \begin{itemize}
+          \item Le mode PAE existe également dans les processeurs
+            AMD~\citep{amd2000system}
+          \item Microsoft a pour sa part développé
+            AWE~\citep{russinovich2012windows}, qui est une API utilisateur
+            basée sur PAE. Cette API propose aux développeurs d'applications
+            d'exploiter eux aussi plus de 4Go de mémoire.
+        \end{itemize}
+      \end{paragraph}
+
+
+    \subsection{Large Physical Address Extension}
+
+    Les processeurs ARM~\cite{arm1990web} apparus dans les années 90 ont
+    anticipés cette faible limite de 64Go et ont proposé leur propre mécanisme,
+    appelé LPAE~\citep{arm2012principles,marinas2011linux}, pour \textit{Large
+      Physical Address Extension}.
+
+    Sur le même principe que PAE, les processeurs proposent un découpage des
+    adresses virtuelles en trois niveaux d'indirections, chacun contenant des
+    entrées sur 64 bits. Le premier permet d'avoir des pages de 1Go, le second
+    de 2Mo, et le dernier de 4Ko.
+
+    L'extension à 40 bits permet de supporter une mémoire de 1To maximum, et non
+    plus 64Go comme le proposait PAE. Malgré tout, l'utilisation des processeurs
+    32 bits implique d'avoir un certain nombre d'informations stockées dans les
+    quatre premiers giga-octets, et notamment:
+
+    \begin{itemize}
+      \item le code de boot
+      \item les registres des périphériques\footnote{De plus, même si ces
+        derniers sont 64 bits, la limitation mémoire est imposée par la plus
+        faible valeur supportée par la machine; 32 bits dans notre
+        cas. Néanmoins, ces périphériques restent compatibles.}
+      \item les régions dynamiquement allouées pour les entrées/sorties (pour la
+        raison évoquée précédement)
+    \end{itemize}
+
+    La figure~\ref{fig:arm-0-1024} nous montre comment l'espace mémoire est
+    découpée selon les limitations de 32, 36 et 40 bits.
+
+    \begin{figure}[h]
+      %% \centering
+      \begin{subfigure}[b]{0.37\textwidth}
+        \includegraphics[scale=0.24]{arm-0-4}
+        \caption{Découpage $0-4Go$}
+        \label{fig:arm-0-4}
+      \end{subfigure}
+      \begin{subfigure}[b]{0.37\textwidth}
+        \includegraphics[scale=0.24]{arm-4-64}
+        \caption{Découpage $4-64Go$}
+        \label{fig:arm-4-64}
+      \end{subfigure}
+      \begin{subfigure}[b]{0.23\textwidth}
+        \includegraphics[scale=0.24]{arm-64-1024}
+        \caption{Découpage $64-1024Go$}
+        \label{fig:arm-64-1024}
+      \end{subfigure}
+      \caption{Découpage de l'espace mémoire sur un processeur ARMv7 avec le
+        mécanisme LPAE. Source:~\citeauthor{arm2012principles}.}
+      \label{fig:arm-0-1024}
+    \end{figure}
+
+    Ces derniers sont optionnels et peuvent être alloués pour des données. On
+    obtient le schéma suivant:
+
+    \begin{itemize}
+      \item 512Go de données (extensible à 544Go)
+      \item 273Go pour les entrées/sorties
+      \item 204Go de réservés\footnote{\todo{Pourquoi ces 204Go de réservés ?}}
+      \item 1Go (le premier) pour la ROM, la RAM et les périphériques
+        adressables
+    \end{itemize}
+
+    Les processeurs ARM étant des processeurs RISC 32 bits, ils remplissent
+    parfaitement les pré-requis nécessaires de l'architecture TSAR. De plus, ils
+    sont concus de manière à avoir une (très) faible consommation électrique, ce
+    qui est idéal dans notre cas. Néanmoins, l'extension LPAE
+
+    \begin{paragraph}{Remarque:}
+      L'extension LPAE supporte le mode \textit{Hypervisor} des processeurs ARM
+      permettant de gérer la para-virtualisation avec des outils comme
+      Xen~\cite{barham2003xen}. Bien qu'en dehors du cadre de ce stage, c'est
+      une caractéristique très intéressante pour le projet
+      TSUNAMY~\cite{tsunamy2013web} dans lequel l'équipe ALSOC est engagée.
+    \end{paragraph}
+
+
+    \subsection{Les noyaux monolithiques classiques (UNIX et NT)}
+
+      Les noyaux monolithiques ont expoité cette avancée matérielle en
+      supportant de manière logiciel le mode PAE. Pourtant, il existe des
+      contraintes très fortes lorsque l'on utilise ce mode d'adressage. Dans un
+      premier temps, on ne supporte que 64Go de RAM. Bien qu'énorme en 1998,
+      cette valeur nous parait aujourd'hui insignifiante compte tenu de la
+      puissance des machines de calcul.  Dans un second temps, cette
+      amélioration apporte un problème logiciel qui reste non résolu à ce
+      jour.\newline
+
+      La mémoire est découpée de manière abstraite en pages. Ces pages peuvent
+      être de grande taille (2Mo ou 4Mo selon les systèmes), ou de petite taille
+      (4Ko). Pour adresser la mémoire, le noyau doit construire cette
+      abstraction via les descripteurs de pages, puis toutes les opérations en
+      mémoire physique passeront par ces descripteurs. Pour connaitre en
+      permanence l'état global de la mémoire ou l'état d'une page en
+      particulier, le noyau doit décrire entièrement l'espace
+      adressable~\citep{cranor1999uvm, gorman2004understanding,
+        russinovich2012windows, dillon2000design, steldt2009memory,
+        steldtXXXXopenbsd}.
+
+      Cette opération est effectuée au boot de la machine. Lorsque l’on dispose
+      d’une grosse quantité de mémoire, la taille de ces descripteurs est
+      énorme. À titre d’exemple, ALMOS a besoin de 14Go pour décrire les 1To de
+      mémoire offerts par TSAR. Cette valeur, bien qu’élevée, est largement
+      supérieure dans les noyaux Linux et *BSD, car les structures représentant
+      les pages dans ces noyaux sont plus volumineuses en mémoire que celle
+      d’ALMOS. Sous Linux, un descripteur de pages fait 4Ko. Pour décrire 1Go de
+      mémoire, Linux a donc besoin de 11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko
+        = 11Mo$} de structure de données représentant ces pages. Si l'on
+      augmente à 16Go, Linux a maintenant besoin de 176Mo pour décrire la
+      mémoire. En sachant que le noyau ne s'accorde que 1Go de mémoire, et qu'il
+      a besoin de ce giga-octet pour de multiple opérations, on ne peut pousser
+      trop loin l'utilisation de la technologie PAE sans risquer de prendre trop
+      de place en mémoire noyau et de voir des chutes de performances très
+      significatives dues au mécanisme de \texttt{swap}.\\
+
+      Le problème à résoudre est donc le suivant : comment stocker ces 14Go de
+      données lorsque l’on a que 1Go d’espace virtuel ?  Actuellement, il existe
+      deux réponses, toutes les deux complémentaires: \benumline \item on ne
+      peut pas et \item il faut acheter une machine 64
+      bits~\citep{gorman2004understanding} \eenumline. Ainsi, malgré les
+      avancées matérielles, les systèmes d'exploitation n'ont pas pu explorer
+      cette voie à 100\%.
+
+  
   \section{Passage à l’échelle des noyaux}
   \label{sec:scalability}
 
@@ -321,214 +532,6 @@
     
      
 
-  \section{Gestion des espaces d'adressage}
-  \label{sec:memory}    
-
-    \subsection{Physical Address Extension}
-
-      Avant l'apparition des architectures 64 bits s'est posé la question de la
-      gestion d'espaces d'adressage supérieurs à 4Go avec des processeurs 32
-      bits. Les premiers travaux ont été menés par Intel et ont débouché sur la
-      technologie PAE (\textit{Physical Address
-        Extension})~\citep{patent6349380}. Celle-ci permet d'utiliser des
-      adresses physiques sur 36 bits au lieu de 32, et donc d'exploiter jusqu'à
-      64Go de mémoire.
-
-      \begin{figure}[h]
-        \centering \includegraphics[scale=0.4]{paging-no-pae}
-        \caption{Exemple de traduction d'adresse par la MMU sans utiliser la
-          technologie PAE}
-        \label{fig:paging-no-pae}
-        \end{figure}
-      
-      Ce mécanisme fût introduit en 1995 dans les premiers Pentium Pro, et
-      foncionne de la manière suivante. Considérons une MMU classique
-      (figure~\ref{fig:paging-no-pae}) permettant de gérer des adresses de 32
-      bits. Celle-ci contient deux niveaux d'indirection, chacun ayant 1024
-      entrées de 4 octets. Lors d'une traduction, on utilise les MSB (Most
-      Significant Bits) d'une adresse pour trouver les entrées correspondantes
-      dans chacune des indirections, puis les LSB pour obtenir l'offset.
-
-      Chaque processus à dans son espace virtuel un pointeur vers une adresse
-      physique. À cette adresse se trouve le \textit{Page Directory}. Les
-      entrées de ce tableau (appelées PDE pour \textit{Page Directory Entry})
-      sont indexées par les 10 premiers bits de l'adresse virtuelle que l'on
-      veut accéder. Elles sont stockées sur 32 bits, et le \textit{Page
-        Directory} contient 1024 entrées ($2^{10} = 1024$). Les PDE contiennent
-      le numéro de la page mémoire où est située la \textit{Page Table} du
-      processus. Ce numéro est appelé PFN, pour \textit{Page Frame
-        Number}. Comme le \textit{Page Directory}, la \textit{Page Table} est
-      indexée par 10 bits. Elle a donc une profondeur de 1024, et les entrées
-      (PTE) sont stockées sur 32 bits. Ces PTE contiennent le PFN de la page
-      contennant la donnée que l'on cherche a accéder. À partir de ce PFN, on
-      peut retrouver l'adresse physique de la page correspondante, puis on
-      utilise les 12 bits d'offset restant pour se déplacer et obtenir la
-      donnée.
-
-      \begin{paragraph}{Remarque:}
-        Le noyau Linux utilise quatre niveaux d'abstraction dans sa version
-        actuelle. Néanmoins, ils sont purement logiciels. La MMU continue de
-        travailler avec deux niveaux d'indirection comme dans la
-        figure~\ref{fig:paging-no-pae}.\newline
-      \end{paragraph}
-      
-      L'activation du mode PAE dans la MMU permet de rajouter un troisième
-      niveau d'indirection, en diminuant le nombre de MSB utilisés
-      précédement. On voit sur la figure~\ref{fig:paging-pae} que les bits 30 et
-      31 sont maintenant réservés à une nouvelle table, la PDPT (\textit{Page
-        Directory Pointer Table}). Le mode PAE transforme également la taille
-      des entrées du \textit{Page Directory} et de la \textit{Page Table} en
-      entrées de 64 bits et non plus 32. Pour ce faire, on diminue le nombre
-      d'entrées possibles dans ces tables. En divisant par deux le nombre
-      d'entrées possibles, soit 512 au lieu de 1024, au multiplie par deux la
-      taille des données que l'ont peut stocker.
-
-      \begin{figure}[h]
-        \centering \includegraphics[scale=0.4]{paging-pae}
-        \caption{Exemple de traduction d'adresse par la MMU avec la technologie
-          PAE}
-        \label{fig:paging-pae}
-      \end{figure}
-      
-      Ce mécanisme permet donc à la MMU d'accéder à des stocker sur 64 bits, et
-      donc de dépasser les 4Go imposé par les espaces d'adressages de 32
-      bits. Néanmoins, l'adressage physique est lui restreint à 36 bits, ce qui
-      implique une limite à 64Go ($2^{36}$).
-
-      \begin{paragraph}{Remarque:}
-        \begin{itemize}
-          \item Le mode PAE existe également dans les processeurs
-            AMD~\citep{amd2000system}
-          \item Microsoft a pour sa part développé
-            AWE~\citep{russinovich2012windows}, qui est une API utilisateur
-            basée sur PAE. Cette API propose aux développeurs d'applications
-            d'exploiter eux aussi plus de 4Go de mémoire.
-        \end{itemize}
-      \end{paragraph}
-
-
-    \subsection{Large Physical Address Extension}
-
-    Les processeurs ARM~\cite{arm1990web} apparus dans les années 90 ont
-    anticipés cette faible limite de 64Go et ont proposé leur propre mécanisme,
-    appelé LPAE~\citep{arm2012principles,marinas2011linux}, pour \textit{Large
-      Physical Address Extension}.
-
-    Sur le même principe que PAE, les processeurs proposent un découpage des
-    adresses virtuelles en trois niveaux d'indirections, chacun contenant des
-    entrées sur 64 bits. Le premier permet d'avoir des pages de 1Go, le second
-    de 2Mo, et le dernier de 4Ko.
-
-    L'extension à 40 bits permet de supporter une mémoire de 1To maximum, et non
-    plus 64Go comme le proposait PAE. Malgré tout, l'utilisation des processeurs
-    32 bits implique d'avoir un certain nombre d'informations stockées dans les
-    quatre premiers giga-octets, et notamment:
-
-    \begin{itemize}
-      \item le code de boot
-      \item les registres des périphériques\footnote{De plus, même si ces
-        derniers sont 64 bits, la limitation mémoire est imposée par la plus
-        faible valeur supportée par la machine; 32 bits dans notre
-        cas. Néanmoins, ces périphériques restent compatibles.}
-      \item les régions dynamiquement allouées pour les entrées/sorties (pour la
-        raison évoquée précédement)
-    \end{itemize}
-
-    La figure~\ref{fig:arm-0-1024} nous montre comment l'espace mémoire est
-    découpée selon les limitations de 32, 36 et 40 bits.
-
-    \begin{figure}[h]
-      %% \centering
-      \begin{subfigure}[b]{0.37\textwidth}
-        \includegraphics[scale=0.24]{arm-0-4}
-        \caption{Découpage $0-4Go$}
-        \label{fig:arm-0-4}
-      \end{subfigure}
-      \begin{subfigure}[b]{0.37\textwidth}
-        \includegraphics[scale=0.24]{arm-4-64}
-        \caption{Découpage $4-64Go$}
-        \label{fig:arm-4-64}
-      \end{subfigure}
-      \begin{subfigure}[b]{0.23\textwidth}
-        \includegraphics[scale=0.24]{arm-64-1024}
-        \caption{Découpage $64-1024Go$}
-        \label{fig:arm-64-1024}
-      \end{subfigure}
-      \caption{Découpage de l'espace mémoire sur un processeur ARMv7 avec le
-        mécanisme LPAE. Source:~\citeauthor{arm2012principles}.}
-      \label{fig:arm-0-1024}
-    \end{figure}
-
-    Ces derniers sont optionnels et peuvent être alloués pour des données. On
-    obtient le schéma suivant:
-
-    \begin{itemize}
-      \item 512Go de données (extensible à 544Go)
-      \item 273Go pour les entrées/sorties
-      \item 204Go de réservés\footnote{\todo{Pourquoi ces 204Go de réservés ?}}
-      \item 1Go (le premier) pour la ROM, la RAM et les périphériques
-        adressables
-    \end{itemize}
-
-    Les processeurs ARM étant des processeurs RISC 32 bits, ils remplissent
-    parfaitement les pré-requis nécessaires de l'architecture TSAR. De plus, ils
-    sont concus de manière à avoir une (très) faible consommation électrique, ce
-    qui est idéal dans notre cas. Néanmoins, l'extension LPAE
-
-    \begin{paragraph}{Remarque:}
-      L'extension LPAE supporte le mode \textit{Hypervisor} des processeurs ARM
-      permettant de gérer la para-virtualisation avec des outils comme
-      Xen~\cite{barham2003xen}. Bien qu'en dehors du cadre de ce stage, c'est
-      une caractéristique très intéressante pour le projet
-      TSUNAMY~\cite{tsunamy2013web} dans lequel l'équipe ALSOC est engagée.
-    \end{paragraph}
-
-
-    \subsection{Les noyaux monolithiques classiques (UNIX et NT)}
-
-      Les noyaux monolithiques ont expoité cette avancée matérielle en
-      supportant de manière logiciel le mode PAE. Pourtant, il existe des
-      contraintes très fortes lorsque l'on utilise ce mode d'adressage. Dans un
-      premier temps, on ne supporte que 64Go de RAM. Bien qu'énorme en 1998,
-      cette valeur nous parait aujourd'hui insignifiante compte tenu de la
-      puissance des machines de calcul.  Dans un second temps, cette
-      amélioration apporte un problème logiciel qui reste non résolu à ce
-      jour.\newline
-
-      La mémoire est découpée de manière abstraite en pages. Ces pages peuvent
-      être de grande taille (2Mo ou 4Mo selon les systèmes), ou de petite taille
-      (4Ko). Pour adresser la mémoire, le noyau doit construire cette
-      abstraction via les descripteurs de pages, puis toutes les opérations en
-      mémoire physique passeront par ces descripteurs. Pour connaitre en
-      permanence l'état global de la mémoire ou l'état d'une page en
-      particulier, le noyau doit décrire entièrement l'espace
-      adressable~\citep{cranor1999uvm, gorman2004understanding,
-        russinovich2012windows, dillon2000design, steldt2009memory,
-        steldtXXXXopenbsd}.
-
-      Cette opération est effectuée au boot de la machine. Lorsque l’on dispose
-      d’une grosse quantité de mémoire, la taille de ces descripteurs est
-      énorme. À titre d’exemple, ALMOS a besoin de 14Go pour décrire les 1To de
-      mémoire offerts par TSAR. Cette valeur, bien qu’élevée, est largement
-      supérieure dans les noyaux Linux et *BSD, car les structures représentant
-      les pages dans ces noyaux sont plus volumineuses en mémoire que celle
-      d’ALMOS. Sous Linux, un descripteur de pages fait 4Ko. Pour décrire 1Go de
-      mémoire, Linux a donc besoin de 11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko
-        = 11Mo$} de structure de données représentant ces pages. Si l'on
-      augmente à 16Go, Linux a maintenant besoin de 176Mo pour décrire la
-      mémoire. En sachant que le noyau ne s'accorde que 1Go de mémoire, et qu'il
-      a besoin de ce giga-octet pour de multiple opérations, on ne peut pousser
-      trop loin l'utilisation de la technologie PAE sans risquer de prendre trop
-      de place en mémoire noyau et de voir des chutes de performances très
-      significatives dues au mécanisme de \texttt{swap}.\\
-
-      Le problème à résoudre est donc le suivant : comment stocker ces 14Go de
-      données lorsque l’on a que 1Go d’espace virtuel ?  Actuellement, il existe
-      deux réponses, toutes les deux complémentaires: \benumline \item on ne
-      peut pas et \item il faut acheter une machine 64
-      bits~\citep{gorman2004understanding} \eenumline. Ainsi, malgré les
-      avancées matérielles, les systèmes d'exploitation n'ont pas pu explorer
-      cette voie à 100\%.
 
 
   \section{Partage et maintien de cohérence de structures noyaux}
