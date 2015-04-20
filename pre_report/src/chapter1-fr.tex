@@ -3,30 +3,28 @@
   La problématique du passage à l’échelle des noyaux n’est pas nouvelle. Dès les
   années 90, ~\citeauthor{unrau1995hierarchical} posent la question et apportent
   des réponses avec le noyau Hurricane (détaillé en section
-  \ref{subsec:others}). D’autres essaye avec le modèle des
-  micro-noyaux, comme Minix~\citep{}, L4~\citep{} ou Mach~\citep{}. Mais c'est
-  finalement Linux qui s’impose comme le modèle de référence, et les travaux se
-  focalise alors sur ce dernier.
+  \ref{subsec:others}). D’autres essaye avec le modèle des micro-noyaux, comme
+  Minix, L4 ou Mach. Mais c'est finalement Linux qui s’impose comme le modèle de
+  référence, et les travaux se focalise alors sur ce dernier.
 
   Mais, aux alentours des années 2004/2005, un changement radical a été opéré de
-  la part des constructeurs tels qu’Intel ou AMD. Plutôt que de continuer à
-  augmenter la fréquence des processeurs, ce qui devenait contre productif vu la
-  quantité d’énergie nécessaire, ils ont préféré augmenter le nombre de coeurs
-  et le nombre de processeurs sur les puces. C'est le début du parallélisme
-  massif~\citep{patterson2011parallel}, et c'est à ce moment là que la question
-  du passage à l’échelle du noyau Linux fût soulevée.\\
+  la part des constructeurs tels qu’Intel ou AMD. En effet, ils ont choisi de
+  simplifier les processeurs\footnote{Avec la suppression des exécutions
+    \textit{out-of-order} par exemple.} pour minimiser l'énergie consommée, et
+  d'augmenter le nombre de coeurs et le nombre de processeurs sur les
+  puces. C'est le début du parallélisme massif~\citep{patterson2011parallel} et
+  de la remise en question des capacité de Linux à suivre cette évolution.\\
 
-  Cet état de l'art se concentre sur cette problématique, mais aborde également
-  une autre thématique.En effet, l'architecture TSAR (voir~\ref{sec:tsar})
-  implique de gérer un espace d'adressage physique considérablement plus grand
-  que l'espace virtuel (4Go), à cause du choix des processeurs 32 bits. Cette
-  situation, inédite, apporte le challenge de la gestion de ces espaces par le
-  noyau. Nous verrons donc quelles solutions, matérielles comme logicielles,
-  existent pour nous permettre de réaliser cela. Enfin, le passage d’ALMOS au
-  mode multi-noyau nous permettra de nous intéresser aux problèmes soulevés par
-  le maintien de la cohérence des données systèmes sur une machine lorsque l'on
-  a plusieurs noyaux en cours d'exécution, ces derniers devant partager un
-  minimum de ressources vitales à leur bon fonctionnement.
+  Cet état de l'art est organisé comme suit. Dans un premier temps, nous nous
+  intéresserons à la mémoire offerte par l'architecture TSAR. Celle-ci implique
+  de gérer un espace d'adressage physique considérablement plus grand que
+  l'espace virtuel à cause du choix des processeurs 32 bits. Nous verrons donc
+  quelles solutions, matérielles comme logicielles, existent pour nous permettre
+  de réaliser cela. Nous nous intéresserons ensuite au côté NUMA de TSAR. Nous
+  verrons quelles sont les solutions permettant de gérer ce type
+  d'architecture. Enfin, nous nous intéresserons aux problèmes soulevés par les
+  multi-noyaux, à savoir le maintien de la cohérence des structures de données
+  critiques lorsque l'on a plusieurs noyaux en cours d'exécution.
 
 
   \section{Gestion des espaces d'adressage}
@@ -181,7 +179,7 @@
     Les processeurs ARM étant des processeurs RISC 32 bits, ils remplissent
     parfaitement les pré-requis nécessaires de l'architecture TSAR. De plus, ils
     sont concus de manière à avoir une (très) faible consommation électrique, ce
-    qui est idéal dans notre cas. Néanmoins, l'extension LPAE
+    qui est idéal dans notre cas.
 
     \begin{paragraph}{Remarque:}
       L'extension LPAE supporte le mode \textit{Hypervisor} des processeurs ARM
@@ -197,9 +195,9 @@
       Les noyaux monolithiques ont expoité cette avancée matérielle en
       supportant de manière logiciel le mode PAE. Pourtant, il existe des
       contraintes très fortes lorsque l'on utilise ce mode d'adressage. Dans un
-      premier temps, on ne supporte que 64Go de RAM. Bien qu'énorme en 1998,
-      cette valeur nous parait aujourd'hui insignifiante compte tenu de la
-      puissance des machines de calcul.  Dans un second temps, cette
+      premier temps, on ne supporte que 64Go de RAM. Bien que conséquente en
+      1998, cette valeur nous paraît aujourd'hui trop petite, compte tenu de la
+      puissance à venir des machines de calcul.  Dans un second temps, cette
       amélioration apporte un problème logiciel qui reste non résolu à ce
       jour.\newline
 
@@ -212,35 +210,85 @@
       particulier, le noyau doit décrire entièrement l'espace
       adressable~\citep{cranor1999uvm, gorman2004understanding,
         russinovich2012windows, dillon2000design, steldt2009memory,
-        steldtXXXXopenbsd}.
+        steldtXXXXopenbsd}.\\
 
       Cette opération est effectuée au boot de la machine. Lorsque l’on dispose
-      d’une grosse quantité de mémoire, la taille de ces descripteurs est
-      énorme. À titre d’exemple, ALMOS a besoin de 14Go pour décrire les 1To de
-      mémoire offerts par TSAR. Cette valeur, bien qu’élevée, est largement
-      supérieure dans les noyaux Linux et *BSD, car les structures représentant
-      les pages dans ces noyaux sont plus volumineuses en mémoire que celle
-      d’ALMOS. Sous Linux, un descripteur de pages fait 4Ko. Pour décrire 1Go de
-      mémoire, Linux a donc besoin de 11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko
-        = 11Mo$} de structure de données représentant ces pages. Si l'on
-      augmente à 16Go, Linux a maintenant besoin de 176Mo pour décrire la
-      mémoire. En sachant que le noyau ne s'accorde que 1Go de mémoire, et qu'il
-      a besoin de ce giga-octet pour de multiple opérations, on ne peut pousser
-      trop loin l'utilisation de la technologie PAE sans risquer de prendre trop
-      de place en mémoire noyau et de voir des chutes de performances très
-      significatives dues au mécanisme de \texttt{swap}.\\
+      d’une grosse quantité de mémoire, l'espace physique occupé par ces
+      descripteurs est conséquent. Sous Linux, un descripteur de pages fait 44
+      octets. Pour décrire 1Go de mémoire, Linux a donc besoin de
+      11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko = 11Mo$} de structure de données
+      représentant ces pages. Si l'on augmente à 16Go, Linux a maintenant besoin
+      de 176Mo pour décrire la mémoire. En sachant que le noyau ne s'accorde que
+      1Go de mémoire, et qu'il a besoin de ce giga-octet pour de multiple
+      opérations, on ne peut pousser trop loin l'utilisation de la technologie
+      PAE sans risquer de prendre trop de place en mémoire noyau et de voir des
+      chutes de performances, voire un crash total\footnote{Le noyau ne peut pas
+        swapper ses propres pages sans risquer de perdre des informations
+        vitales. S'il n'a plus de place, sa seule possibilité est de lancer un
+        \texttt{panic} et de s'arrêter.}. Cette valeur, bien qu’élevée, est
+      largement supérieure dans le noyau ALMOS, car les structures représentant
+      les pages dans sont plus volumineuses en mémoire que celle de Linux ou
+      *BSD. En effet, un descripteur de page fait 56 octets. Le noyau a donc
+      besoin de 14Go pour décrire les 1To de mémoire offerts par TSAR. Le
+      tableau~\ref{tab:pages-desc} montre un comparatif de la place occupée par
+      ces descripteurs.\\
 
-      Le problème à résoudre est donc le suivant : comment stocker ces 14Go de
-      données lorsque l’on a que 1Go d’espace virtuel ?  Actuellement, il existe
-      deux réponses, toutes les deux complémentaires: \benumline \item on ne
-      peut pas et \item il faut acheter une machine 64
-      bits~\citep{gorman2004understanding} \eenumline. Ainsi, malgré les
-      avancées matérielles, les systèmes d'exploitation n'ont pas pu explorer
-      cette voie à 100\%.
+      %% Change space between rows and columns
+      \FloatBarrier
+      \setlength{\tabcolsep}{10pt}
+      \renewcommand{\arraystretch}{1.5}
+      \begin{table}[htp]
+        \centering
+        \begin{tabular}{cc|c|c|c}
+          \cline{3-4} & & \multicolumn{2}{c|}{Noyau} & \\ \cline{3-4} & & Linux
+          & ALMOS & \\ \cline{1-4} \multicolumn{1}{|c|}{\multirow{3}{*}
+            {\begin{tabular}[c]{@{}c@{}}M\\ e\\ m\end{tabular}}} & 1Go & 11Mo &
+          57Mo & \\ \cline{2-4} \multicolumn{1}{|c|}{} & 16Go & 176Mo & 224Mo &
+          \\ \cline{2-4} \multicolumn{1}{|c|}{} & 1To & 11Go & 14Go &
+          \\ \cline{1-4}
+        \end{tabular}
+        \caption{Tableau récapitulatif de la place occupée par les descripteurs
+          de pages dans les noyaux Linux et ALMOS. Afin de simplifier les
+          résultats, les calculs ont été fait avec des puissances de 10 et non
+          de 2.}
+        \label{tab:pages-desc}
+      \end{table}
+      %% Restore default parameters
+      \setlength{\tabcolsep}{6pt}
+      \renewcommand{\arraystretch}{1.0}
+      \FloatBarrier
+
+    \subsection{Conclusion}
+
+      Les industriels ont apporté des solutions à ce problème qu'ils
+      considèrent comme important. Les mécanismes de PAE ou de LPAE sont un bon
+      exemple de solutions efficaces et fonctionnelles, bien que PAE soit limité
+      à 64Go. Néanmoins, les noyaux classiques, et notamment Linux, ont choisi
+      de ne pas supporter entièrement ces mécanismes et de ne pas traiter ce
+      problème en considérant que ce n'en est pas un. En effet, les développeurs
+      n'ont pas vu les avantages à conserver des architectures 32 bits, et
+      invitent à passer sur des architecture 64
+      bits~\citep{gorman2004understanding} pour la gestion de grosses quantité
+      de mémoire. Nous pensons que les architectures 64 bits ne sont pas une
+      voie optimale pour les architectures massivement multi-c\oe urs. De plus,
+      la gestion de grands espaces d'adressage mérite d'être traité de manière
+      logicielle, pour apporter une solution efficace à celles développées par
+      Intel ou ARM sur leurs processeurs.
 
   
   \section{Passage à l’échelle des noyaux}
   \label{sec:scalability}
+
+    TSAR est une architecture massivement multi-c\oe urs cc-NUMA à mémoire
+    cohérente partagée. Ainsi, en plus de disposer d'une grande mémoire, elle
+    propose un grands nombre de c\oe urs, répartis en clusters. Ce découpage
+    implique que les accès mémoire se font à deux vitesses: si un processeur
+    accède à la mémoire de son cluster, la réponse sera plus rapide que s'il
+    veut accéder à la mémoire du cluster voisin. La localité de ces accès
+    mémoire est au c\oe ur des problématique des architecture NUMA. Nous allons
+    donc nous intéresser dans cette seconde partie aux différents travaux qui
+    adressent cette problématique.
+
 
     \subsection{Scalabilité du noyau Linux}
 
