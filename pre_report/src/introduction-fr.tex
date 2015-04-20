@@ -3,13 +3,13 @@
   \hspace{1cm}Depuis le début des années 2000, une des plus anciennes loi de
   l'informatique commence à montrer ses limites: la loi de Moore. Les
   constructeurs de matériels ont cessé d'augmenter la fréquence des processeurs,
-  principalement pour des raisons énergétiques et techniques. En effet, cette
-  augmentation va de pair avec celle de la consommation électrique, qui devient
-  impossible à assurer. De plus, il devient de plus en plus difficile de
-  refroidir les machines sans introduire de nouvelles technologies comme le
-  water cooling~\citep{googleXXXXdatacenters}, qui sont très coûteuses, et aussi
-  très énergivore. Les entreprise font le choix d'augmenter le nombre de c\oe
-  urs par processeur, ainsi que le nombre de processeurs pour faire face à ces
+  pour des raisons énergétiques. En effet, cette augmentation va de pair avec
+  celle de la consommation électrique, qui devient impossible à assurer. De
+  plus, il devient de plus en plus difficile de refroidir les machines sans
+  introduire de nouvelles technologies comme le water
+  cooling~\citep{googleXXXXdatacenters}, qui sont très coûteuses, et aussi très
+  énergivores. Les entreprise font le choix d'augmenter le nombre de c\oe urs
+  par processeur, ainsi que le nombre de processeurs pour faire face à ces
   difficultés. De nos jours, des architectures avec une cinquantaine de c\oe urs
   sont courantes, et d'autres comportant plusieurs centaines voire milliers de
   c\oe urs sont à prévoir. L'augmentation des processeurs sur les puces entraine
@@ -18,32 +18,40 @@
   doivent maintenant faire face à d'énormes quantités de
   mémoire~\citep{hp2012z820, puget2013z9pe}. Il est donc nécessaire de revoir
   ces systèmes et de les adapter pour gérer efficacement ces ressources.\newline
-  
-  \hspace{1cm}Dans le cadre de ce stage, nous faisons face à deux
+
+  \hspace{1cm} Dans le cadre de ce stage, nous faisons face à plusieurs
   problèmes. L'architecture matérielle considérée est l'architecture
   TSAR~\citep{greiner2009tsar} développée au LIP6. Celle-ci offre notamment 1To
   de mémoire physique. Pour des raisons énergétiques, les processeurs de cette
   architecture sont des processeurs 32 bits, qui sont donc limités à 4Go
   d'espace adressable. Ainsi, le premier problème consiste à gérer, depuis le
   noyau, un espace mémoire supérieur à l'espace mémoire adressable des
-  processeurs. Notre second problème est également une conséquence de
-  l'architecture TSAR. Le système d'exploitation
-  ALMOS~\citep{almaless2011almos}, développé pour celle-ci, est un noyau
-  monolithique. Afin de pouvoir mieux gérer toute la mémoire, il a évolué vers
-  le principe du multi-noyau~\cite{schupbach2008embracing}. Le passage de
-  messages est donc la seule facon de communiquer. Pourtant, il est nécessaire
-  de maintenir certaines informations cohérentes entre tous les noyaux en cours
-  d'exécution. Notre second problème est donc la gestion de cette cohérence, et
-  particulièrement celle des structures noyaux partagées par les processus, tel
-  que les descripteurs de fichiers ou les zones mémoires partagées. La
-  résolution de ce problème nous permet ensuite de mettre en place un système de
-  création/migration de threads inter-noyaux.\newline
+  processeurs.\\
+
+  Deuxièment, cette architecture est une architecture NUMA à mémoire partagée
+  cohérente, composée de 1024 coeurs répartis en clusters. Afin de pouvoir gérer
+  efficacement le matériel, un système d'exploitation a été spécialement
+  développé: ALMOS~\citep{almaless2011almos}. Ce système est basé sur un noyau
+  monolithique, tout comme Linux ou *BSD. Son but est de répondre à l'un des
+  enjeux des architecture NUMA, à savoir gérer efficacement le placement en
+  mémoire des données et le placement des threads accédant à ces
+  données. \todo{Dire qu'ALMOS évolue/va évoluer vers le multi-noyau.}\\
+
+  Enfin, notre troisième problème est une conséquence de ce changement de
+  paradigme. En effet, il est nécessaire de maintenir certaines informations
+  cohérentes entre tous les noyaux en cours d'exécution, et particulièrement
+  celle des structures noyaux partagées par les processus tel que les
+  descripteurs de fichiers ou les zones mémoires partagées. Cette cohérence
+  permet entre autre de donner l'illusion à l'utilisateur de n'avoir qu'un seul
+  système en cours d'exécution sur la machine. Cela nous permet également de
+  mettre en place un système de création et de migration de threads entre les
+  noyaux.\newline
 
   \hspace{1cm}Ce document est organisé de la manière suivante: en
-  section~\ref{sec:scalability} nous présentons les différents travaux de
-  recherche adressant la problématique du passage à l'échelle des systèmes
-  d'exploitation. En section~\ref{sec:memory} nous nous intéressons à la gestion
-  de grande quantité de mémoire sur des architectures 32 bits. La
+  section~\ref{sec:memory} nous nous intéressons à la gestion de grande quantité
+  de mémoire sur des architectures 32 bits. En section~\ref{sec:scalability}
+  nous présentons les différents travaux de recherche adressant la problématique
+  du passage à l'échelle des systèmes d'exploitation.  La
   section~\ref{sec:consistency} est relative aux problèmes de cohérence mémoire
   pour les structures de données des noyaux large échelle. La présentation du
   contexte de travail sera faite en section~\ref{sec:context}. Enfin nous
