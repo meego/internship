@@ -1,7 +1,7 @@
 %!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
 
-\documentclass[onecolumn]{report}
+\documentclass[twoside]{report}
 
 %% LANGUAGE (english by default)
 \def\mlanguage french % TODO: remove this and use a cli parameter
@@ -16,7 +16,8 @@
 \newcommand{\ifr}[2]{\iflanguage{frenchb}{#1}{#2}}
 
 %% PACKAGES %%
-\usepackage[top=2cm,bottom=2cm,left=3cm,right=3cm]{geometry}
+\usepackage[top=3cm,bottom=2.7cm,left=2.3cm,right=2.3cm]{geometry}
+
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{url}
@@ -50,18 +51,13 @@
 \date{\normalsize\today}
 
 %% HEADER / FOOTER
-\pagestyle{plain}
-\fancyhead{}
-\fancyfoot{}
-\fancyfoot[RO, LE] {\thepage}
-
-\pagestyle{fancy}
+%% \pagestyle{fancy}
 \fancyhead{}
 \fancyfoot{}
 
 \fancyhead[CO,CE]{Pré-rapport de stage}
-\fancyhead[LH]{Université Pierre et Marie Curie}
-\fancyhead[RH]{Pierre-Yves Péneau}
+\fancyhead[LH]{Université Pierre \& Marie Curie}
+\fancyhead[RH]{Pierre-Yves PÉNEAU}
 \fancyfoot[C]{Draft version}
 \fancyfoot[RO, LE] {\thepage}
 
@@ -70,6 +66,7 @@
 \newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
 \newcommand{\eenumline}{\end{inparaenum}}
 \setlength\parindent{0pt}
+\titlespacing*{\chapter}{0pt}{0pt}{20pt}
 \titleformat{\chapter}[hang]{\bf\huge}{\thechapter}{2pc}{}
 \newcommand{\horrule}[1]{\rule{\linewidth}{#1}}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -99,17 +96,22 @@
 
   \input{src/titlepage-fr}
 
-  \pagestyle{headings}
   \setcounter{page}{1}
   \pagenumbering{roman}
+  \pagestyle{headings}
   \onehalfspacing
 
-  \tableofcontents
   \listoffigures
+  \listoftables
+  \tableofcontents
   \newpage
 
   \setcounter{page}{1}
   \pagenumbering{arabic}
+  \pagestyle{fancy}
+
+  %% Redefined fancyplain style. It's used on chapter and titlepage
+  \fancypagestyle{plain}{}
 
   \ifr{ %% FRENCH PART HERE
     \input{src/introduction-fr}
@@ -121,6 +123,16 @@
     %% ENGLISH PART HERE
   }
 
+
+  \clearpage
+  %% Redefined header for bib
+  \fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    %% \fancyfoot[RO,LE] {\thepage}
+  }
+  \pagestyle{plain}
   \bibliographystyle{plainnat}
   \bibliography{src/references}
   \ifr {\addcontentsline{toc}{chapter}{Bibliographie}}
