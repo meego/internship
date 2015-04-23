@@ -659,8 +659,117 @@
 
     %% \subsection{Popcorn Linux}
 
-    %% \subsection{Hare}
-
     %% \subsection{Barrelfish}
+
+    \subsection{Hare}
+
+      Hare~\citep{gruenwald2014providing} est une bibliothèque s'exécutant au
+      dessus de Linux en mode multi-noyau. Elle a pour but de fournir un système
+      de fichier scalable et cohérent sans utiliser de mécanismes matériels,
+      considérés eux comme non scalables. Hare apporte différentes solutions à
+      plusieurs niveaux, et notamment concernant la distribution du systeme de
+      fichiers et la migration de processus. C'est à ce jour la solution la plus
+      complète que nous avons trouvé.\\
+
+      Hare propose de distribuer la gestion des fichiers en utiliser le
+      mécanisme client/serveur. Certains noyaux possèdent un serveur responsable
+      d'une partie de l'arborescence. Lors d'un \texttt{open()} se faisant sur
+      un noyau ne disposant pas d'un serveur de fichier, le client doit dans un
+      premier temp résoudre le nom de celui qu'il doit contacter. Pour cela, la
+      fonction suivante est utilisée:
+      \begin{center}
+        \texttt{hash(dir, name) \% NSERVERS = server\_id}
+      \end{center}
+      où \textit{dir} représente le chemin vers le fichier désiré, \textit{name}
+      le nom de ce fichier, et \texttt{NSERVERS} le nombre de serveurs de
+      fichiers présent dans le système\footnote{Ce nombre est fixé au démarrage
+        du noyau. Néanmoins, l'auteur précise qu'il travaille à la dynamicité de
+        ce paramètre à des fins de performances.}. Une fois que l'identifiant du
+      serveur est connu, la demande est effectuée via passage de message.
+
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[scale=0.25]{hare-design}
+        \caption{Fonctionnement de Hare. Certains noyaux possèdent un serveur de
+          fichiers et d'autres non. La communication se fait par passage de
+          messages. Les écritures se font dans le buffer-cache qui est
+          partagé.~\citep{gruenwald2014providing}}
+        \label{fig:hare-design}
+      \end{figure}
+
+      Pour gérer le partage de fichiers, Hare utilise un mécanisme nommé
+      \textit{Hybrid File Descriptor Tracking} (figure~\ref{fig:hare-fd}). Le
+      principe est le suivant:
+      \begin{itemize}
+        \item les serveurs maintiennent une table de compteurs de références sur
+          les inodes qu'ils gèrent
+        \item lorsqu'un thread accède à un fichier, ce compteur est incrémenté.
+        \item si celui-ci est inférieur ou égal à 1 (\textit{i.e,} le thread est
+          le seul à accéder au fichier), le descripteur de fichier que lui
+          renvoi le serveur contient le champ \texttt{offset} et sa valeur.
+        \item dans le cas ou plusieurs threads ont ouvert le même fichier, alors
+          la valeur du champ \texttt{offset} est gérée du côté du serveur, et
+          toutes les opérations sur le fichier devront se faire par passage de
+          message.
+      \end{itemize}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[scale=0.28]{hare-fd-2}
+        \caption{Mécanisme de partage de descripteurs de fichier. Le
+          \textit{file desciptor} 3 correspond à un fichier local de
+          l'applicatio 1, tandis que le \textit{file descriptor} 4 est partagé
+          par les deux applications.~\citep{gruenwald2014providing}}
+        \label{fig:hare-fd}
+      \end{figure}
+
+      Selon l'auteur, cette solution n'est pas une réponse définitive au
+      problème des descripeurs de fichiers. En effet, le serveur représente un
+      goulot d'étranglement si beaucoup de threads ont ouvert le même
+      fichier. Néanmoins, elle reste efficace comme en témoigne les résultats de
+      la figure~\ref{fig:hare-res}. Enfin, les applications où les threads se
+      partagent un/des fichier(s) ne sont pas nombreuses pour des raisons de
+      performances.\\
+
+      \begin{figure}[ht]
+        \begin{subfigure}[b]{0.5\textwidth}
+          \includegraphics[scale=0.25]{hare-speedup}
+          \caption{Accélération en fonction du nombre de c\oe urs}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.5\textwidth}
+          \includegraphics[scale=0.25]{hare-linux}
+          \caption{Accélération de Hare comparée à Linux. On voit que Hare est
+            bien plus efficace avec des microbenchmark.}
+        \end{subfigure}
+        \caption{Résultats des benchmark et microbenchmark exécutés sur
+          Hare.~\citep{gruenwald2014providing}}
+        \label{fig:hare-res}
+      \end{figure}
+
+      Dans le cas de la migration de processus, l'approche de Hare est également
+      intéressante. En effet, la bilbiothèque impose que la migration sur un
+      autre c\oe ur soit effectuée uniquement lors d'un appel à une fonction de
+      la famille \texttt{exec()}. Celle-ci a été ré-implémentée dans le noyau
+      et, dans le cas d'une migration, fonctionne comme un appel de fonction via
+      RPC. Une fois déplacé, un processus restera sur le même processeur jusqu'à
+      sa libération. Pour assurer la cohérence des descripteurs de fichiers
+      entre processus, l'initiateur du \texttt{exec()} sur le noyau source n'est
+      pas détruit mais est utilisé comme \textit{proxy}. C'est à lui que
+      s'adressera le nouveau processus s'il désire accéder à d'anciens
+      descripteurs de fichiers. Le \textit{proxy} se charge quant à lui de
+      relayer les signaux qui sont destinés au processus.
+
+      Cette approche a des avantages et des inconvénients. Un avantage certain
+      est de conserver la localité des accès mémoire pour les processus ``d'une
+      même famille''. Nous considérons des processus d'une même famille comme
+      les processus appelant la fonction \texttt{fork()} mais jamais
+      \texttt{exec()}\footnote{On pense notamment aux navigateurs web qui ont
+        récemment changer leur gestion mémoire afin d'utiliser un processus par
+        onglet et non un thread~\citep{}. \todo{Trouver une référence}}. En
+      imposant la migration lors du \texttt{exec()}, on ne brise pas ce lien de
+      parenté. Néanmoins, l'inconvénient majeur de cette solution est sa
+      granularité. En choisissant de migrer des processus entiers et non un
+      certain nombre de threads par processus, et en imposant la migration
+      uniquement lors de l'appel à \texttt{exec()}, Hare ne permet pas la
+      parallélisation massive des applications.
 
     %% \subsection{DragonFly BSD}
