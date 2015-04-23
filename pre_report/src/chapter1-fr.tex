@@ -435,9 +435,23 @@
       collectivement l’accès à l’état global du système et maintient la
       cohérence des structures de données répliquées par c\oe ur (les tables
       d’allocation mémoire et les mappings des espaces d’adressages
-      virtuels).\newline
+      virtuels).\\
 
-      \todo{Résultats de benchmark ici.}
+      \citeauthor{baumann2009multikernel} ont ``stressé'' Barrelfish avec
+      différents benchmarks. Les résultats sont montrés par la
+      figure~\ref{fig:barrelfish-bench}. On voit que Barrelfish comme Popcorn
+      Linux ne montre pas d'augmentation de performances
+      significatives. Néanmoins, ce résultat est à relativiser. Il démontre que
+      Barrelfish, qui est un noyau jeune, construit \textit{from scratch}, peut
+      obtenir des performances similaires voire supérieures à Linux.
+
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[scale=0.33]{barrelfish-bench}
+        \caption{Résultats de benchmark \textit{compute-band} sur une machine
+          AMD à 16 c\oe eurs.~\citep{baumann2009multikernel}}
+        \label{fig:barrelfish-bench}
+      \end{figure}
 
     \subsection{Autres travaux}
     \label{subsec:others}
@@ -517,24 +531,24 @@
         FoS. L’objectif du projet FoS est de concevoir un système à la fois pour
         processeurs many-cores et pour les infrastructures de Cloud
         Computing. Comme dans le cas de Barrelfish, chaque c\oe ur exécute une
-        instance de l’OS complet à base de micro-noyau comme il est illustré par
-        la figure~\ref{fig:fos}.
+        instance de l’OS complet à base de micro-noyau.
+        %% comme il est illustré par la figure~\ref{fig:fos}.
 
-        \begin{figure}[h]
-          \centering
-          \includegraphics[scale=0.3]{fos}
-          \caption{Apercu de la structure interne du noyau FoS et du schéma de
-            communication}
-          \label{fig:fos}
-        \end{figure}
+        %% \begin{figure}[h]
+        %%   \centering
+        %%   \includegraphics[scale=0.3]{fos}
+        %%   \caption{Apercu de la structure interne du noyau FoS et du schéma de
+        %%     communication.~\citep{wentzlaff2010operating}}
+        %%   \label{fig:fos}
+        %% \end{figure}
 
-        \todo{Dire qu'on peut attribuer les ressources matérielles à certaines
-          fonctionnalités.} En se fondant sur le partitionnement spatial des
-        ressources de calcul, certaines instances de l’OS exécutent des serveurs
-        systèmes, tandis que d’autres exécutent les applications. À la
-        différence de Barrelfish, FoS se focalise sur la parallélisation des
-        services systèmes pour faire face à une demande massive et variable de
-        services.\\
+        FoS permet de spécifier aux différents noyaux en cours d'exécution
+        quelles sont les ressource matérielles dont il peut disposer. En se
+        fondant sur le partitionnement spatial des ressources de calcul,
+        certaines instances de l’OS exécutent alors des serveurs systèmes,
+        tandis que d’autres exécutent les applications. À la différence de
+        Barrelfish, FoS se focalise sur la parallélisation des services systèmes
+        pour faire face à une demande massive et variable de services.\\
 
         Concernant les évaluations expérimentales, les principales publications
         autour du projet FoS~\citep{wentzlaff2009factored,
@@ -655,7 +669,7 @@
         \caption{Résultats d'expérience après modification du partage des
           descripteurs de fichiers~\citep{boyd2008corey}.}
       \end{figure}
-
+      \FloatBarrier
 
     %% \subsection{Popcorn Linux}
 
