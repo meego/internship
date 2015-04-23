@@ -128,12 +128,11 @@
       \end{figure}
 
       La norme POSIX impose que dans l'espace d'adressage des processus, il y
-      ait un mapping sur certaines pages du noyau\footnote{\todo{Dire lesquelles
-          ou c'est trop technique ?}}. Or, si le code et les données du noyau
-      sont situés à un seul et unique endroit en mémoire (le cluster 0 par
-      exemple, celui utilisé au boot de la machine), alors on paiera le coût de
-      l'architecture NUMA a chaque appel système, puisque l'on devra accéder à
-      des pages distantes.
+      ait un mapping sur certaines pages du noyau. Or, si le code et les données
+      du noyau sont situés à un seul et unique endroit en mémoire (le cluster 0
+      par exemple, celui utilisé au boot de la machine), alors on paiera le coût
+      de l'architecture NUMA a chaque appel système, puisque l'on devra accéder
+      à des pages distantes.
 
       Afin de résoudre ce problème, la notion de réplica noyau a été introduite
       au sein des clusters-manager. Un réplica noyau consiste à dupliquer le
@@ -186,13 +185,10 @@
         données ne pouvait plus être contenues dans un si petit espace, comme
         par exemple la table des pages. Celle-ci, une fois pleine\footnote{Ce
           cas n'arrive jamais, mais il est néanmoins mathématiquement possible},
-        peut atteindre une taille maximale de 8Mo. De plus, chaque
-        processus \footnote{\todo{Vérifier si la version d'ALMOS de Francois
-            n'avait pas les processus hybrides, ce qui impliquerait que ce soit
-            une table de pages par thread et pas par processus.}}  dipose de sa
-        propre table des pages. Il est techniquement impossible de stocker 8Mo
-        dans cet espace virtuel, Francois a donc choisi de sortir cette
-        structure de l'espace virtuel.
+        peut atteindre une taille maximale de 8Mo. De plus, chaque processus
+        dipose de sa propre table des pages. Il est techniquement impossible de
+        stocker 8Mo dans cet espace virtuel, Francois a donc choisi de sortir
+        cette structure de l'espace virtuel.
 
         La seconde structure de données problématique est la table des
         descripteurs de pages physiques. Les noyaux actuels ont fait le choix de
