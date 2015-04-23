@@ -578,16 +578,89 @@
       incomplète. Ces solutions seront une base de réflexion pour de futurs
       travaux au laboratoire.
     
-     
+
   \section{Partage et maintien de cohérence de structures noyaux}
   \label{sec:consistency}
-  
+
+    Le modèle du multi-noyau proposé par~\citeauthor{baumann2009multikernel}
+    apporte son lot de solutions quant à la gestion des architectures du
+    futur. Néanmoins, il subsiste un problème inhérent au multi-noyau: la
+    cohérence des données. En effet, l'un des trois principes fondateurs de ce
+    modèle est: ``voyez les états comme répliqués et non
+    partagés''\footnote{\textit{``View state as replicated instead of
+        shared''}}~\citep{baumann2009multikernel}. Pourtant, il faut être
+    capable de fournir à l'utilisateur une vision unique du système
+    d'exploitation tout en maintenant le partage de ces données.
+
+    Nous nous intéressons ici aux descripteurs de fichiers et aux signaux. Ces
+    deux points représentent les données critiques qui nous intéresse dans le
+    cadre de la création distante ou de la migration de processus/threads.
+
+    \subsection{Corey}
+    \label{subsec:corey}
+
+      Comme nous l'avons vu précédemment, Corey permet de manipuler de manière
+      très précise le partage des données des processus, et notamment celui des
+      descripteurs de fichiers.~\citeauthor{boyd2008corey} ont
+      identifié via un simple microbenchmark que ces derniers posaient problème
+      sur le noyau Linux, au fur et à mesure que l'on augmentait le nombre de
+      c\oe urs. L'expérience est la suivante: on initialise un certain nombre de
+      threads pour un processus. Chaque thread créé un descripteur de fichier,
+      le clone via la fonction \texttt{dup()}, puis le ferme avec
+      \texttt{close()}. L'expérience montre (figure~\ref{fig:fd-problem}) que
+      plus on augmente le nombre de c\oe urs disponibles (et donc la répartition
+      des threads), plus le nombre d'opérations par unité de temps diminue.
+
+      \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.3]{fd-problem}
+        \caption{Débit des opérations \texttt{dup} et \texttt{close} en fonction
+          du nombre de c\oe urs~\citep{boyd2008corey}.}
+        \label{fig:fd-problem}
+      \end{figure}
+
+      Cela est dû à la norme POSIX, qui spécifie que toute opération d'un thread
+      sur un fichier soit visible par les autres threads du même processus. Les
+      accès à la table des descripteurs de fichiers se faisant de manière
+      atomique, celle-ci est un goulot d'étranglement pour le système.\\
+
+      Pour répondre à cela,~\citeauthor{boyd2008corey} ont poussés le contrôle
+      du partage jusqu'aux descripteurs de fichiers. Ainsi, lorsqu'un thread
+      ouvre un fichier, il dispose d'un mode permettant d'indiquer au noyau si
+      le fichier en question sera partagé. Par défaut il ne l'est pas, ce qui
+      implique au programmeur de devoir définir explicitement le partage.
+
+      Ce mécanisme permet de gérer de manière locale au thread les fichiers
+      qu'il manipule. Si au cours de l'exécution le fichier doit être partagé,
+      le thread change le mode en \texttt{SHARED}, accède de manière atomique à
+      la table des descripteurs de fichiers du processus, et ajoute son
+      descripteur. Ce permet de réduire de manière significative la contention
+      sur cette structure (figure~\ref{fig:fd-solved-1}), qui se matérialise
+      également par le nombre de miss dans le cache L3
+      (figure~\ref{fig:fd-solved-2}).
+
+      %% FIXME: figures alignement
+      \begin{figure}[ht]
+        \begin{subfigure}[b]{0.5\textwidth}
+          \includegraphics[width=200px]{fd-solved-1}
+          \caption{Débit des opérations \texttt{dup} et \texttt{close} en
+            fonction du nombre de c\oe urs.}
+          \label{fig:fd-solved-1}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.5\textwidth}
+          \includegraphics[width=211px]{fd-solved-2}
+          \caption{Nombre de miss dans le cache L3.}
+          \label{fig:fd-solved-2}
+        \end{subfigure}
+        \caption{Résultats d'expérience après modification du partage des
+          descripteurs de fichiers~\citep{boyd2008corey}.}
+      \end{figure}
+
+
+    %% \subsection{Popcorn Linux}
+
     %% \subsection{Hare}
 
     %% \subsection{Barrelfish}
 
-    %%   passage de message
-
     %% \subsection{DragonFly BSD}
-
-    %%   multi-noyau, passage de message, HAMMER
