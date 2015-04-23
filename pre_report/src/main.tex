@@ -105,9 +105,18 @@
   \onehalfspacing
 
   \listoffigures
+  \newpage
+  \thispagestyle{plain}
+  \mbox{}
   \listoftables
+  \newpage
+  \thispagestyle{plain}
+  \mbox{}
   \tableofcontents
   \newpage
+  \thispagestyle{plain}
+  \mbox{}
+  \clearpage
 
   \setcounter{page}{1}
   \pagenumbering{arabic}
@@ -136,6 +145,7 @@
     %% \fancyfoot[RO,LE] {\thepage}
   }
   \pagestyle{plain}
+  \mbox{}
   \bibliographystyle{plainnat}
   \bibliography{src/references}
   \ifr {\addcontentsline{toc}{chapter}{Bibliographie}}
