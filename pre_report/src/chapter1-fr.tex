@@ -758,18 +758,20 @@
       descripteurs de fichiers. Le \textit{proxy} se charge quant à lui de
       relayer les signaux qui sont destinés au processus.
 
+      \enlargethispage{2mm} % Avoid footnote splitting
+
       Cette approche a des avantages et des inconvénients. Un avantage certain
       est de conserver la localité des accès mémoire pour les processus ``d'une
       même famille''. Nous considérons des processus d'une même famille comme
       les processus appelant la fonction \texttt{fork()} mais jamais
-      \texttt{exec()}\footnote{On pense notamment aux navigateurs web qui ont
-        récemment changer leur gestion mémoire afin d'utiliser un processus par
-        onglet et non un thread~\citep{}. \todo{Trouver une référence}}. En
-      imposant la migration lors du \texttt{exec()}, on ne brise pas ce lien de
-      parenté. Néanmoins, l'inconvénient majeur de cette solution est sa
-      granularité. En choisissant de migrer des processus entiers et non un
-      certain nombre de threads par processus, et en imposant la migration
-      uniquement lors de l'appel à \texttt{exec()}, Hare ne permet pas la
-      parallélisation massive des applications.
+      \texttt{exec()}\footnote{Notamment Firefox dont la gestion mémoire est en
+        cours de changement pour ne plus utiliser un thread par onglet mais un
+        processus~\citep{mozillaElectrolysis}}. En imposant la migration lors du
+        \texttt{exec()}, on ne brise pas ce lien de parenté. Néanmoins,
+        l'inconvénient majeur de cette solution est sa granularité. En
+        choisissant de migrer des processus entiers et non un certain nombre de
+        threads par processus, et en imposant la migration uniquement lors de
+        l'appel à \texttt{exec()}, Hare ne permet pas la parallélisation massive
+        des applications.
 
     %% \subsection{DragonFly BSD}
