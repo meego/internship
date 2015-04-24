@@ -116,8 +116,11 @@
 
   \ifr{ %% FRENCH PART HERE
     \input{src/introduction-fr}
+    \cleardoublepage
     \input{src/chapter1-fr}
+    \cleardoublepage
     \input{src/chapter2-fr}
+    \cleardoublepage
     \input{src/conclusion-fr}
   }
   {
@@ -125,7 +128,7 @@
   }
 
 
-  \clearpage
+  \cleardoublepage
   %% Redefined header for bib
   \fancypagestyle{plain}{
     \fancyhf{}
@@ -134,7 +137,6 @@
     %% \fancyfoot[RO,LE] {\thepage}
   }
   \pagestyle{plain}
-  \mbox{}
   \bibliographystyle{plainnat}
   \bibliography{src/references}
   \ifr {\addcontentsline{toc}{chapter}{Bibliographie}}
