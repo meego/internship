@@ -308,14 +308,14 @@
       problèmes liés aux applications de MOSBENCH, et ce en utilisant des
       techniques basiques de programmation parallèle. De plus, la grande
       majorité de leurs contributions sur le noyau ne sont que de petits
-      changements très localisés. À l’exception du mécanisme des \textit{sloppy
-        counters} qu'ils ont introduit, aucun concept clé de Linux n'a été
-      touché. \todo{Détailler les sloppy counters.}
+      changements très localisés. Seul la gestion des compteurs de références
+      pour le \textit{garbage collector} à été grandement
+      modifiée\footnote{Voir~\citep{boyd2010analysis}.}.
 
       Ainsi, ils sont parvenus à identifier les problèmes du noyau, comme par
       exemple la gestion du cache des \texttt{dentry}, les goulots formés par
-      les sytèmes de fichiers montés, etc\ldots, et à les résoudre pour obtenir
-      des performances acceptables.
+      les sytèmes de fichiers montés (\texttt{vsfmount}), etc\ldots, et à les
+      résoudre pour obtenir des performances acceptables.\\
 
       Néanmoins, nous pouvons aujourd’hui adresser trois critiques à ces travaux
       :
@@ -344,11 +344,12 @@
       Popcorn Linux permet de lancer plusieurs noyaux Linux en même temps sur la
       même machine. Le matériel est attribué de manière logicielle entre les
       différentes instances du noyau, et ces dernières communiquent uniquement
-      par passage de messages. Afin de garantir à l’utilisateur l’illusion d’un
-      seul système en cours d'exécution, ils ont utilisé les mécanismes de
-      \textit{namespace} offert par Linux pour construire ce qu’ils nomment ``
-      l’image disque unique'' (\textit{Single System Image},
-      figure~\ref{fig:popcorn-layers}). \todo{Expliquer les namespaces}
+      par passage de messages~\citep{shelton2013popcorn}. Afin de garantir à
+      l’utilisateur l’illusion d’un seul système en cours d'exécution, les
+      noyaux utilisent ces messages pour construire `` l’image disque unique''
+      (\textit{Single System Image}, figure~\ref{fig:popcorn-layers}). C'est
+      cette abstraction qui est proposée à l'utilisateur, lui masquant
+      entièrement l'aspect multi-noyau du système.
 
       \begin{figure}[ht]
         \centering
@@ -360,20 +361,22 @@
       \end{figure}
 
       Le partitionnement des ressources est fait selon la configuration donnée
-      au boot du noyau. Le premier noyau qui est lancé, appelé `` noyau
-      maître'', lance un processus de reconnaissance du matériel. Ensuite, on
-      précise aux noyaux secondaires, via des paramètres au boot les ressources
-      dont ils peuvent disposer, en fonction de celles trouvées par le noyau
-      maître. Une fois les noyaux lancés, ils ne partagent aucune données,
-      exception faite de la table contenant les adresses d’écriture des buffers
-      des autres noyaux, utilisée pour le passage de messages (voir
-      figure~\ref{fig:popcorn-buf}). Ces buffers sont de types `` MWSR'', ou
-      \textit{Multi Writer Single Reader}, et utilisent un système de ticket
-      pour les écritures. Les lectures utilisent un mélange de deux
-      techniques:\benumline \item le lecteur viendra consulter de manière
-      régulière le contenu de son buffer (\textit{polling}) ou \item il ira lire
-      le buffer sur réception d’une IPI (\textit{Inter-Processor Interruption})
-      du coeur ayant initié l’écriture\eenumline.
+      au boot du noyau, mais il est également possible de redéfinir
+      l'attribution des ressources pendant l'exécution d'un noyau. Le premier
+      noyau qui est lancé, appelé `` noyau maître'', lance un processus de
+      reconnaissance du matériel. Ensuite, on précise aux noyaux secondaires,
+      via des paramètres au boot les ressources dont ils peuvent disposer, en
+      fonction de celles trouvées par le noyau maître. Une fois les noyaux
+      lancés, ils ne partagent aucune données, exception faite de la table
+      contenant les adresses d’écriture des buffers des autres noyaux, utilisée
+      pour le passage de messages (voir figure~\ref{fig:popcorn-buf}). Ces
+      buffers sont de types `` MWSR'', ou \textit{Multi Writer Single Reader},
+      et utilisent un système de ticket pour les écritures. Les lectures
+      utilisent un mélange de deux techniques:\benumline \item le lecteur
+      viendra consulter de manière régulière le contenu de son buffer
+      (\textit{polling}) ou \item il ira lire le buffer sur réception d’une IPI
+      (\textit{Inter-Processor Interruption}) du coeur ayant initié
+      l’écriture\eenumline.
 
       \begin{figure}[ht]
         \centering
@@ -388,7 +391,8 @@
 
       Ces communications permettent de donner l’illusion qu’il n’y a qu’un seul
       noyau en cours d’exécution, mais aussi de pouvoir migrer des tâches entre
-      les différentes instances de noyaux de manière transparente.\\
+      les différentes instances de noyaux de manière
+      transparente~\citep{katz2013popcorn}.\\
 
       Les tests de performances effectués sur Popcorn Linux se sont montrés
       décevants. D'une part parce que la machine considérée ne contient que 48
