@@ -2,14 +2,14 @@
 
   \hspace{1cm}Depuis le début des années 2000, une des plus anciennes loi de
   l'informatique commence à montrer ses limites: la loi de Moore. Les
-  constructeurs de matériels ont cessé d'augmenter la fréquence des processeurs,
+  constructeurs de matériel ont cessé d'augmenter la fréquence des processeurs,
   pour des raisons énergétiques. En effet, cette augmentation va de pair avec
   celle de la consommation électrique, qui devient impossible à assurer. De
   plus, il devient de plus en plus difficile de refroidir les machines sans
   introduire de nouvelles technologies comme le water
   cooling~\citep{googleXXXXdatacenters}, qui sont très coûteuses, et aussi très
-  énergivores. Les entreprise font le choix d'augmenter le nombre de c\oe urs
-  par processeur, ainsi que le nombre de processeurs pour faire face à ces
+  énergivores. Les entreprises font donc le choix d'augmenter le nombre de c\oe
+  urs par processeur, ainsi que le nombre de processeurs pour faire face à ces
   difficultés. De nos jours, des architectures avec une cinquantaine de c\oe urs
   sont courantes, et d'autres comportant plusieurs centaines voire milliers de
   c\oe urs sont à prévoir. L'augmentation des processeurs sur les puces entraine
@@ -39,13 +39,12 @@
 
   Enfin, notre troisième problème est une conséquence de ce changement de
   paradigme. En effet, il est nécessaire de maintenir certaines informations
-  cohérentes entre tous les noyaux en cours d'exécution, et particulièrement
-  celle des structures noyaux partagées par les processus tel que les
-  descripteurs de fichiers ou les zones mémoires partagées. Cette cohérence
-  permet entre autre de donner l'illusion à l'utilisateur de n'avoir qu'un seul
-  système en cours d'exécution sur la machine. Cela nous permet également de
-  mettre en place un système de création et de migration de threads entre les
-  noyaux.\newline
+  cohérentes entre tous les noyaux en cours d'exécution, et particulièrement les
+  structures noyaux partagées par les processus tel que les descripteurs de
+  fichiers ou les zones mémoires. Cette cohérence permet entre autre de donner
+  l'illusion à l'utilisateur de n'avoir qu'un seul système en cours d'exécution
+  sur la machine. Cela nous permet également de mettre en place un système de
+  création et de migration de threads entre les noyaux.\newline
 
   \hspace{1cm}Ce document est organisé de la manière suivante: en
   section~\ref{sec:memory} nous nous intéressons à la gestion de grande quantité

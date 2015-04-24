@@ -3,7 +3,7 @@
   La problématique du passage à l’échelle des noyaux n’est pas nouvelle. Dès les
   années 90, ~\citeauthor{unrau1995hierarchical} posent la question et apportent
   des réponses avec le noyau Hurricane (détaillé en section
-  \ref{subsec:others}). D’autres essaye avec le modèle des micro-noyaux, comme
+  \ref{subsec:others}). D’autres essayent avec le modèle des micro-noyaux, comme
   Minix, L4 ou Mach. Mais c'est finalement Linux qui s’impose comme le modèle de
   référence, et les travaux se focalise alors sur ce dernier.
 
@@ -40,20 +40,20 @@
       adresses physiques sur 36 bits au lieu de 32, et donc d'exploiter jusqu'à
       64Go de mémoire.
 
-      \begin{figure}[h]
-        \centering \includegraphics[scale=0.4]{paging-no-pae}
+      \begin{figure}[ht]
+        \centering \includegraphics[scale=0.45]{paging-no-pae}
         \caption{Exemple de traduction d'adresse par la MMU sans utiliser la
           technologie PAE}
         \label{fig:paging-no-pae}
         \end{figure}
       
       Ce mécanisme fût introduit en 1995 dans les premiers Pentium Pro, et
-      foncionne de la manière suivante. Considérons une MMU classique
+      fonctionne de la manière suivante. Considérons une MMU classique
       (figure~\ref{fig:paging-no-pae}) permettant de gérer des adresses de 32
       bits. Celle-ci contient deux niveaux d'indirection, chacun ayant 1024
-      entrées de 4 octets. Lors d'une traduction, on utilise les MSB (Most
-      Significant Bits) d'une adresse pour trouver les entrées correspondantes
-      dans chacune des indirections, puis les LSB pour obtenir l'offset.
+      entrées de 4 octets. Lors d'une traduction, on utilise les MSB
+      (\textit{Most Significant Bits}) comme index dans chacune des
+      indirections, puis les LSB pour obtenir l'offset.
 
       Chaque processus à dans son espace virtuel un pointeur vers une adresse
       physique. À cette adresse se trouve le \textit{Page Directory}. Les
@@ -75,7 +75,7 @@
         Le noyau Linux utilise quatre niveaux d'abstraction dans sa version
         actuelle. Néanmoins, ils sont purement logiciels. La MMU continue de
         travailler avec deux niveaux d'indirection comme dans la
-        figure~\ref{fig:paging-no-pae}.\newline
+        figure~\ref{fig:paging-no-pae}.\\
       \end{paragraph}
       
       L'activation du mode PAE dans la MMU permet de rajouter un troisième
@@ -84,20 +84,21 @@
       31 sont maintenant réservés à une nouvelle table, la PDPT (\textit{Page
         Directory Pointer Table}). Le mode PAE transforme également la taille
       des entrées du \textit{Page Directory} et de la \textit{Page Table} en
-      entrées de 64 bits et non plus 32. Pour ce faire, on diminue le nombre
-      d'entrées possibles dans ces tables. En divisant par deux le nombre
-      d'entrées possibles, soit 512 au lieu de 1024, au multiplie par deux la
-      taille des données que l'ont peut stocker.
+      entrées de 64 bits et non plus 32. Pour ce faire, on va considérer que le
+      nombre d'entrées dans ces tables est maintenant de 512, et que chaque
+      entrée est la concaténation de deux entrées de 4 octets. On obtient donc
+      des \textit{PDE} et des \textit{PTE} sur 8 octets, capables de manipuler
+      des adresses sur 64 bits.
 
-      \begin{figure}[h]
-        \centering \includegraphics[scale=0.4]{paging-pae}
+      \begin{figure}[ht]
+        \centering \includegraphics[scale=0.45]{paging-pae}
         \caption{Exemple de traduction d'adresse par la MMU avec la technologie
           PAE}
         \label{fig:paging-pae}
       \end{figure}
       
       Ce mécanisme permet donc à la MMU d'accéder à des stocker sur 64 bits, et
-      donc de dépasser les 4Go imposé par les espaces d'adressages de 32
+      ainsi de dépasser les 4Go imposé par les espaces d'adressages de 32
       bits. Néanmoins, l'adressage physique est lui restreint à 36 bits, ce qui
       implique une limite à 64Go ($2^{36}$).
 
@@ -115,7 +116,7 @@
 
     \subsection{Large Physical Address Extension}
 
-    Les processeurs ARM apparus dans les années 90 ont anticipés cette faible
+    Les processeurs ARM apparus dans les années 90 ont anticipé cette faible
     limite de 64Go et ont proposé leur propre mécanisme, appelé
     LPAE~\citep{arm2012principles,marinas2011linux}, pour \textit{Large Physical
       Address Extension}.
@@ -128,23 +129,22 @@
     L'extension à 40 bits permet de supporter une mémoire de 1To maximum, et non
     plus 64Go comme le proposait PAE. Malgré tout, l'utilisation des processeurs
     32 bits implique d'avoir un certain nombre d'informations stockées dans les
-    quatre premiers giga-octets, et notamment:
+    quatre premiers giga-octet, et notamment:
 
     \begin{itemize}
       \item le code de boot
-      \item les registres des périphériques\footnote{De plus, même si ces
-        derniers sont 64 bits, la limitation mémoire est imposée par la plus
-        faible valeur supportée par la machine; 32 bits dans notre
-        cas. Néanmoins, ces périphériques restent compatibles.}
-      \item les régions dynamiquement allouées pour les entrées/sorties (pour la
-        raison évoquée précédement)
+      \item un certaine quantité de RAM pour le noyau
+      \item les registres des périphériques\footnote{Y compris les périphérique
+        64 bits qui doivent être adressables par le noyau qui lui est 32 bits.}
+      \item les régions dynamiquement allouées pour les
+        entrées/sorties\footnote{Il n'est pas obligatoire que ces régions soient
+          toutes mappées dans les quatre premiers giga.}
     \end{itemize}
 
     La figure~\ref{fig:arm-0-1024} nous montre comment l'espace mémoire est
     découpée selon les limitations de 32, 36 et 40 bits.
 
-    \begin{figure}[h]
-      %% \centering
+    \begin{figure}[ht]
       \begin{subfigure}[b]{0.37\textwidth}
         \includegraphics[scale=0.24]{arm-0-4}
         \caption{Découpage $0-4Go$}
@@ -161,7 +161,7 @@
         \label{fig:arm-64-1024}
       \end{subfigure}
       \caption{Découpage de l'espace mémoire sur un processeur ARMv7 avec le
-        mécanisme LPAE. Source:~\citeauthor{arm2012principles}.}
+        mécanisme LPAE~\citep{arm2012principles}.}
       \label{fig:arm-0-1024}
     \end{figure}
 
@@ -192,14 +192,14 @@
 
     \subsection{Les noyaux monolithiques classiques (UNIX et NT)}
 
-      Les noyaux monolithiques ont expoité cette avancée matérielle en
+      Les noyaux monolithiques ont exploité cette avancée matérielle en
       supportant de manière logiciel le mode PAE. Pourtant, il existe des
       contraintes très fortes lorsque l'on utilise ce mode d'adressage. Dans un
       premier temps, on ne supporte que 64Go de RAM. Bien que conséquente en
       1998, cette valeur nous paraît aujourd'hui trop petite, compte tenu de la
       puissance à venir des machines de calcul.  Dans un second temps, cette
       amélioration apporte un problème logiciel qui reste non résolu à ce
-      jour.\newline
+      jour: la gestion des descripteurs de page.\\
 
       La mémoire est découpée de manière abstraite en pages. Ces pages peuvent
       être de grande taille (2Mo ou 4Mo selon les systèmes), ou de petite taille
@@ -210,7 +210,7 @@
       particulier, le noyau doit décrire entièrement l'espace
       adressable~\citep{cranor1999uvm, gorman2004understanding,
         russinovich2012windows, dillon2000design, steldt2009memory,
-        steldtXXXXopenbsd}.\\
+        steldtXXXXopenbsd}.
 
       Cette opération est effectuée au boot de la machine. Lorsque l’on dispose
       d’une grosse quantité de mémoire, l'espace physique occupé par ces
@@ -231,7 +231,7 @@
       *BSD. En effet, un descripteur de page fait 56 octets. Le noyau a donc
       besoin de 14Go pour décrire les 1To de mémoire offerts par TSAR. Le
       tableau~\ref{tab:pages-desc} montre un comparatif de la place occupée par
-      ces descripteurs.\\
+      ces descripteurs dans Linux et ALMOS.
 
       %% Change space between rows and columns
       \FloatBarrier
@@ -247,10 +247,9 @@
           \\ \cline{2-4} \multicolumn{1}{|c|}{} & 1To & 11Go & 14Go &
           \\ \cline{1-4}
         \end{tabular}
-        \caption{Tableau récapitulatif de la place occupée par les descripteurs
-          de pages dans les noyaux Linux et ALMOS. Afin de simplifier les
-          résultats, les calculs ont été fait avec des puissances de 10 et non
-          de 2.}
+        \caption{Place occupée par les descripteurs de pages dans les noyaux
+          Linux et ALMOS. Afin de simplifier les résultats, les calculs ont été
+          fait avec des puissances de 10 et non de 2.}
         \label{tab:pages-desc}
       \end{table}
       %% Restore default parameters
@@ -340,7 +339,7 @@
       précédente (3.2), ils ont en partie adopté les principes du multi-noyau
       mais en ont rejeté certains.\footnote{Notamment l'hétérogénéité des
         architectures~\citep{schupbach2008embracing} qui n'est pas du tout
-        abordée dans ce projet.}\newline
+        abordée dans ce projet.}\\
 
       Popcorn Linux permet de lancer plusieurs noyaux Linux en même temps sur la
       même machine. Le matériel est attribué de manière logicielle entre les
@@ -351,12 +350,12 @@
       l’image disque unique'' (\textit{Single System Image},
       figure~\ref{fig:popcorn-layers}). \todo{Expliquer les namespaces}
 
-      \begin{figure}[h]
+      \begin{figure}[ht]
         \centering
         \includegraphics[scale=0.44]{popcorn-layers}
         \caption{Architecture logicielle du noyau Popcorn Linux. La couche de
-          communication assure à l'utilisateur l'illusion d'un unique noyau.
-          Source:~\citeauthor{barbalacepopcorn}}
+          communication assure à l'utilisateur l'illusion d'un unique
+          noyau~\citep{barbalacepopcorn}.}
         \label{fig:popcorn-layers}
       \end{figure}
 
@@ -376,20 +375,20 @@
       le buffer sur réception d’une IPI (\textit{Inter-Processor Interruption})
       du coeur ayant initié l’écriture\eenumline.
 
-      \begin{figure}[h]
+      \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.3]{popcorn-buffers}
+        \includegraphics[scale=0.25]{popcorn-buffers}
         \caption{Les différents noyaux doivent impérativement mapper le tableau
           \texttt{rkvirt} dans leur espace d'adressage pour pouvoir communiquer
           avec les autres. L'adresse de ce tableau est fixe et connue de tous.
           Lorsqu'un noyau secondaire est lancé, il ajoute l'adresse de son
-          buffer dans ce tableau. Source:~\citeauthor{barbalacepopcorn}}
+          buffer dans ce tableau~\citep{barbalacepopcorn}.}
         \label{fig:popcorn-buf}
       \end{figure}
 
       Ces communications permettent de donner l’illusion qu’il n’y a qu’un seul
       noyau en cours d’exécution, mais aussi de pouvoir migrer des tâches entre
-      les différentes instances de noyaux de manière transparente.\newline
+      les différentes instances de noyaux de manière transparente.\\
 
       Les tests de performances effectués sur Popcorn Linux se sont montrés
       décevants. D'une part parce que la machine considérée ne contient que 48
@@ -412,16 +411,17 @@
       construction des systèmes d’exploitation : le
       multi-noyau~\citep{baumann2009multikernel}. Ce paradigme part de plusieurs
       postulats\benumline \item les architectures du futur seront très
-      hétérogènes \item les noyaux actuels ne profitent pas de l’hétérogénéité
-      offerte par le matériel et au contraire essayent de la masquer un maximum
+      hétérogènes~\citep{schupbach2008embracing} \item les noyaux actuels ne
+      profitent pas de l’hétérogénéité offerte par le matériel et au contraire
+      essayent de la masquer un maximum
       \item les machines sont construites comme des systèmes distribués,
         pourquoi ne pas appliquer le même modèle aux systèmes
         d’exploitation~\citep{baumann2009your}\eenumline.\\
 
-      \begin{figure}[h]
+      \begin{figure}[ht]
         \centering \includegraphics[scale=0.3]{barrelfish}
-        \caption{L'architecture multi-noyau de Barrelfish. Source:
-          \citeauthor{baumann2009multikernel}}
+        \caption{L'architecture multi-noyau de
+          Barrelfish~\citep{baumann2009multikernel}.}
         \label{fig:barrelfish}
       \end{figure}
         
@@ -449,7 +449,7 @@
         \centering
         \includegraphics[scale=0.33]{barrelfish-bench}
         \caption{Résultats de benchmark \textit{compute-band} sur une machine
-          AMD à 16 c\oe eurs.~\citep{baumann2009multikernel}}
+          AMD à 16 c\oe eurs~\citep{baumann2009multikernel}.}
         \label{fig:barrelfish-bench}
       \end{figure}
 
@@ -465,7 +465,7 @@
         parallélisme \item borner le surcoût des services et \item préserver la
         localité\eenumline. \citet{unrau1995hierarchical} ont proposé le système
         d’exploitation Hurricane à base de micro-noyau avec une approche de
-        conception nommée Hierarchical Clustering.\newline
+        conception nommée Hierarchical Clustering.\\
 
         Selon cette approche, le système d’exploitation est vu en tant qu’une
         collection de clusters. Un cluster est un système d’exploitation complet
@@ -478,17 +478,7 @@
         l’existence de plusieurs clusters constitue une réplication des mêmes
         services et augmente la disponibilité du système. La dimension (en
         nombre de processeurs) d’un cluster est un compromis entre le coût des
-        accès intra-cluster et inter-clusters.\newline
-
-        %% La figure~\ref{fig:hurricane} illustre l’organisation de plusieurs
-        %% clusters pour constituer un système distribué fortement couplé.
-
-        %% \begin{figure}[h]
-        %%   \centering \includegraphics[scale=0.2]{hurricane}
-        %%   \caption{Un système multi-cluster. Source:
-        %%     \citet{unrau1995hierarchical}}
-        %%   \label{fig:hurricane}
-        %% \end{figure}
+        accès intra-cluster et inter-clusters.\\
 
         Un envoi de message est réalisé par l’interruption du cluster cible
         pour\benumline \item l’allocation d’un tampon mémoire pour réceptionner
@@ -534,7 +524,7 @@
         instance de l’OS complet à base de micro-noyau.
         %% comme il est illustré par la figure~\ref{fig:fos}.
 
-        %% \begin{figure}[h]
+        %% \begin{figure}[ht]
         %%   \centering
         %%   \includegraphics[scale=0.3]{fos}
         %%   \caption{Apercu de la structure interne du noyau FoS et du schéma de
@@ -625,7 +615,7 @@
       plus on augmente le nombre de c\oe urs disponibles (et donc la répartition
       des threads), plus le nombre d'opérations par unité de temps diminue.
 
-      \begin{figure}[h]
+      \begin{figure}[ht]
         \centering
         \includegraphics[scale=0.3]{fd-problem}
         \caption{Débit des opérations \texttt{dup} et \texttt{close} en fonction
@@ -707,7 +697,7 @@
         \caption{Fonctionnement de Hare. Certains noyaux possèdent un serveur de
           fichiers et d'autres non. La communication se fait par passage de
           messages. Les écritures se font dans le buffer-cache qui est
-          partagé.~\citep{gruenwald2014providing}}
+          partagé~\citep{gruenwald2014providing}.}
         \label{fig:hare-design}
       \end{figure}
 
@@ -732,7 +722,7 @@
         \caption{Mécanisme de partage de descripteurs de fichier. Le
           \textit{file desciptor} 3 correspond à un fichier local de
           l'application 1, tandis que le \textit{file descriptor} 4 est partagé
-          par les deux applications.~\citep{gruenwald2014providing}}
+          par les deux applications~\citep{gruenwald2014providing}.}
         \label{fig:hare-fd}
       \end{figure}
 
@@ -755,7 +745,7 @@
             bien plus efficace avec des microbenchmark.}
         \end{subfigure}
         \caption{Résultats des benchmark et microbenchmark exécutés sur
-          Hare.~\citep{gruenwald2014providing}}
+          Hare~\citep{gruenwald2014providing}.}
         \label{fig:hare-res}
       \end{figure}
 
