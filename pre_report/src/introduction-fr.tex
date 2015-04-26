@@ -17,7 +17,7 @@
   évidentes de performance. En plus de centaines de c\oe urs, les systèmes
   doivent maintenant faire face à d'énormes quantités de
   mémoire~\citep{hp2012z820, puget2013z9pe}. Il est donc nécessaire de revoir
-  ces systèmes et de les adapter pour gérer efficacement ces ressources.\newline
+  ces systèmes et de les adapter pour gérer efficacement ces ressources.\\
 
   \hspace{1cm} Dans le cadre de ce stage, nous faisons face à plusieurs
   problèmes. L'architecture matérielle considérée est l'architecture
@@ -26,7 +26,7 @@
   architecture sont des processeurs 32 bits, qui sont donc limités à 4Go
   d'espace adressable. Ainsi, le premier problème consiste à gérer, depuis le
   noyau, un espace mémoire supérieur à l'espace mémoire adressable des
-  processeurs.\\
+  processeurs.
 
   Deuxièment, cette architecture est une architecture NUMA à mémoire partagée
   cohérente, composée de 1024 coeurs répartis en clusters. Afin de pouvoir gérer
@@ -35,7 +35,7 @@
   monolithique, tout comme Linux ou *BSD. Son but est de répondre à l'un des
   enjeux des architecture NUMA, à savoir gérer efficacement le placement en
   mémoire des données et le placement des threads accédant à ces
-  données. \todo{Dire qu'ALMOS évolue/va évoluer vers le multi-noyau.}\\
+  données. \todo{Dire qu'ALMOS évolue/va évoluer vers le multi-noyau.}
 
   Enfin, notre troisième problème est une conséquence de ce changement de
   paradigme. En effet, il est nécessaire de maintenir certaines informations
@@ -43,8 +43,8 @@
   structures noyaux partagées par les processus tel que les descripteurs de
   fichiers ou les zones mémoires. Cette cohérence permet entre autre de donner
   l'illusion à l'utilisateur de n'avoir qu'un seul système en cours d'exécution
-  sur la machine. Cela nous permet également de mettre en place un système de
-  création et de migration de threads entre les noyaux.\newline
+  sur la machine, ou de pouvoir créer/migrer de threads entre les
+  noyaux.\\
 
   \hspace{1cm}Ce document est organisé de la manière suivante: en
   section~\ref{sec:memory} nous nous intéressons à la gestion de grande quantité
