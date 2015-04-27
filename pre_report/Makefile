@@ -19,7 +19,6 @@ out:
 
 bib: out
 	$(LN) $(SRC)/references.bib $(BIN)
-	@cd $(BIN)
 	$(BIB) $(BIN)/$(REPORT)
 
 dir:
