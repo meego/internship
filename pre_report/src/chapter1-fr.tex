@@ -675,8 +675,6 @@
       \end{figure}
       \FloatBarrier
 
-    %% \subsection{Popcorn Linux}
-
 
     \subsection{Hare}
 
@@ -792,4 +790,193 @@
       \texttt{exec()}, Hare ne permet pas la parallélisation massive des
       applications.
 
-    %% \subsection{DragonFly BSD}
+
+      \clearpage
+      \newpage
+    \subsection{Popcorn Linux}
+
+      Nous allons maintenant étudier les réponses apportées
+      par~\citet{katz2013popcorn} pour la migration de processus ou de thread
+      dans un multi-noyau, à savoir: \benumline \item les \textit{shadow
+        task} \item la définition des informations nécessaires à une
+      migration \item la consistance des espaces d'adressages, virtuels comme
+      physiques\eenumline.
+
+      \begin{paragraph}{Shadow Task:}
+
+        Popcorn Linux propose une nouvelle abstraction dans le noyau Linux qui
+        est la \textit{shadow task}. Celle-ci permet d'assurer le mécanisme de
+        consistence que nous verrons par la suite.
+
+        Lors de la migration d'un thread, la \texttt{struct task} qui le
+        représente n'est pas libérée une fois la migration terminée. Le thread
+        est placé à l'état \textit{sleep}, la structure est conservée en mémoire
+        et est placée dans une liste de \textit{shadow task}. Celle-ci restera à
+        l'état \textit{shadow} jusqu'à ce que le thread migré reviennent
+        s'exécuter sur le noyau en question, ou si le processus termine son
+        exécution. Un processus ayant terminé son exécution sur un noyau envoi
+        un message \texttt{exit()} en \textit{broadcast} à tous les noyaux. Les
+        \texttt{struct task} de tous ses threads sont alors libérées.
+
+        Une autre structure liée à la \texttt{struct task} est conservée: la
+        \texttt{struct mm}. Celle-ci contient toutes les informations relatives
+        à la mémoire physique d'un processus. La \texttt{struct mm} est
+        conservée jusqu'à la réception d'un signal \texttt{exit()}. Même s'il
+        n'existe plus de threads d'un processus $P$ sur un noyau $N$, la
+        structure est conservée car il existe encore des instances de $P$
+        ailleurs sur la machine, qui peuvent avoir besoin des informations de
+        mapping qui ont été crées sur $N$.\\
+
+        Conserver ces structures à de nombreux avantages:\benumline \item
+        si la tâche revient s'exécuter sur le noyau, son redémarrage est
+        beaucoup plus rapide puisque l'on s'affranchi de l'allocation
+        mémoire \item cela permet de conserver les informations du thread
+        concernant les pages physiques occupées \item elles permettent de
+        relayer les signaux des processus entre les noyaux\eenumline.
+
+      \end{paragraph}
+
+      \begin{paragraph}{La migration: }
+        Migrer un processus entre deux instances d'un noyau est une opération
+        complexe. Il faut pouvoir re-créer un contexte d'exécution dans un autre
+        espace d'adressage tout en conservant une cohérence entre les espaces
+        virtuels, mais aussi physiques. Lors d'une migration de thread, il est
+        nécessaire de fournir les adresses virtuelles de début et de fin:
+        \begin{itemize}
+          \item de la pile utilisateur
+          \item du tas
+          \item de l'environnement d'exécution
+          \item des arguments
+          \item des données
+        \end{itemize}
+        Ces informations permettent de maintenir la cohérence de l'espace
+        virtuel du thread. Pour maintenir \textit{la cohérence
+          d'exécution}\footnote{\todo{Mal dit mais je sais pas trop comment
+            dire}}, il faut envoyer les informations suivantes:
+        \begin{itemize}
+          \item le \texttt{pid}
+          \item l'identifiant du noyau d'origine
+          \item le \texttt{pid} sur le noyau d'origine
+          \item l'identificateur de groupe
+          \item la priorité
+          \item la politique d'ordonnancement
+        \end{itemize}
+        Une fois toutes ces données rećues, le noyau de destination crée un
+        thread avec les données d'identification et d'exécution adéquates, puis
+        copie l'espace virtuel reću dans celui du thread.
+
+        \begin{figure}[ht]
+          \begin{subfigure}[b]{0.45\textwidth}
+            \includegraphics[scale=0.23]{popcorn-migrate-src}
+            \caption{}
+            \label{fig:popcorn-migrate-src}
+          \end{subfigure}
+          \begin{subfigure}[b]{0.5\textwidth}
+            \includegraphics[scale=0.23]{popcorn-migrate-dst}
+            \caption{}
+            \label{fig:popcorn-migrate-dst}
+          \end{subfigure}
+          \caption{Actions effectuées par le noyau source (a) et destination (b)
+            lors d'une migration~\citep{katz2013popcorn}.}
+        \end{figure}
+
+      \end{paragraph}
+
+      \begin{paragraph}{Consistence des espaces d'adressage:}
+        Dans sa thèse,~\citeauthor{katz2013popcorn} a identifié les propriétés
+        que doit garantir une migration de processus cohérente. Les informations
+        suivantes doivent être identiques sur tous les noyaux en cours
+        d'exécution:
+        \begin{itemize}
+          \item l'espace virtuel
+          \item l'espace physique\footnote{Doit être le même ou non présent}
+          \item les bits de protection
+          \item les pages spéciales (COW, zero,\ldots)\\
+        \end{itemize}
+
+        L'espace virtuel d'un thread est maintenu cohérent car il est
+        entièrement recopié lors de chaque migration. En revanche, l'espace
+        physique n'est pas transmis lors de celle-ci. La consistence de l'espace
+        physique est gérée par la modification du gestionnaire de défaut de page
+        de Linux, et par les \textit{shadow task} vues précédemment.\\
+
+        Lorsqu'un processus veut accéder à une adresse virtuelle n'ayant pas de
+        correspondance dans l'espace physique, le noyau lance une exception
+        appelée \textit{page fault} ou défaut de page. Cette situation est
+        possible car Linux utilise une stratégie d'allocation dite
+        \textit{lazy}. Lors de la création d'un processus, il n'alloue toutes
+        les pages physiques nécessaires mais note uniquement le fait que le
+        processus aura besoin de ces pages. Elles seront réellement allouées
+        lors de leur premier accès.
+
+        Ce mécanisme est le même dans Popcorn Linux, mais une opération a été
+        ajoutée avant l'allocation de la page. En effet, le noyau où le thread a
+        engendré cette exception va envoyer un message en \textit{broadcast} à
+        tous les autres en précisant\benumline \item le groupe de thread auquel
+        appartient l'initiateur de la faute et \item l'adresse virtuelle
+        demandée\eenumline. À la réception de ce message, les noyaux vont alors
+        regarder dans toutes les \textit{shadow task} qu'ils possèdent s'il n'y
+        en a pas une correspondant à la requête. Si oui, alors la \texttt{struct
+          mm} correspondante à sera utilisée pour résoudre la mapping physique,
+        et ainsi assurée la cohérence. Cette méthode, également basée sur le
+        modèle \textit{lazy}, s'appelle \textit{On-Demande Address Space
+          Migration}. Elle permet de réduire le coût de l'opération de
+        migration, et d'avoir dans les tables des pages des threads uniquement
+        les pages utilisées.
+
+        \begin{paragraph}{Remarque:}
+          Il existe de nombreux problème liés aux opérations concurentes en
+          mémoire physiques (\texttt{mmap(), mprotect(), etc\ldots}). Les
+          mécanismes de cohérences présentés ici ont été simplifiés.\\
+        \end{paragraph}
+
+      \end{paragraph}
+
+      Popcorn Linux apporte ici une réponse très intéressante à la problématique
+      de la migration de processus ou de threads. Néanmoins, il subsiste un
+      problème: la localité des accès mémoire. Ici, les threads peuvent être
+      transférés entre les noyaux, mais les espaces physiques qu'ils utilisent
+      sont statiques. On paye donc le coût des accès NUMA pour chaque thread
+      migré en dehors de son cluster. De plus, bien qu'identifié
+      par~\citeauthor{katz2013popcorn} comme étant un point critique lors d'une
+      migration, Popcorn Linux n'apporte pour l'instant aucune réponse quant à
+      la cohérence des descripteurs de fichiers~\citep[page
+        4]{katz2013popcorn}. Enfin, les tests de performances (figure
+      ~\ref{fig:popcorn-bench} et tableau~\ref{tab:popcorn-bench} ont montré un
+      surcoût non négligeable liés au passage de messages et à l'acquisition de
+      verrous pour les accès atomiques.
+
+      \begin{figure}[ht]
+        \centering \includegraphics[scale=0.27]{popcorn-bench}
+        \caption{Temps de migration d'un thread sur Linux et sur Popcorn Linux
+          \itshape i) \upshape lors de la première migration \itshape ii)
+          \upshape lors d'un retour sur un précédent
+          noyau~\citep{katz2013popcorn}.}
+        \label{fig:popcorn-bench}
+      \end{figure}
+
+      %% Change space between rows and columns
+      \setlength{\tabcolsep}{8pt}
+      \renewcommand{\arraystretch}{1.5}
+      \begin{table}[h]
+        \centering
+        \begin{tabular}{@{}lc@{}}
+          \toprule Procedure Measured & \multicolumn{1}{l}{Average Time (TSC)}
+          \\ \midrule
+          \begin{tabular}[c]{@{}l@{}}Importing a migrated task, including\\first
+            mapping retrieval\end{tabular} & 188902 \\ Distributed task
+            exit() & 134859 \\ Distributed group exit() & 6223 \\ Distributed
+            mprotect() & 40598 \\ Couting remote
+            thread group members & 237263 \\ Waiting for Lamport Lock & 27777
+            \\ \bottomrule
+        \end{tabular}
+        \caption{Résultats des microbenchmark}
+        \label{tab:popcorn-bench}
+        \end{table}
+      %% Restore default parameters
+      \setlength{\tabcolsep}{6pt}
+      \renewcommand{\arraystretch}{1.0}
+      \FloatBarrier
+
+
+      %% \subsection{DragonFly BSD}
