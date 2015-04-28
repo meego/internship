@@ -38,7 +38,10 @@
 
     \begin{figure}[ht]
       \centering \includegraphics[scale=0.2]{include/img/tsar.png}
-      \caption{Schéma global de l'architecture TSAR~\citep{greiner2009tsar}.}
+      \caption{Schéma global de l'architecture TSAR. Les clusters sont composés
+        de quatre processeurs connectés entre eux sur un interonnect local,
+        lui-même relié à différents périphériques (TTy, ICU, NIC,
+        etc\ldots)~\citep{greiner2009tsar}.}
       \label{fig:tsar}
     \end{figure}
 
@@ -101,18 +104,14 @@
     \subsection{Les réplica noyau}
 
       Comme nous l'avons vu précédemment, l'architecture TSAR offre au système
-      d'exploitation la notion de cluster. Ceux-ci sont composés de quatre
-      processeurs connectés entre eux sur un interonnect local, lui-même relié à
-      différents périphériques (TTy, ICU, NIC, etc\ldots).
+      d'exploitation la notion de cluster.
       
-      La norme POSIX impose\footnote{\todo{C'est vraiment la norme qui impose ća
-          ou on peut tout simplement pas faire autrement ?}} que dans l'espace
-      d'adressage des processus, il y ait un mapping sur certaines pages du
-      noyau. Or, si le code et les données du noyau sont situés à un seul et
-      unique endroit en mémoire physique, et que chaque processus mappe ces
-      pages dans son espace virtuel, alors on paiera le coût de l'architecture
-      NUMA à chaque appel système, puisque l'on devra accéder à des pages
-      distantes.
+      Dans l'espace d'adressage d'un processus, il y a un mapping sur certaines
+      pages du noyau. Néanmoins, si le code et les données du noyau sont situés
+      à un seul et unique endroit en mémoire physique, et que chaque processus
+      mappe ces pages dans son espace virtuel, alors on paiera le coût de
+      l'architecture NUMA à chaque appel système, puisque l'on devra accéder à
+      des pages distantes.
 
       Afin de résoudre ce problème, la notion de réplica noyau a été introduite
       au sein des \textit{clusters-manager}. Un réplica noyau consiste à
@@ -266,7 +265,6 @@
           \label{fig:page-table}
         \end{figure}
         \FloatBarrier
-        %% TODO: barrier here ?
       \end{paragraph}
       
       \begin{paragraph}{Le noyau:}

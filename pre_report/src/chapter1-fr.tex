@@ -511,9 +511,17 @@
 
         Avant leurs travaux sur Linux,~\citet{boyd2008corey}. ont proposé le
         système d’exploitation Corey. Dans ce dernier, la gestion du partage des
-        ressources est laissée aux applications utilisateurs.\\
-
-        \todo{Les trois mécanismes d'abstraction.}\\
+        ressources est laissée aux applications utilisateurs. Pour cela, trois
+        abstractions ont été proposées: \benumline \item \textit{Adresse Range}
+        qui permet au programmeur d’une application de décider quelle partie de
+        l’espace d’adressage est privée par c\oe ur et laquelle est
+        partagée \item \textit{Kernel Core} qui permet au programmeur d’une
+        application d’affecter un service noyau (p. ex : piloter une carte
+        réseau) à un c\oe ur en particulier et \item \textit{Shares} qui permet
+        au programmeur d’une application de contrôler le degré de partage de
+        certaines tables de correspondances au niveau noyau (par exemple la
+        table de descripteurs des fichiers ouverts par le
+        processus)\eenumline.\\
 
         En donnant le contrôle aux programmeurs des applications utilisateur,
         Corey permet en effet de personnaliser le comportement du noyau selon
@@ -843,15 +851,14 @@
         \begin{itemize}
           \item de la pile utilisateur
           \item du tas
-          \item de l'environnement d'exécution\footnote{\todo{J'ai pas compris
-              ce que c'est réellement.}}
+          %% \item de l'environnement d'exécution\footnote{\todo{J'ai pas compris
+          %%     ce que c'est réellement.}}
           \item des arguments
           \item des données
         \end{itemize}
         Ces informations permettent de maintenir la cohérence de l'espace
-        virtuel du thread. Pour maintenir \textit{la cohérence
-          d'exécution}\footnote{\todo{Mal dit mais je sais pas trop comment
-            dire}}, il faut envoyer les informations suivantes:
+        virtuel du thread. Pour maintenir la cohérence de l'identification et de
+        l'exécution, il faut envoyer les informations suivantes:
         \begin{itemize}
           \item le \texttt{pid}
           \item l'identifiant du noyau d'origine
