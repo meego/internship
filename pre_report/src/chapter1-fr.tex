@@ -953,28 +953,5 @@
         \label{fig:popcorn-bench}
       \end{figure}
 
-      %% Change space between rows and columns
-      \setlength{\tabcolsep}{8pt}
-      \renewcommand{\arraystretch}{1.5}
-      \begin{table}[h]
-        \centering
-        \begin{tabular}{@{}lc@{}}
-          \toprule Procedure Measured & \multicolumn{1}{l}{Average Time (TSC)}
-          \\ \midrule
-          \begin{tabular}[c]{@{}l@{}}Importing a migrated task, including\\first
-            mapping retrieval\end{tabular} & 188902 \\ Distributed task
-            exit() & 134859 \\ Distributed group exit() & 6223 \\ Distributed
-            mprotect() & 40598 \\ Couting remote
-            thread group members & 237263 \\ Waiting for Lamport Lock & 27777
-            \\ \bottomrule
-        \end{tabular}
-        \caption{Résultats des microbenchmark}
-        \label{tab:popcorn-bench}
-        \end{table}
-      %% Restore default parameters
-      \setlength{\tabcolsep}{6pt}
-      \renewcommand{\arraystretch}{1.0}
-      \FloatBarrier
-
 
       %% \subsection{DragonFly BSD}
