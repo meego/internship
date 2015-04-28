@@ -29,22 +29,26 @@
   processeurs.
 
   Deuxièment, cette architecture est une architecture NUMA à mémoire partagée
-  cohérente, composée de 1024 coeurs répartis en clusters. Afin de pouvoir gérer
-  efficacement le matériel, un système d'exploitation a été spécialement
-  développé: ALMOS~\citep{almaless2011almos}. Ce système est basé sur un noyau
-  monolithique, tout comme Linux ou *BSD. Son but est de répondre à l'un des
-  enjeux des architecture NUMA, à savoir gérer efficacement le placement en
-  mémoire des données et le placement des threads accédant à ces
-  données. \todo{Dire qu'ALMOS évolue/va évoluer vers le multi-noyau.}
+  cohérente, composée de pouvant contenir c\oe urs répartis en clusters. Afin de
+  pouvoir gérer efficacement le matériel, un système d'exploitation a été
+  spécialement développé: ALMOS~\citep{almaless2011almos}. Ce système est basé
+  sur un noyau monolithique, tout comme Linux ou *BSD. Son but est de répondre à
+  l'un des enjeux des architecture NUMA, à savoir gérer efficacement le
+  placement en mémoire des données et le placement des threads accédant à ces
+  données.
 
-  Enfin, notre troisième problème est une conséquence de ce changement de
-  paradigme. En effet, il est nécessaire de maintenir certaines informations
-  cohérentes entre tous les noyaux en cours d'exécution, et particulièrement les
-  structures noyaux partagées par les processus tel que les descripteurs de
-  fichiers ou les zones mémoires. Cette cohérence permet entre autre de donner
-  l'illusion à l'utilisateur de n'avoir qu'un seul système en cours d'exécution
-  sur la machine, ou de pouvoir créer/migrer de threads entre les
-  noyaux.\\
+  Troisièmement, du fait de l'espace d'adressage de 40 bits, ALMOS est en train
+  d'être transformé en multi-noyau. En conséquence de cela, il est nécessaire de
+  maintenir certaines informations cohérentes entre tous les noyaux en cours
+  d'exécution, et particulièrement les structures noyaux partagées par les
+  processus tel que les descripteurs de fichiers ou les zones mémoires. Cette
+  cohérence permet entre autre de donner l'illusion à l'utilisateur de n'avoir
+  qu'un seul système en cours d'exécution sur la machine; essentiel pour le
+  support des applications en mémoire partagées.
+
+  Notre travail consiste principalement à supporter le mécanisme de création
+  distante et de migration de threads entre les noyaux, et d'assurer la
+  cohérence des structures partagées entre eux.\\
 
   \hspace{1cm}Ce document est organisé de la manière suivante: en
   section~\ref{sec:memory} nous nous intéressons à la gestion de grande quantité
