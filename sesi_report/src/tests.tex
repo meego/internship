@@ -1,0 +1,37 @@
+\chapter{Définition de la procédure de recette}
+\label{chap:tests}
+
+  \todo{chapitre à faire au propre.}\\
+
+  Nous allons à présent donner les différentes procédures de recettes que nous
+  allons utiliser pour valider nos solutions.
+  
+  \section{Migration de processus mono-thread}
+
+    \begin{itemize}
+      \item Pour tester les \texttt{fork()} sans \texttt{exec()} : un programme
+        C qui \texttt{fork()} à fond et on fait des printfs régulier des
+        clusters d'exécution.
+      \item Pour tester la migration en cours d'exécution, on devra faire une
+        politique ad-hoc dans la DQDT. On fera en sorte qu'au bout d'un temps
+        $T$ un processus sera migré sur un autre cluster. Cette modification
+        sera faite dans la DQDT. Pour créer ce processus, on peut reprendre le
+        programme donné précedemment en ajoutant un appel à \texttt{exec()}
+        après le \texttt{fork()}. Chaque processus affiche périodiquement son
+        cluster.
+    \end{itemize}
+
+
+  \section{Le multi-threading}
+
+    \begin{itemize}
+      \item On reprendre le programme C précédent mais on ajoute en plus la
+        création d'un nombre $N$ de thread par processus.
+    \end{itemize}
+
+
+  \section{Évaluation du coût}
+
+    Avec ce qu'on a dit avant, on a de quoi tester la migration mais pas son
+    coût en terme de cycles. On va devoir ajouter des compteurs dans les
+    programmes pour avoir une idée de la faisabilité de la solution.
