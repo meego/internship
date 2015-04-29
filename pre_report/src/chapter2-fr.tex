@@ -133,11 +133,11 @@
       problème d'ALMOS est le mapping de l'espace virtuel, qui se révèle être
       très simple. En effet, lors de la phase de boot, ce dernier va chercher à
       mapper le maximum de la mémoire physique du cluster de boot dans son
-      espace virtuel\footnote{Contraitement aux noyaux ``classiques'', ALMOS
-        s'accordge 2 giga-octet d'espace virtuel au lieu de 1.}. Donc, si ce
-      cluster possède (au moins) 2Go de mémoire physique, l'ensemble du noyau
-      est mappé dans ce seul cluster. De plus, cela ne laisse que 2Go de mémoire
-      virtuelle pour les applications utilisateur.
+      espace virtuel. Contraitement aux noyaux ``classiques'', ALMOS s'accorde 2
+      giga-octet d'espace virtuel au lieu de 1. Donc, si ce cluster possède (au
+      moins) 2Go de mémoire physique, l'ensemble du noyau est mappé dans ce seul
+      cluster. Enfin, cela ne laisse que 2Go de mémoire virtuelle pour les
+      applications utilisateur.
 
       
     \subsection{Contributions de Francois \citeauthor{guerret2014exploitation}}
@@ -171,7 +171,7 @@
         par exemple la table des pages. Celle-ci, une fois pleine\footnote{Ce
           cas n'arrive jamais, mais il est néanmoins mathématiquement possible},
         peut atteindre une taille maximale de 8Mo. De plus, chaque processus
-        dipose de sa propre table des pages. Il est techniquement impossible de
+        dispose de sa propre table des pages. Il est techniquement impossible de
         stocker 8Mo dans cet espace virtuel, Francois a donc choisi de sortir
         cette structure de l'espace virtuel.
 
@@ -186,7 +186,7 @@
 
       \begin{paragraph}{Résultats:}
         Ce travail n'a malheureusement pas donné lieu à une solution
-        fonctionnelle. La gestion par des adresses physiques des ces deux
+        fonctionnelle. La gestion par des adresses physiques des ce deux
         structures s'est avérée être très compliquée et nécessitait de recoder
         une partie conséquente du noyau. Le principal inconvénient de ce choix
         est le parcours de listes: il est nécessaire de vérifier que chaque
@@ -223,16 +223,16 @@
 
     Une seconde conséquence de ce choix est d'avoir rendu non fonctionnelle la
     migration de processus et de threads entre les clusters (la migration entre
-    processeurs du même cluster est elle toujours fonctionnelle). Dans la
-    version initiale d'ALMOS, cette migration se faisait\benumline \item en
-    stoppant le processus sur le c\oe ur concerné \item en l'ajoutant dans la
-    liste des processus du c\oe ur distant \item en relancant son exécution sur
-    ce nouveau c\oe ur\eenumline. L'ajout du processus dans cette liste est
-    possible uniquement parce que le noyau est en mémoire virtuelle. Il peut
-    ainsi accéder au \textit{core-manager} du cluster destinataire et lui
-    ajouter la \texttt{struct task} du processus à migrer. Les pages physiques
-    du processus seront ensuite migrées via la stratégie
-    \textit{Auto-Next-Touch\footnote{Non détaillée dans ce
+    c\oe urs du même cluster est elle toujours fonctionnelle). Dans la version
+    initiale d'ALMOS, cette migration se faisait\benumline \item en stoppant le
+    processus sur le c\oe ur concerné \item en l'ajoutant dans la liste des
+    processus du c\oe ur distant \item en relancant son exécution sur ce nouveau
+    c\oe ur\eenumline. L'ajout du processus dans cette liste est possible
+    uniquement parce que le noyau est en mémoire virtuelle. Il peut ainsi
+    accéder au \textit{core-manager} du cluster destinataire, sans se rendre
+    compte que celui-ci est distant, et lui ajouter la \texttt{struct task} du
+    processus à migrer. Les pages physiques du processus seront ensuite migrées
+    via la stratégie \textit{Auto-Next-Touch\footnote{Non détaillée dans ce
         rapport. Voir~\citep{almaless2014universite}.}}.
 
     En choisissant de passer ALMOS en mode multi-noyau, les clusters sont tous
