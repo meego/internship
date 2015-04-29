@@ -106,6 +106,10 @@
 
 \sloppy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def \printed {no}
+\def \yes {yes}
+\def \no {no}
+
 \begin{document}
 
   \input{src/titlepage}
@@ -113,24 +117,31 @@
   \setcounter{page}{1}
   \pagenumbering{Roman}
 
+
   %% For printed version
-  %% \newpage
-  %% \thispagestyle{empty}
-  %% \mbox{}
+  \ifx \printed \yes
+    \newpage
+    \thispagestyle{empty}
+    \mbox{}
+  \fi
 
   \tableofcontents
 
   %% For printed version
-  %% \newpage
-  %% \thispagestyle{empty}
-  %% \mbox{}
+  \ifx \printed \yes
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
+  \fi
 
   \listoffigures
 
   %% For printed version
-  %% \newpage
-  %% \thispagestyle{empty}
-  %% \mbox{}
+  \ifx \printed \yes
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
+  \fi
 
   \clearpage
   \setcounter{page}{1}
@@ -150,10 +161,12 @@
   %% \input{src/conclusion}
   %% \input{src/appendix}
 
-  %% For printed version  
-  %% \clearpage
-  %% \thispagestyle{empty}
-  %% \cleardoublepage
+  %% For printed version
+  \ifx \printed \yes
+  \clearpage
+  \thispagestyle{empty}
+  \cleardoublepage
+  \fi
 
   %% Redefined header for bib
   \fancypagestyle{plain}{
