@@ -21,11 +21,44 @@
 \usepackage{listings}
 \usepackage{placeins}
 
-%% Bib
+%% Commands
 \bibpunct{[}{]}{,}{n}{,}{,}
 \newcommand{\todo}[1]{\textbf{\color{red}TODO: #1}}
 \newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
 \newcommand{\eenumline}{\end{inparaenum}}
+\newcommand{\frontmatter}{
+  \input{src/titlepage}
+  \printversion
+
+  \pagestyle{headings}
+  \setcounter{page}{1}
+  \pagenumbering{Roman}
+
+
+  \tableofcontents
+  \printversion
+  \listoffigures
+  \printversion
+
+  \clearpage
+  \setcounter{page}{1}
+  \pagenumbering{arabic}
+  \pagestyle{fancy}
+  \fancypagestyle{plain}{}
+}
+
+\newcommand{\footmatter}{
+  %% Redefined header for bib
+  \fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    %% \fancyfoot[RO,LE] {\thepage}
+  }
+  \pagestyle{plain}
+  \bibliographystyle{plainnat}
+  \bibliography{src/references}
+}
  %% Graphics
 \graphicspath{{include/img/},{include/pdf/}}
 \DeclareGraphicsExtensions{.jpeg,.jpg,.png}
@@ -114,29 +147,12 @@
 
 \begin{document}
 
-  \input{src/titlepage}
-  \printversion
+  %% \frontmatter
 
-  \pagestyle{headings}
-  \setcounter{page}{1}
-  \pagenumbering{Roman}
-
-
-  \tableofcontents
-  \printversion
-  \listoffigures
-  \printversion
-
-  \clearpage
-  \setcounter{page}{1}
-  \pagenumbering{arabic}
-  \pagestyle{fancy}
-  \fancypagestyle{plain}{}
-
-  \input{src/intro}
-  \printversion
-  \input{src/subject}
-  \printversion
+  %% \input{src/intro}
+  %% \printversion
+  %% \input{src/subject}
+  %% \printversion
   \input{src/solution}
   \printversion
 
@@ -147,17 +163,8 @@
   %% \input{src/howto}
   %% \input{src/conclusion}
   %% \input{src/appendix}
+  %% \printversion
 
-  \printversion
-  %% Redefined header for bib
-  \fancypagestyle{plain}{
-    \fancyhf{}
-    \renewcommand{\headrulewidth}{0pt}
-    \renewcommand{\footrulewidth}{0pt}
-    %% \fancyfoot[RO,LE] {\thepage}
-  }
-  \pagestyle{plain}
-  \bibliographystyle{plainnat}
-  \bibliography{src/references}
+  %% \footmatter
 
 \end{document}
