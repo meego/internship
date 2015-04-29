@@ -109,39 +109,23 @@
 \def \printed {no}
 \def \yes {yes}
 \def \no {no}
+\newcommand{\printversion}{\ifx \printed \yes \clearpage \thispagestyle{empty}
+  \cleardoublepage \fi}
 
 \begin{document}
 
   \input{src/titlepage}
+  \printversion
+
   \pagestyle{headings}
   \setcounter{page}{1}
   \pagenumbering{Roman}
 
 
-  %% For printed version
-  \ifx \printed \yes
-    \newpage
-    \thispagestyle{empty}
-    \mbox{}
-  \fi
-
   \tableofcontents
-
-  %% For printed version
-  \ifx \printed \yes
-  \newpage
-  \thispagestyle{empty}
-  \mbox{}
-  \fi
-
+  \printversion
   \listoffigures
-
-  %% For printed version
-  \ifx \printed \yes
-  \newpage
-  \thispagestyle{empty}
-  \mbox{}
-  \fi
+  \printversion
 
   \clearpage
   \setcounter{page}{1}
@@ -150,8 +134,11 @@
   \fancypagestyle{plain}{}
 
   \input{src/intro}
+  \printversion
   \input{src/subject}
+  \printversion
   \input{src/solution}
+  \printversion
 
   %% \input{src/tasks}
   %% \input{src/tests}
@@ -161,13 +148,7 @@
   %% \input{src/conclusion}
   %% \input{src/appendix}
 
-  %% For printed version
-  \ifx \printed \yes
-  \clearpage
-  \thispagestyle{empty}
-  \cleardoublepage
-  \fi
-
+  \printversion
   %% Redefined header for bib
   \fancypagestyle{plain}{
     \fancyhf{}
