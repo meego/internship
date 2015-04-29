@@ -371,10 +371,42 @@
 
     \subsection{Les signaux}
 
-    \todo{Vérifier si les signaux sont par threads ou par processus.}
+    %% \todo{Vérifier si les signaux sont par threads ou par processus.} C'est par
+    %% processus : \texttt{man 7 signal} $\rightarrow$ ``The signal disposition is
+    %% a per-process attribute: in a multithreaded application, the disposition of
+    %% a particular signal is the same for all threads.''
 
-    \todo{Comment retrouver tous les threads d'un processus quand ils ont migré
-      sur différents clusters ?}
+    %% \todo{Comment retrouver tous les threads d'un processus quand ils ont migré
+    %%   sur différents clusters ?} Faut mettre en place un système de \texttt{pid}
+    %% ou on peut appliquer des masques. Les MSB du \texttt{pid} contiennent la
+    %% valeur du cluster courant, et les LSB la valeur du \texttt{pid} dans ce
+    %% cluster. Quand un processus migre, il envoie à son cluster d'origine son
+    %% nouveau \texttt{pid} et le cluster d'origine change le \texttt{pid} dans sa
+    %% table des processus. On peut savoir que c'est un \texttt{pid} distant
+    %% puisque le cluster aura dans son tableau un pid dont les MSB ne
+    %% correspondent pas à son \texttt{id}.
+
+      Dans cette partie, nous allons devoir mettre en place des mécanismes pour
+      la transmission des signaux lorsque les threads sont distribués sur
+      plusieurs noyaux. En effet, la norme POSIX stipule que la portée des
+      signaux est un processus dans son ensmble\footnote{Extrait de \texttt{man
+          7 signal} : ``The signal disposition is a per-process attribute: in a
+        multithreaded application, the disposition of a particular signal is the
+        same for all threads.''}.
+
+      Pour cela, il faudra redéfinir la notion de \texttt{pid}. Un \texttt{pid}
+      sera découpé en deux parties \benumline \item la partie haute indiquera la
+      valeur du cluster sur lequel s'exécute le thread \item la partie basse
+      donnera la valeur classique du \texttt{pid} sur ce
+      cluster\eenumline. L'application d'un masque sur le champ \texttt{pid}
+      permettra alors d'obtenir l'information souhaitée.
+
+      Après une migration, un processus envera son nouveau \texttt{pid} au noyau
+      d'origine, qui le modifiera dans sa table des processus. Ainsi, le noyau
+      d'origine des processus connait en permanence la localisation de ses fils
+      sur la machine. Ce mécanisme nous permet de pouvoir transmettre les
+      signaux.
+
 
   \section{La DQDT}
   \label{sec:dqdt}
