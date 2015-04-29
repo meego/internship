@@ -1,0 +1,169 @@
+\documentclass [french, 12pt, a4paper, twoside] {report}
+\usepackage[frenchb]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{lettrine}
+\usepackage{palatino}
+\renewcommand*\rmdefault{ppl}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{url}
+\usepackage{paralist}
+\usepackage{titlesec}
+\usepackage[sort, authoryear]{natbib}
+\usepackage{listings}
+\usepackage{placeins}
+
+%% Bib
+\bibpunct{[}{]}{,}{n}{,}{,}
+\newcommand{\todo}[1]{\textbf{\color{red}TODO: #1}}
+\newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
+\newcommand{\eenumline}{\end{inparaenum}}
+ %% Graphics
+\graphicspath{{include/img/},{include/pdf/}}
+\DeclareGraphicsExtensions{.jpeg,.jpg,.png}
+%% Title
+\titleformat{\chapter}[hang]{\bf\huge}{\thechapter}{2pc}{}
+\titlespacing*{\chapter}{0pt}{0pt}{20pt}
+%% subsubsection numbering
+\setcounter{secnumdepth}{3}
+
+%% Header / Footer
+\fancyhead{}
+\fancyfoot{}
+\fancyhead[C]{\todo{title}}
+\fancyhead[L,R]{{\color{red}Draft version}}
+\fancyfoot[L]{Université Pierre \& Marie Curie}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R] {Pierre-Yves PÉNEAU}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% correct bad hyphenation here
+\hyphenation{}
+\setlength{\topmargin}{0cm}
+\setlength{\headheight}{1cm}
+\setlength{\textheight}{23cm}
+\setlength{\textwidth}{16cm}
+\setlength{\oddsidemargin}{0cm}
+\setlength{\evensidemargin}{0cm}
+\setlength{\columnsep}{0.125in}
+\setlength{\columnseprule}{0.5pt}
+\setlength{\footskip}{1cm}
+
+%% lst config
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{lightgray}{gray}{0.9}
+\lstset{ %
+  backgroundcolor=\color{white},
+  basicstyle=\footnotesize\ttfamily,     
+  belowcaptionskip=1\baselineskip,
+  breakatwhitespace=false,      
+  breaklines=true,              
+  captionpos=b,                 
+  commentstyle=\color{mygreen}, 
+  extendedchars=true,           
+  frame=single, 
+  keepspaces=true,
+  keywordstyle=\color{blue},    
+  language=C,                   
+  %numbers=none,                 
+  numbersep=5pt,                
+  numberstyle=\tiny\color{mygray},
+  rulecolor=\color{black},        
+  showspaces=false,               
+  showstringspaces=false,         
+  showtabs=false,                 
+  stepnumber=2,                   
+  stringstyle=\color{mymauve},    
+  tabsize=4,
+  title=\lstname
+  xleftmargin=\parindent,
+}
+
+
+%% \lstdefinestyle{almos}{
+%%   backgroundcolor=\color{lightgray},
+%%   keywordstyle=\bfseries\color{mygreen},
+%%   commentstyle=\itshape\color{mymauve},
+%%   identifierstyle=\color{black},
+%%   %% stringstyle=\color{orange},
+%%   morekeywords={pid_t, uid_t, gid_t,
+%%     uint_t, uint16_t, uint32_t, uint64_t, spinlock_t, mcs_lock_t, atomic_t,
+%%     bool_t, error_t, task_s, thread_s, cluster_s, cpu_s, list_entry, page_s,
+%%     sig_mgr_s, event_s, rwlock_s, vmm_s, pmm_s, vfs_node_s, vfs_file_s,
+%%     fd_info_s, metafs_s, wait_queue_s, mapper_s, vfs_stat_s, vfs_context_s,
+%%     vfs_node_s, vfs_file_s, vfs_node_op_s}, }
+
+\sloppy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+  \input{src/titlepage}
+  \pagestyle{headings}
+  \setcounter{page}{1}
+  \pagenumbering{Roman}
+
+  %% For printed version
+  %% \newpage
+  %% \thispagestyle{empty}
+  %% \mbox{}
+
+  \tableofcontents
+
+  %% For printed version
+  %% \newpage
+  %% \thispagestyle{empty}
+  %% \mbox{}
+
+  \listoffigures
+
+  %% For printed version
+  %% \newpage
+  %% \thispagestyle{empty}
+  %% \mbox{}
+
+  \clearpage
+  \setcounter{page}{1}
+  \pagenumbering{arabic}
+  \pagestyle{fancy}
+  \fancypagestyle{plain}{}
+
+  \input{src/intro}
+  \input{src/subject}
+  \input{src/solution}
+
+  %% \input{src/tasks}
+  %% \input{src/tests}
+  %% \input{src/schedule}
+  %% \input{src/results}
+  %% \input{src/howto}
+  %% \input{src/conclusion}
+  %% \input{src/appendix}
+
+  %% For printed version  
+  %% \clearpage
+  %% \thispagestyle{empty}
+  %% \cleardoublepage
+
+  %% Redefined header for bib
+  \fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    %% \fancyfoot[RO,LE] {\thepage}
+  }
+  \pagestyle{plain}
+  \bibliographystyle{plainnat}
+  \bibliography{src/references}
+
+\end{document}
