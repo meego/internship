@@ -223,16 +223,16 @@
 
     Une seconde conséquence de ce choix est d'avoir rendu non fonctionnelle la
     migration de processus et de threads entre les clusters (la migration entre
-    processeurs du même cluster est elle toujours fonctionnelle). Dans la
-    version initiale d'ALMOS, cette migration se faisait\benumline \item en
-    stoppant le processus sur le c\oe ur concerné \item en l'ajoutant dans la
-    liste des processus du c\oe ur distant \item en relancant son exécution sur
-    ce nouveau c\oe ur\eenumline. L'ajout du processus dans cette liste est
-    possible uniquement parce que le noyau est en mémoire virtuelle. Il peut
-    ainsi accéder au \textit{core-manager} du cluster destinataire et lui
-    ajouter la \texttt{struct task} du processus à migrer. Les pages physiques
-    du processus seront ensuite migrées via la stratégie
-    \textit{Auto-Next-Touch\footnote{Non détaillée dans ce
+    c\oe urs du même cluster est elle toujours fonctionnelle). Dans la version
+    initiale d'ALMOS, cette migration se faisait\benumline \item en stoppant le
+    processus sur le c\oe ur concerné \item en l'ajoutant dans la liste des
+    processus du c\oe ur distant \item en relancant son exécution sur ce nouveau
+    c\oe ur\eenumline. L'ajout du processus dans cette liste est possible
+    uniquement parce que le noyau est en mémoire virtuelle. Il peut ainsi
+    accéder au \textit{core-manager} du cluster destinataire, sans se rendre
+    compte que celui-ci est distant, et lui ajouter la \texttt{struct task} du
+    processus à migrer. Les pages physiques du processus seront ensuite migrées
+    via la stratégie \textit{Auto-Next-Touch\footnote{Non détaillée dans ce
         rapport. Voir~\citep{almaless2014universite}.}}.
 
     En choisissant de passer ALMOS en mode multi-noyau, les clusters sont tous
