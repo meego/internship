@@ -10,8 +10,8 @@
   \begin{paragraph}{Remarque:}
     Dans la section~\ref{sec:mono}, le mot \textit{processus} est utilisé pour
     désigner un processus composé d'un seul thread. Dans la suite de ce
-    chapitre, et notamment en section~\ref{sec:multi}, on considère des
-    processus avec plusieurs threads.
+    chapitre, à partir de la section~\ref{sec:multi}, on considère que les
+    processus ont plusieurs threads.
   \end{paragraph}
 
 
@@ -41,10 +41,11 @@
         remplacer le code exécuté par un processus.\\
 
         Dans la très grande majorité des cas, un appel à \texttt{fork()} est
-        suivit d'un appel à \texttt{exec()}. C'est la seule manière de lancer
-        des applications différentes sous un système UNIX. Un exemple
-        d'utilisation de ces deux fonctions est donné par le
-        Listing~\ref{lst:fork-exec}.
+        suivit d'un appel à \texttt{exec()}. C'est la principale manière de
+        lancer des applications différentes dans un système\footnote{Voir
+          \texttt{posix\_spawn()} pour une alternative.}. Un exemple
+          d'utilisation de ces deux fonctions est donné par le
+          Listing~\ref{lst:fork-exec}.
         \clearpage
 
         \lstinputlisting[label={lst:fork-exec}, caption=Utilisation de
@@ -67,9 +68,8 @@
           \item des arguments
           \item des données
         \end{itemize}
-        Ces informations permettent de maintenir la cohérence de l'espace
-        virtuel du thread. Pour maintenir la cohérence de l'identification et de
-        l'exécution, il faut envoyer les informations suivantes:
+        Pour l'identification et de l'exécution, il faut envoyer les
+        informations suivantes:
         \begin{itemize}
           \item le \texttt{pid}
           \item l'identifiant du noyau d'origine
@@ -86,17 +86,22 @@
 
       \subsubsection{Création distante}
 
-        Ce mécanisme permet au noyau de créer un processus fils sur un autre
-        noyau que lui-même. Pour cela, on va se baser sur l'appel système
-        \texttt{exec()}. On a vu que ce dernier est généralement utilisé de pair
-        avec \texttt{fork()} pour lancer des applications. Nous allons modifier
-        l'appel système \texttt{exec()} en ajoutant un appel aux fonctions de la
-        DQDT. Si en retour le noyau s'aperćoit que le processus doit être migré,
-        alors les informations citées précédemment seront envoyées. Ici, les
-        données les plus importantes à transmettre sont le code et les arguments
-        qui sont spécifiés dans l'appel \texttt{exec()} (voir
-        Listing~\ref{lst:fork-exec}). En effet, on veut que le processus qui
-        sera créé exécute un nouveau code et pas celui de son père.\\
+        Migrer un processus pendant sa création, donc lors du \texttt{fork()}
+        est une erreur. En effet, après avoir déplacé toutes les données du fils
+        sur le nouveau noyau, la probabilité que ce dernier fasse un
+        \texttt{exec()} est très grande. Par cet appel, il écrasera toutes les
+        données que l'on aura déplacées juste avant. On aura donc payé le coût
+        de la migration pour rien.\\
+
+        Pour implémenter ce mécanisme, nous avons choisi de nous baser sur
+        l'appel système \texttt{exec()}. Nous allons le modifier en ajoutant un
+        appel aux fonctions de la DQDT. Si en retour le noyau s'aperćoit que le
+        processus doit être migré, alors les informations citées précédemment
+        seront envoyées. Ici, les données les plus importantes à transmettre
+        sont le code et les arguments qui sont spécifiés dans l'appel
+        \texttt{exec()} (voir Listing~\ref{lst:fork-exec}). En effet, on veut
+        que le processus qui sera créé exécute un nouveau code et pas celui de
+        son père.\\
 
         Attendre un appel à \texttt{exec()} pour effectuer la migration permet
         de ne pas briser la localité spatiale des processus ayant un lien de
@@ -104,7 +109,7 @@
         exemple au navigateur web Firefox, qui gère ses onglets en utilisant un
         processus complet et non plus un thread~\citep{mozillaElectrolysis}.\\
 
-        On note qu'unn processus qui créé des fils sans faire d'appel à
+        On note qu'un processus qui crée beaucoup de fils sans faire d'appel à
         \texttt{exec()} ne représente pas une menace pour la stabilité du
         système. En effet, au bout d'un temps $T$ borné, la DQDT verra la
         surchage engendrée par tous ces processus. Les mécanismes de migration
@@ -123,7 +128,7 @@
       surtout celle qu'ils partagent. Nous avons identifié les structures
       suivantes comme étant problématiques dans notre cas:
       \begin{itemize}
-      \item les descripteurs de fichiers
+      \item les descripteurs de fichiers ouverts
       \item les zones mémoires
       \end{itemize}
 
@@ -131,9 +136,10 @@
       maintenues cohérentes\footnote{C'est une obligation de la norme
         POSIX~\citep{posix2013}, norme que le noyau ALMOS a choisi de
         respecter.}. Ces informations sont l'offset et le compteur de
-      référence. L'offset indique la position à laquelle se trouve le processus
-      dans un fichier. Le compteur de référence permet de savoir combien de
-      processus ont ouvert le même fichier.
+      référence\footnote{Uniquement dans le cas du multi-thread}. L'offset
+      indique la position à laquelle se trouve le processus dans un fichier. Le
+      compteur de référence permet de savoir combien de processus ont ouvert le
+      même fichier.
 
       Lorsqu'un processus ouvre un fichier puis crée un fils, les modifications
       du père doivent être visibles pour le fils, et inversement. Or, chaque
@@ -148,14 +154,14 @@
       informations. Pour des raisons évidentes, ces zones mémoires partagées
       doivent impérativement être cohérentes entre les processus.
 
-      \begin{paragraph}{Remarque:}
-        Tous les processus n'ont pas de zones mémoire partagées avec d'autres
-        par défaut. Ainsi, la cohérence de ces dernières n'est pas la priorité
-        ici. Nous voulons d'abord être capable de gérer les descripteurs de
-        fichiers, qui sont partagés par défaut \texttt{stdin, stdout} et
-        \texttt{stderr} sont tous les trois des fichiers et sont ouverts par
-        tous les processus en permanence.
-      \end{paragraph}
+      %% \begin{paragraph}{Remarque:}
+      %%   Tous les processus n'ont pas de zones mémoire partagées avec d'autres
+      %%   par défaut. Ainsi, la cohérence de ces dernières n'est pas la priorité
+      %%   ici. Nous voulons d'abord être capable de gérer les descripteurs de
+      %%   fichiers, qui sont partagés par défaut \texttt{stdin, stdout} et
+      %%   \texttt{stderr} sont tous les trois des fichiers et sont ouverts par
+      %%   tous les processus en permanence.
+      %% \end{paragraph}
 
 
     \subsection{Accélération de la migration}
@@ -312,8 +318,8 @@
       accès mémoire,\citeauthor{almaless2014universite} propose de redéfinir la
       notion de processus et de thread. Un processus hybride contient des
       threads qui ont leur propre espace virtuel qui n'est plus accessible par
-      les autres threads du processus. L'intérêt des processus hypbride est
-      double:
+      les autres threads du processus. Le noyau maintien néanmoins la cohérence
+      entre ces espaces. L'intérêt des processus hybride est double:
       \begin{itemize}
         \item on évite le goulot d'étranglement sur la table des pages
           (présentée ci-après)
@@ -324,10 +330,8 @@
 
       Par manque de temps, ce concept n'a pas été implémenté dans le noyau
       ALMOS. Nous allons donc devoir le mettre en place, avec dans un premier
-      temps l'objectif d'avoir une table des pages distribuée entre les threads.
-
-
-    \subsection{La table des pages}
+      temps l'objectif d'avoir une table des pages distribuée entre les
+      threads.\\
 
       La table des pages est la structure de données des processus contenant les
       traductions des adresses virtuelles en adresses physiques. Chaque
