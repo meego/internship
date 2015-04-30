@@ -145,30 +145,25 @@
 \def \no {no}
 \newcommand{\printversion}{\ifx \printed \yes \clearpage \thispagestyle{empty}
   \cleardoublepage \fi}
+\newcommand{\minput}[1]{\input{#1}\printversion}
 
 \begin{document}
 
   \frontmatter
 
-  \input{src/intro}
-  \printversion
-  \input{src/subject}
-  \printversion
-  \input{src/solution}
-  \printversion
-  \input{src/tasks}
-  \printversion
-  \input{src/tests}
-  \printversion
-  \input{src/schedule}
-  \printversion
-  %% \input{src/results}
+  \minput{src/intro}
+  \minput{src/subject}
+  \minput{src/solution}
+  \minput{src/tasks}
+  \minput{src/tests}
+  \minput{src/schedule}
+  %% \minput{src/results}
   %% \printversion
-  %% \input{src/howto}
+  %% \minput{src/howto}
   %% \printversion
-  %% \input{src/conclusion}
+  %% \minput{src/conclusion}
   %% \printversion
-  %% \input{src/appendix}
+  %% \minput{src/appendix}
   %% \printversion
 
   \clearpage
