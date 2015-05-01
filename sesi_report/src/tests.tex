@@ -1,0 +1,77 @@
+\chapter{Définition de la procédure de recette}
+\label{chap:tests}
+
+  Nous allons à présent donner les différentes procédures de recettes que nous
+  allons utiliser pour valider nos solutions. Ces tests sont de simples
+  microbenchmark nous permettant de valider le fonctionnement de notre solution.
+
+  Ces expériences seront basées sur le système d'exploitation ALMOS-MK (pour
+  \textit{Multi-Kernel}), qui est l'évolution d'ALMOS en multi-noyau. Cette
+  version du système est actuellement maintenue par Mohamed
+  Karaoui. L'architecture d'exécution d'ALMOS-MK sera l'architecture TSAR 40
+  bits basique.\\
+
+  Pour prouver le fonctionnement de la migration mono et multi-thread,, nous
+  allons modifier la DQDT pour qu'elle agisse en fonction de nos besoins et non
+  pas ceux du système. On peut se permettre cela car on cherche ici à prouver la
+  migration et non la politique de migration. De plus, la DQDT ne sera pas
+  entièrement opérationnelle lors de ces tests : sa vision de la machine sera
+  réduite à un cluster. Néanmoins, ces changement seront effacés lors des tests
+  de la DQDT, que nous verrons en section~\ref{sec:dqdt-test}.
+
+  \section{Migration de processus mono et multi-thread}
+
+    On considère ici des processus mono ou multi-thread, les expériences étant
+    les mêmes dans les deux cas.
+
+    \subsection{Migration basique}
+
+      On considère ici le schéma \texttt{fork()/exec()} classique vu au
+      chapitre~\ref{chap:sol}. Nous allons dans un premier temps modifier la
+      DQDT pour que la migration soit faite \textit{de facto} lors d'un appel à
+      \texttt{exec()}, et non plus selon le taux d'utilisation de la
+      machine. Ensuite, on lancera un simple programme \texttt{fork()/exec()} où
+      le fils affiche le numéro de son cluster et de son c\oe ur avant et après
+      le \texttt{exec()}.
+
+    \subsection{Cas du \texttt{fork()} sans \texttt{exec()}}
+
+      Nous voulons ici tester la migration de processus fils n'ayant pas fait
+      d'appel à \texttt{exec()}. Nous allons donc écrire un programme créeant
+      $N$ fils, puis chacun de ces fils affichera à interval régulier le numéro
+      de cluster et le numero de c\oe ur sur lequel il s'exécute. La DQDT sera
+      modifiée pour que la migration ne commence qu'à partir du moment où $N$
+      sera atteint.
+
+    \subsection{Migration en cours d'exécution}
+
+      Enfin, pour tester la migration en cours d'exécution, nous allons modifier
+      la DQDT pour qu'au bout d'un certain temps $T$ d'exécution d'un processus,
+      celui-ci soit migré sur un autre cluster. Le processus en question
+      affichera à interval régulier les informations sur son cluster et son c\oe
+      ur d'exécution.
+
+
+  \section{Cohérence de données}
+
+    La cohérence des fichiers ouverts pourra être testée selon la procédure
+    suivante:
+    \begin{itemize}
+      \item le processus père ouvre un fichier
+      \item il crée son fils via \texttt{fork()} et celui-ci est migré
+      \item le père fait un \texttt{read()} de $N$ octets et modifie la tête de
+        lecture
+      \item le fils, via \texttt{ftell()}\footnote{Fonction non POSIX néanmoins
+        supportée par la \texttt{libc} d'ALMOS}, obtient la position de la tête
+        de lecture, qui doit être égale à $N$.
+    \end{itemize}
+
+
+  \section{Tests de la DQDT}
+  \label{sec:dqdt-test}
+
+    Nous allons devoir ``stresser'' le système avec de vrais applications, et
+    comparer les résultats avec ceux obtenus
+    par~\citeauthor{almaless2014universite} dans sa thèse. Pour cela, nous
+    utiliserons les mêmes benchmark et nous étudierons les temps nécessaires à
+    la prise de décision et la migration.

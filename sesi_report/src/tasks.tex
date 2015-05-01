@@ -1,0 +1,56 @@
+\chapter{Identification des tâches à accomplir}
+\label{chap:tasks}
+
+
+  \section{Processus mono-thread}
+
+    La première étape sera de modifier les \texttt{struct fd\_info\_s} et
+    \texttt{struct vfs\_file\_s} gérant la description des fichiers. Nous allons
+    mettre en place une des deux tables de hachage présentées au
+    chapitre~\ref{chap:sol} pour avoir une nouvelle gestion des
+    pointeurs. Précisément, cela nous permettra de retrouver des adresses en
+    mémoire après une migration sans avoir besoin de \textit{vrais}
+    pointeurs. Nous allons pour cela utiliser les numéros des pages physiques.
+
+    Dans un second temps, nous allons appliquer ce même mécanisme aux régions
+    virtuelles partagées. Cette partie est néanmoins une option. Bien qu'imposée
+    par la norme POSIX, les régions partagées ne sont pas notre priorité. En
+    effet, les processus n'ont par défaut aucune zone partagée. En revanche,
+    nous voulons d'abord être capable de gérer les descripteurs de fichiers, qui
+    eux sont partagés par défaut : \texttt{stdin, stdout} et \texttt{stderr}
+    sont tous les trois des fichiers et sont ouverts par tous les processus en
+    permanence.
+
+    Ensuite, nous allons implémenter la fonction de migration qui sera appelée
+    par la DQDT si celle-ci estime qu'une migration doit avoir lieu. Cette
+    fonction est spécifique aux processus déjà en cours d'exécution. Nous allons
+    également implémenter une fonction permettant de migrer les processus en
+    cours de création.
+    
+    Enfin, nous allons modifier l'appel système \texttt{exec()} pour faire appel
+    à la fonction décrite précédemment.
+
+
+  \section{Processus multi-thread}
+
+    Notre première étape sera de changer la construction des \texttt{pid} comme
+    vu au chapitre~\ref{chap:sol}. Nous devrons ensuite ajouter à la fonction de
+    migration un message pour l'envoi du nouveau \texttt{pid} au noyau
+    d'origine. Enfin, nous devrons mettre en place un serveur système permettant
+    la diffusion des signaux à tous les threads d'un même processus, quelque
+    soit leur emplacement sur la machine.
+
+    La seconde étape, la plus délicate, sera l'implémentation du concept des
+    processus hybrides. Cette partie s'annonce assez difficile et complexe
+    puisqu'elle touche à la base même d'ALMOS, en particulier la gestion de la
+    table des pages au niveau des threads.
+
+
+  \section{La DQDT}  
+
+    La fonction \texttt{dqdt\_update()} permet de mettre à jour les informations
+    sur les taux d'utilisation des processeurs. Cette fonction est appelée
+    périodiquement pour assurer une vision correct de l'utilisation de la
+    machine. Nous allons devoir modifier cette fonction selon les présentées au
+    chapitre~\ref{chap:sol}, à savoir une méthode générique par passage de
+    messages, et une autre plus efficace mauis spécifique à notre architecture.
