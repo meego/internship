@@ -1,56 +1,64 @@
 \chapter{Introduction}
-\label{chap:intro}
 
-  Depuis le début des années 2000, une des plus anciennes loi de l'informatique
-  commence à montrer ses limites: la loi de Moore. Les constructeurs de matériel
-  ont cessé d'augmenter la fréquence des processeurs, pour des raisons
-  énergétiques. En effet, cette augmentation va de pair avec celle de la
-  consommation électrique, qui devient impossible à assurer. De plus, il devient
-  de plus en plus difficile de refroidir les machines sans introduire de
-  nouvelles technologies comme le water cooling~\citep{googleXXXXdatacenters},
-  qui sont très coûteuses, et aussi très énergivores. Les entreprises font donc
-  le choix d'augmenter le nombre de c\oe urs par processeur, ainsi que le nombre
-  de processeurs pour faire face à ces difficultés. De nos jours, des
-  architectures avec une cinquantaine de c\oe urs sont courantes, et d'autres
-  comportant plusieurs centaines voire milliers de c\oe urs sont à
-  prévoir. L'augmentation des processeurs sur les puces entraine inévitablement
-  une augmentation de la mémoire, et ce pour des raisons évidentes de
-  performance. En plus de centaines de c\oe urs, les systèmes doivent maintenant
-  faire face à d'énormes quantités de mémoire~\citep{hp2012z820,
-    puget2013z9pe}. Il est donc nécessaire de revoir ces systèmes et de les
-  adapter pour gérer efficacement ces ressources.\\
+  \hspace{1cm}Au milieu des années 2000, les fabricants de processeurs ont
+  atteint une limite technique.  Au-delà de 100 Watts par boitier, il est
+  difficile de refroidir les circuits à l'aide de simples ventilateurs. Les
+  technologies comme le water cooling~\citep{googleXXXXdatacenters} sont
+  coûteuses et énergivores.  Pour continuer l'augmentation de puissance des
+  processeurs en profitant de la loi de Moore, ils ont dû cesser de complexifier
+  l'architecture des c\oe urs et d'augmenter leur fréquence de
+  fonctionnement. Au contraire, ils ont simplifié les c\oe urs pour en mettre
+  plusieurs par processeur.  De nos jours, les architectures à 8 c\oe urs sont
+  courantes, celles à une cinquantaine de c\oe urs sont disponibles, et d'autres
+  comportant plusieurs centaines, voire milliers, sont à prévoir.
+  L'augmentation du nombre de c\oe urs par processeur permet l'augmentation du
+  nombre d'instructions exécutées par cycle.  Cela impose une augmentation de la
+  quantité de mémoire nécessaire et du débit des accès~\citep{hp2012z820,
+    puget2013z9pe}. Les systèmes d'exploitation doivent s'adapter pour gérer
+  efficacement ces nouvelles ressources.\\
 
-  Dans le cadre de ce stage, nous faisons face à plusieurs
-  problèmes. L'architecture matérielle considérée est l'architecture
-  TSAR~\citep{greiner2009tsar} développée au LIP6. Celle-ci offre notamment 1To
-  de mémoire physique. Pour des raisons énergétiques, les processeurs de cette
-  architecture sont des processeurs 32 bits, qui sont donc limités à 4Go
-  d'espace adressable. Ainsi, le premier problème consiste à gérer, depuis le
-  noyau, un espace mémoire supérieur à l'espace mémoire adressable des
-  processeurs.
+  \hspace{1cm}Dans ce stage, l'architecture matérielle considérée est
+  l'architecture TSAR~\citep{greiner2009tsar} développée au LIP6. TSAR est une
+  architecture NUMA (\textit{Non Uniform Memory Acces}) à mémoire partagée
+  cohérente, composée de 1024 c\oe urs 32 bits et 1To de mémoire physique (40
+  bits).  Les c\oe urs sont répartis en clusters contenant chacun 4 c\oe urs et
+  gérant un segment de 4Go de mémoire physique. Le choix de c\oe urs 32 bits, et
+  non 64bits, est assumé. C'est, selon les architectes, le meilleur compromis en
+  énergie dissipée par instruction et cela permet un meilleur usage des caches
+  car les pointeurs sont plus petits.  Un système d'exploitation nommé
+  ALMOS~\citep{almaless2011almos} a été spécialement développé pour TSAR. Ce
+  système est basé sur un noyau monolithique, tout comme Linux ou *BSD. ALMOS
+  signifie \textit{Advanced Locality Management Operating System}. En effet, son
+  but premier est le placement efficace des données dans les segments mémoires,
+  et des threads accédant à ces données sur les c\oe urs.\\
 
-  Deuxièment, cette architecture est une architecture NUMA à mémoire partagée
-  cohérente, composée de 1024 coeurs répartis en clusters. Afin de pouvoir gérer
-  efficacement le matériel, un système d'exploitation a été spécialement
-  développé: ALMOS~\citep{almaless2011almos}. Ce système est basé sur un noyau
-  monolithique, tout comme Linux ou *BSD. Son but est de répondre à l'un des
-  enjeux des architecture NUMA, à savoir gérer efficacement le placement en
-  mémoire des données et le placement des threads accédant à ces données.
+  \hspace{1cm}L'architecture TSAR utilisée lors du développement d'ALMOS n'était
+  pas finalisée. Elle ne proposait que 4Go de mémoire physique (32 bits). Elle
+  gère désormais 1To (40 bits). Le but de ce stage est de faire évoluer ALMOS
+  pour permettre la gestion de ce tera octet.\\
 
-  Troisièmement, du fait de l'espace d'adressage de 40 bits, ALMOS est en train
-  d'être transformé en multi-noyau. En conséquence de cela, il est nécessaire de
-  maintenir certaines informations cohérentes entre tous les noyaux en cours
-  d'exécution, et particulièrement les structures noyaux partagées par les
-  processus tel que les descripteurs de fichiers ou les zones mémoires. Cette
-  cohérence permet entre autre de donner l'illusion à l'utilisateur de n'avoir
-  qu'un seul système en cours d'exécution sur la machine; essentiel pour le
-  support des applications en mémoire partagées.
+  \hspace{1cm}Nous faisons face à plusieurs problèmes. Le premier est que les
+  c\oe urs 32 bits sont limités à 4Go d'espace adressable virtuel. Le noyau doit
+  gérer un espace mémoire physique supérieur à l'espace virtuel des
+  processeurs. Pour résoudre ce problème, nous verrons que nous allons devoir
+  répartir et souvent répliquer toutes les structures du noyau dans chaque
+  cluster. \todo{ALMOS, dans sa version 32 bits, a déjà une organisation
+    clusterisée pour gérer le co-placement des threads et des données, mais cela
+    n'interdit pas d'accéder facilement à toute la mémoire, c'est désormais
+    difficile.} Le deuxième problème est donc de revoir la répartition ou
+  réplication des structures du noyau et leur mode d'accès. ALMOS va ainsi
+  évoluer vers une structure semblable par certains aspects au
+  multi-noyau~\citep{baumann2009multikernel}. Ainsi, le troisième problème est
+  une conséquence du deuxième. Si certaines structures sont répliquées, il faut
+  que le système en garantisse la cohérence et ainsi offre à l'utilisateur
+  l'illusion d'un noyau monolithique. \\
 
-  Notre travail consiste principalement à supporter le mécanisme de création
-  distante et de migration de threads entre les noyaux, et d'assurer la
-  cohérence des structures partagées entre eux.\\
+  \hspace{1cm}Pour ce stage, nous allons nous concentrer sur les structures
+  partagées par les threads d'un processus, telles que les descripteurs de
+  fichiers ou les zones mémoires partagées. \\
 
-  Ce document est organisé de la manière suivante: dans le
+
+  \hspace{1cm}Ce document est organisé de la manière suivante: dans le
   chapitre~\ref{chap:subject}, nous présenterons le sujet du stage et la
   problématique. Le chapitre~\ref{chap:sol} expliquera la solution envisagée
   pour ce répondre à la problématique. Ensuite, nous donnerons dans le
