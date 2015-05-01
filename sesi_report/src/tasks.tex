@@ -1,6 +1,7 @@
 \chapter{Identification des tâches à accomplir}
 \label{chap:tasks}
 
+
   \section{Processus mono-thread}
 
     La première étape sera de modifier les \texttt{struct fd\_info\_s} et
@@ -13,7 +14,12 @@
 
     Dans un second temps, nous allons appliquer ce même mécanisme aux régions
     virtuelles partagées. Cette partie est néanmoins une option. Bien qu'imposée
-    par la norme POSIX, les régions partagées ne sont pas notre priorité.
+    par la norme POSIX, les régions partagées ne sont pas notre priorité. En
+    effet, les processus n'ont par défaut aucune zone partagée. En revanche,
+    nous voulons d'abord être capable de gérer les descripteurs de fichiers, qui
+    eux sont partagés par défaut : \texttt{stdin, stdout} et \texttt{stderr}
+    sont tous les trois des fichiers et sont ouverts par tous les processus en
+    permanence.
 
     Ensuite, nous allons implémenter la fonction de migration qui sera appelée
     par la DQDT si celle-ci estime qu'une migration doit avoir lieu. Cette
@@ -23,22 +29,23 @@
     
     Enfin, nous allons modifier l'appel système \texttt{exec()} pour faire appel
     à la fonction décrite précédemment.
-    
+
+
   \section{Processus multi-thread}
 
-    Notre première étape sera de changer la construction des \texttt{pid}. Nous
-    devrons ensuite ajouter à la fonction de migration un message pour l'envoi
-    du nouveau \texttt{pid} au noyau d'origine.
+    Notre première étape sera de changer la construction des \texttt{pid} comme
+    vu au chapitre~\ref{chap:sol}. Nous devrons ensuite ajouter à la fonction de
+    migration un message pour l'envoi du nouveau \texttt{pid} au noyau
+    d'origine. Enfin, nous devrons mettre en place un serveur système permettant
+    la diffusion des signaux à tous les threads d'un même processus, quelque
+    soit leur emplacement sur la machine.
 
     La seconde étape, la plus délicate, sera l'implémentation du concept des
     processus hybrides. Cette partie s'annonce assez difficile et complexe
-    puisqu'elle touche à la base même d'ALMOS. Les étapes identifiées sont:
-    \begin{itemize}
-      \item \todo{}
-      \item \todo{}
-      \item \todo{}
-    \end{itemize}
-  
+    puisqu'elle touche à la base même d'ALMOS, en particulier la gestion de la
+    table des pages au niveau des threads.
+
+
   \section{La DQDT}  
 
     La fonction \texttt{dqdt\_update()} permet de mettre à jour les informations
