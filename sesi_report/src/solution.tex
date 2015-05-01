@@ -2,10 +2,10 @@
 \label{chap:sol}
 
   Notre solution est découpée en trois étapes incrémentales. Dans un premier
-  temps, nous allons rétablir le procédé de migration de processus
-  mono-thread. Dans un second temps, nous ajouterons le support du
-  multi-thread. Enfin, nous allons ré-implémenter un composant d'ALMOS appelé
-  DQDT, responsable de la politique de migration dans le noyau.
+  temps, nous rétablissons le procédé de migration de processus
+  mono-thread. Dans un second temps, nous ajoutons le support du
+  multi-thread. Enfin, nous ré-implémentons un composant d'ALMOS appelé
+  DQDT, nécessaire pour la politique de migration dans le noyau.
 
   \begin{paragraph}{Remarque:}
     Dans la section~\ref{sec:mono}, le mot \textit{processus} est utilisé pour
@@ -18,23 +18,23 @@
   \section{Support des processus mono-thread}
   \label{sec:mono}
 
-    Cette première étape à pour but de mettre en place deux mécanismes:
+    Cette première étape a pour but de mettre en place deux mécanismes:
     \benumline \item la migration de processus entre noyaux \item la création
     distante de processus\eenumline. Pour compléter ces deux objectifs, il est
     nécessaire de définir l'ensemble des structures partagées par les processus,
-    lesquelles devront nécessairement être maintenues cohérentes tout au long de
+    lesquelles doivent nécessairement être maintenues cohérentes tout au long de
     l'exécution.
 
     \subsection{Principes}
 
       \subsubsection{Rappels}
 
-        L'appel système \texttt{fork()} est la seule et unique manière de créer
-        un processus dans un système UNIX. Lorsqu'un processus fait appel à
-        cette fonction, un processus identique à l'appelant est créé. L'appelant
-        est appelé \textit{père}, et le résultat est appelé \textit{fils}. Le
-        fils étant une copie de son père, son exécution commence juste après
-        l'appel système \texttt{fork()}.
+        L'appel système \texttt{fork()} est la manière usuelle de créer un
+        processus dans un système. Lorsqu'un processus fait appel à cette
+        fonction, un processus identique à l'appelant est créé. L'appelant est
+        nommé \textit{père}, et le résultat est appelé \textit{fils}. Le fils
+        étant une copie de son père, son exécution commence juste après l'appel
+        système \texttt{fork()}.
 
         Pour qu'un fils exécute un autre programme que celui du père, il faut
         utiliser l'appel système \texttt{exec()}. C'est lui qui permet de
@@ -123,12 +123,11 @@
     \subsection{Maintien de cohérence}
 
       Comme nous l'avons vu précédemment, ces deux opérations représentent un
-      enjeux quant aux structures de données que contiennent les processus, et
-      surtout celle qu'ils partagent. Nous avons identifié les structures
-      suivantes comme étant problématiques dans notre cas:
+      enjeux quant aux structures de données que contiennent les processus, en
+      particulier celle qu'ils partagent:
       \begin{itemize}
       \item les descripteurs de fichiers ouverts
-      \item les zones mémoires
+      \item les zones mémoires partagées
       \end{itemize}
 
       Les descripteurs de fichiers contiennent des données qui doivent être
@@ -150,10 +149,10 @@
       pas accéder à celui des autres. Néanmoins, les noyaux permettent d'allouer
       de la mémoire en mode \texttt{SHARED}. Ainsi, deux processus peuvent se
       partager une certaine zone mémoire et ainsi échanger des
-      informations. Pour des raisons évidentes, ces zones mémoires partagées
-      doivent impérativement être cohérentes entre les processus\footnote{On
-        parle ici du contenu de la mémoire, pas de la structure la représentant,
-        qui elle est propre aux processus.}.
+      informations. Pour des raisons évidentes, le contenu de ces zones mémoires
+      doit impérativement être cohérent entre les processus\footnote{On ne parle
+        pas de la structure représentant la zone mémoire, qui elle est propre
+        aux processus.}.
 
       %% \begin{paragraph}{Remarque:}
       %%   Tous les processus n'ont pas de zones mémoire partagées avec d'autres
@@ -168,25 +167,23 @@
     \subsection{Accélération de la migration}
 
       Afin de faciliter le maintien de la cohérence et surtout accélérer la
-      migration, nous allons redéfinir l'implémentation des descripteurs de
-      fichiers et des zones mémoires. Il est nécessaire de s'abstraire de
-      l'utilisation des pointeurs qui deviennent incorrects lorsqu'un processus
-      change de noyau. En effet, une adresse dans un noyau $N$ n'est pas
-      toujours significative dans un noyau $N'$. Un bon exemple pour illustrer
-      notre cas est celui des processus père/fils. Chaque processus doit savoir
-      qui est son père, et possède un pointeur en direction de la \texttt{struct
-        task} de ce père. Si le fils est migré sur un nouveau noyau, cette
-      adresse est devient obsolète.
+      migration, nous devons redéfinir l'implémentation des descripteurs de
+      fichiers et des zones mémoires. Il est nécessaire d'eliminer l'utilisation
+      des pointeurs qui deviennent faux lorsqu'un processus change de noyau. En
+      effet, une adresse dans un noyau $N$ n'est pas significative dans un noyau
+      $N'$. Un bon exemple pour illustrer notre cas est celui des processus
+      père/fils. Chaque processus doit savoir qui est son père, et possède un
+      pointeur en direction de la \texttt{struct task} de ce père. Si le fils
+      est migré sur un nouveau noyau, cette adresse n'est plus valable.
 
-      Nous allons donc réduire au maximum le nombre de pointeurs, et notamment
+      Nous devons donc réduire au maximum le nombre de pointeurs, et notamment
       ceux utilisés pour gérer les descripteurs de fichiers ouverts ainsi que
       les zones de mémoire virtuelle d'un processus. Supprimer ces pointeurs
       implique de devoir changer l'implémentation de la structure de données
-      utilisée pour stocker toutes les informations. Nous allons utiliser des
+      utilisée pour stocker toutes les informations. Nous devons utiliser des
       tableaux pour enregistrer les informations sur les fichiers ouverts par
-      les processus. Ces tableaux seront plus faciles à migrer puisqu'ils
-      s'agira seulement d'en faire une copie dans la mémoire du noyau
-      destinataire.
+      les processus. Ces tableaux sont plus faciles à migrer puisqu'ils s'agit
+      seulement d'en faire une copie dans la mémoire du noyau destinataire.
 
       Nous avons actuellement deux solutions à l'étude et aucune n'a pour
       l'instant été choisie:
@@ -214,98 +211,19 @@
       le système. Elles restent donc à l'état d'hypothèse jusqu'à ce que l'une
       d'elle s'avère plus efficace.
 
-    %% \subsection{Les descripteurs de fichiers}
-
-    %%   Les \textit{file descriptors} sont une abstraction des systèmes
-    %%   d'exploitation permettant aux processus de manipuler des fichiers. Ce sont
-    %%   en réalité des structures de données pointant sur une autre structure
-    %%   appelée \texttt{struct file}. Celle-ci contient notamment la valeur de la
-    %%   tête de lecture, appelé \textit{offset}, et un compteur de référence
-    %%   permettant de savoir combien de \textit{file descriptors} pointent sur la
-    %%   \texttt{struct file}, \textit{i.e,} combien de fois le fichier à été
-    %%   ouvert.
-
-    %%   Lors d'un \texttt{fork()}, un processus enfant héritera de certaines
-    %%   informations de son père. La norme POSIX~\citep{posix2013} impose
-    %%   notamment qu'un processus enfant doit avoir accès aux fichiers ouverts par
-    %%   son père. Néanmoins, un fichier ouvert après un \texttt{fork()} n'est pas
-    %%   partagé avec le processus père. Ces deux mécanismes sont illustrés par la
-    %%   figure~\ref{fig:file-descriptors}. Le mécanismes des \texttt{inode} est
-    %%   introduit juste après.
-
-    %%   \begin{figure}[ht]
-    %%     \centering
-    %%     \includegraphics[scale=0.5]{file-descriptors-2}
-    %%     \caption{Partage d'une \texttt{struct file}. Le processus $A$ appelle
-    %%       \texttt{fork()} et crée le processus $C$. Ils partagent la même table
-    %%       mais n'ont aucun fichier en commun. $A$ ouvre le fichier
-    %%       \texttt{A\_Filename} puis fait un nouveau \texttt{fork()}, créant le
-    %%       processus $B$. Ce dernier partage alors la \texttt{struct file}
-    %%       pointée par son père.}
-    %%     \label{fig:file-descriptors}
-    %%   \end{figure}
-
-    %%   Ce partage implique que la tête de lecture soit la même pour les deux
-    %%   processus. Lors d'un \texttt{read()} ou d'un \texttt{write()} par le
-    %%   processus $A$, celui-ci change la valeur de la tête de lecture. Ce
-    %%   changement doit être visible par le processus $B$.
-
-    %%   Cette obligation se révèle problématique dans le cas d'une migration. En
-    %%   effet, si un processus enfant est changé de noyau, il est changé d'espace
-    %%   d'adressage. Il ne peut donc plus accéder aux données de son père de
-    %%   manière directe, et doit utiliser le passage de message. Cette opération
-    %%   est très coûteuse, et est source de contention dans le cas des messages de
-    %%   cohérence pour la modification de la tête de lecture.\\
-
-    %%   Nous allons changer la gestion des compteurs de références et des
-    %%   \textit{offset} du noyau ALMOS. Dans un premier temps, nous allons nous
-    %%   abstraire des \textit{file descriptors}. Plutôt que d'avoir des pointeurs
-    %%   sur les \texttt{struct file} des fichiers ouverts, nous allons placer au
-    %%   sein des processus un tableau contenant ces structures. L'utilisation d'un
-    %%   tableau permet de s'affranchir des pointeurs qui sont problématiques lors
-    %%   des migrations.
-
-    %%   Ensuite, nous allons changer l'emplacement de l'\textit{offset}. Nous
-    %%   allons le déplacer au sein de la \texttt{struct inode}. Un \textit{inode}
-    %%   est une structure de donnée représentant le fichier au sein du système de
-    %%   fichier. Elle est pointée par les \texttt{struct file} et possède un
-    %%   compteur de références fonctionnement sur le même modèle que vu
-    %%   précédement.
-
-    %%   \begin{paragraph}{Remarque:}
-    %%     La différence entre une \texttt{struct inode} et une \texttt{struct
-    %%       file} peut être expliquée comme suit. Soit deux fichiers, dont un est
-    %%     un lien symbolique vers l'autre. Ces deux fichiers auront deux
-    %%     \texttt{struct file} différentes, car un lien symbolique \textit{est} un
-    %%     fichier. Néanmoins, il n'y a qu'un seul fichier \textit{réel} sur le
-    %%     disque, qui est matérialisé par sa \texttt{struct inode}. Chaque
-    %%     \textit{inode} est unique sur le système.\\
-    %%   \end{paragraph}
-
-    %%   Le fait de gérer l'offset d'un fichier directement dans l'\textit{inode}
-    %%   nous assure par construction de la cohérence de la valeur de la tête de
-    %%   lecture lors de tous les accès, quelque que soit la localisation du
-    %%   processus effectuant l'opération. La migration d'un processus sera
-    %%   d'autant plus facilitée puisqu'il suffira simplement de copier le tableau
-    %%   des \texttt{struct file} du père, l'offset étant gérer dans
-    %%   l'\textit{inode}.
-
-
-    %% \subsection{Les zones mémoire}
 
   \section{Ajout du multi-thread}
   \label{sec:multi}  
 
-    Une fois le support des processus mono-thread en place, nous allons ajouter
+    Une fois le support des processus mono-thread en place, nous devons ajouter
     le support du multi-thread. Cette opération s'avère très délicate, et
     représente probablement l'étape la plus compliquée de ce stage.\\
 
-    Dans la section~\ref{sec:mono}, nous avons présenté les structures de
-    données critiques dans le cas d'applications se basant sur des processus et
-    non des threads. Nous allons à présent nous intéresser à ces derniers. Après
-    étude du problème, nous avons considéré les structures suivantes comme
-    problématiques lors que la migration de threads (en plus de celle vues
-    en ~\ref{sec:mono}):
+    Dans la section~\ref{sec:mono}, nous avons parlé des structures de données
+    critiques pour les processus mono-thread. Nous allons à présent nous
+    intéresser au processus multi-thread. Après étude du problème, nous avons
+    principalement deux structures problématiques (en plus de celle vues en
+    ~\ref{sec:mono}):
     \begin{itemize}
       \item la table des pages
       \item les signaux
@@ -337,25 +255,25 @@
       La table des pages est la structure de données des processus contenant les
       traductions des adresses virtuelles en adresses physiques. Chaque
       processus possède sa propre table des pages. Tous les threads d'un
-      processus accèdent de manière atomique à cette table lorsqu'ils veulent
-      ajouter une entrée. Ces accès seront problématiques en cas de miss TLB
-      fréquents.\\
+      processus accèdent à cette table.
 
-      Le problème de cette structure est sa granularité de partage: on considère
-      un processus entier comme propriétaire. Si l'on migre un thread du
-      processus sur un autre noyau, ce dernier accèdera par passage de messages
-      à la table, ce qui n'est pas envisageable pour des raisons de
-      performances. Il faut donc copier la table des pages entièrement, ce qui
-      n'est pas gratuit, et maintenir ensuite une cohérence entre toutes les
-      tables répliquées dans les clusters. En prenant en compte le fait que
-      chaque processus possède une table de page, les surcoûts liés aux
-      communications apparaîssent rapidement.
+      Le problème de cette structure est qu'elle est accédée lors des miss TLB
+      (le cache de traduction d'adresses virtuelles $\leftrightarrow$
+      physiques). Si l'on migre un thread du processus sur un autre noyau, ce
+      dernier accèdera par passage de messages à la table, ce qui n'est pas
+      envisageable pour des raisons de performances. Il faut donc copier la
+      table des pages entièrement, ce qui n'est pas gratuit, et maintenir
+      ensuite une cohérence entre toutes les tables répliquées dans les
+      clusters. En prenant en compte le fait que chaque processus possède une
+      table de page, les surcoûts liés aux communications apparaîssent
+      rapidement.
 
-      Pour répondre à cette problématique, nous allons intégrer une nouvelle
-      granularité pour la table des pages en les affectant par thread et non par
-      processus. Chaque table contiendra certaines pages communes avec les
-      autres threads du processus, mais aura également ses propres pages. Le
-      mécanisme proposé est illustré par la figure~\ref{fig:almos-page-table}.
+      Pour répondre à cette problématique, nous allons intégrer le concept des
+      processus hybrides introduit par
+      Ghassan~\citeauthor{almaless2014universite}. Chaque table contiendra des
+      pages communes avec les autres threads du processus, mais aura également
+      ses propres pages locales. Le mécanisme proposé est illustré par la
+      figure~\ref{fig:almos-page-table}.
 
       \begin{figure}[ht]
         \centering
@@ -375,21 +293,6 @@
 
 
     \subsection{Les signaux}
-
-    %% \todo{Vérifier si les signaux sont par threads ou par processus.} C'est par
-    %% processus : \texttt{man 7 signal} $\rightarrow$ ``The signal disposition is
-    %% a per-process attribute: in a multithreaded application, the disposition of
-    %% a particular signal is the same for all threads.''
-
-    %% \todo{Comment retrouver tous les threads d'un processus quand ils ont migré
-    %%   sur différents clusters ?} Faut mettre en place un système de \texttt{pid}
-    %% ou on peut appliquer des masques. Les MSB du \texttt{pid} contiennent la
-    %% valeur du cluster courant, et les LSB la valeur du \texttt{pid} dans ce
-    %% cluster. Quand un processus migre, il envoie à son cluster d'origine son
-    %% nouveau \texttt{pid} et le cluster d'origine change le \texttt{pid} dans sa
-    %% table des processus. On peut savoir que c'est un \texttt{pid} distant
-    %% puisque le cluster aura dans son tableau un pid dont les MSB ne
-    %% correspondent pas à son \texttt{id}.
 
       Dans cette partie, nous allons devoir mettre en place des mécanismes pour
       la transmission des signaux lorsque les threads sont distribués sur
@@ -416,26 +319,27 @@
   \section{La DQDT}
   \label{sec:dqdt}
 
-    Cette partie du stage doit être considérée comme ``optionnelle''. La
-    réimplémentation de ce composant est un besoin réel pour ALMOS, néanmoins
-    cela implique que les étapes présentées précédemment respectent l'échéancier
-    que nous verrons au chapitre~\ref{chap:sched}.\\
+    Cette partie du stage 8 ``optionnelle''. La réimplémentation de ce composant
+    est un besoin réel pour ALMOS, néanmoins cela implique que les étapes
+    présentées précédemment soient finalisées.
 
     La DQDT, pour \textit{Distributed Quaternary Decision Tree}, est le
     composant d'ALMOS assurant une vision cohérente et temps-réel\footnote{C'est
       un abus de langage qui est fait ici. Nous voulons simplement montrer que
       la DQDT permet d'avoir en permanence les taux d'utilisation des 4096
-      processeurs de la plateforme.} de l'utilisation des ressources. Dans la
-    version d'\citet{almaless2014universite}, la DQDT repose sur des serveurs
-    répliqués dans tous les clusters. Chaque processeur physique représente une
-    feuille de la DQDT. Ces serveurs récupèrent les informations sur
-    l'occupation des processeurs de la machine, et construisent une moyenne
-    d'utilisation pour chaque cluster. Cette information est stockée dans un
-    n\oe de l'arbre. Chaque étage de l'arbre représente un niveau
-    d'abstraction. Comme le montre la figure~\ref{fig:dqdt-logical}, le premier
-    niveau, en noir, est celui des processeurs. Le second niveau, en bleu, est
-    celui du cluster, et le dernier, en rouge, regroupe quatre clusters. Ces
-    niveaux sont matérialisés par les étages de l'arbre, comme le montre la
+      processeurs de la plateforme.} de l'utilisation des ressources (mémoire et
+    c\oe urs). Dans la version de Ghassan~\citet{almaless2014universite}, la
+    DQDT repose sur des serveurs répliqués dans tous les clusters. Chaque
+    cluster physique représente une feuille de la DQDT. Ces serveurs récupèrent
+    les informations sur l'occupation des c\oe urs de la machine, et
+    construisent une moyenne d'utilisation pour chaque cluster. Cette
+    information est stockée dans un n\oe ud de l'arbre. Chaque étage de l'arbre
+    représente un niveau d'abstraction. Comme le montre la
+    figure~\ref{fig:dqdt-logical}, le premier niveau, en noir, est celui des
+    processeurs. Le second niveau, en bleu, regroupe 4 clusters. C'est un
+    cluster logique de niveau 1. Le dernier, en rouge, regroupe quatre clusters
+    logique de niveau 1 dans un cluster logique de niveau 2. Ces niveaux sont
+    matérialisés par les étages de l'arbre, comme le montre la
     figure~\ref{fig:dqdt-tree}.\\
 
     \begin{figure}[ht]
@@ -452,21 +356,21 @@
       \caption{Construction de la DQDT~\citep{almaless2014universite}.}
     \end{figure}
 
-    La DQDT, comme la plupart des composant noyaux d'ALMOS, repose sur le
-    mécanisme de la mémoire virtuelle répartie entre les clusters. Si l'on passe
-    ALMOS en mode multi-noyau, les serveurs de la DQDT ne peuvent plus
+    La DQDT, comme la plupart des composants noyaux d'ALMOS, repose sur le
+    mécanisme de la mémoire virtuelle répartie entre les clusters. Si l'on
+    change ALMOS en mode multi-noyau, les serveurs de la DQDT ne peuvent plus
     communiquer grâce à la mémoire virtuelle. Ils sont obligés d'utiliser le
     passage de messages entre les noyaux.
 
-    Notre but est donc de changer le schéma de communication de la DQDT. Deux
+    Notre but est de changer le schéma de communication de la DQDT. Deux
     techniques peuvent être utilisées:
     \begin{itemize}
-      \item nous voulons avoir une solution portable sur n'importe quelle
-        architecture matérielle : nous allons utiliser le passage de messages
-      \item nous voulons avoir une solution efficace sur l'architecture TSAR :
-        nous allons profiter des mécanismes matériels nous permettant d'accéder
-        directement à la mémoire physique des clusters voisins.
+      \item avoir une solution portable sur n'importe quelle architecture
+        matérielle : nous utilisons le passage de messages
+      \item avoir une solution efficace sur l'architecture TSAR : nous profitons
+        des mécanismes matériels nous permettant d'accéder directement à la
+        mémoire physique des clusters voisins.
     \end{itemize}
 
-    Nous implémenterons d'abord une version efficace sur TSAR, puis s'il nous
-    reste du temps, nous implémenterons une solution générique.
+    Nous allons dans un premier temps implémenter une version efficace sur TSAR,
+    puis selon le temps restant, une solution générique.
