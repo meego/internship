@@ -86,21 +86,21 @@
       \subsubsection{Création distante}
 
         Migrer un processus pendant sa création, donc lors du \texttt{fork()}
-        est une erreur. En effet, après avoir déplacé toutes les données du fils
-        sur le nouveau noyau, la probabilité que ce dernier fasse un
-        \texttt{exec()} est très grande. Par cet appel, il écrasera toutes les
-        données que l'on aura déplacées juste avant. On aura donc payé le coût
-        de la migration pour rien.\\
+        est une hypothèse que nous avons écartée. En effet, après avoir déplacé
+        toutes les données du fils sur le nouveau noyau, la probabilité que ce
+        dernier fasse un \texttt{exec()} est très grande. Par cet appel, il
+        écrasera toutes les données que l'on aura déplacées juste avant. On aura
+        donc payé le coût de la migration pour rien.\\
 
         Pour implémenter ce mécanisme, nous avons choisi de nous baser sur
         l'appel système \texttt{exec()}. Nous allons le modifier en ajoutant un
-        appel aux fonctions de la DQDT. Si en retour le noyau s'aperćoit que le
+        appel aux fonctions de la DQDT. Si en retour le noyau s'aperçoit que le
         processus doit être migré, alors les informations citées précédemment
         seront envoyées. Ici, les données les plus importantes à transmettre
-        sont le code et les arguments qui sont spécifiés dans l'appel
-        \texttt{exec()} (voir Listing~\ref{lst:fork-exec}). En effet, on veut
-        que le processus qui sera créé exécute un nouveau code et pas celui de
-        son père.\\
+        sont le chemin vers l'exécutable et les arguments qui sont spécifiés
+        dans l'appel \texttt{exec()} (voir Listing~\ref{lst:fork-exec}). En
+        effet, on veut que le processus qui sera créé exécute un nouveau code et
+        pas celui de son père.\\
 
         Attendre un appel à \texttt{exec()} pour effectuer la migration permet
         de ne pas briser la localité spatiale des processus ayant un lien de
