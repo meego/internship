@@ -3,10 +3,11 @@
 
   Pour répondre à ces enjeux de passage à l'échelle et de consommation
   énergétique, l'équipe ALSOC du LIP6 participe à deux projets européens
-  successifs: TSAR~\cite{tsar2008} et SHARP~\cite{sharp2012}. Ces projets, pour
-  le LIP6, ont pour but de fournir une architecture de processeurs, TSAR, de
-  plusieurs centaines de c\oe urs, et un système d'exploitation pour gérer
-  efficacement cette nouvelle architecture.
+  successifs: TSAR~\cite{tsar2008} et
+  SHARP~\cite{sharp2012}\nomenclature{SHARP}{TODO}. Ces projets, pour le LIP6,
+  ont pour but de fournir une architecture de processeurs, TSAR, de plusieurs
+  centaines de c\oe urs, et un système d'exploitation pour gérer efficacement
+  cette nouvelle architecture.
 
   Notre travail portera sur ALMOS, donc l'architecture va évoluer vers celle
   d'un multi-noyau, et plus particulièrement sur la migration de tâches entre
@@ -27,14 +28,15 @@
     sont BULL, Philips et THALES, et dont les partenaires académiques sont le
     LIP6 et le CEA-Leti. La figure \ref{fig:tsar} est un aperçu global de
     l'architecture TSAR. Il s'agit d'un ensemble de clusters interconnectés par
-    un NoC (\textit{Network-On-Chip}) DSPIN (\textit{Distributed, Scalable,
-      Predictable, Integrated Network}). Chaque c\oe ur dispose de ses propres
-    caches L1 indexés en adresses physiques (données et instructions séparés) et
-    d'une MMU (Memory Management Unit). La cohérence des caches de premier
-    niveau de tous les c\oe urs ainsi que des TLB est assurée par un protocole
-    matériel nommé DHCCP (\textit{Distributed Hybrid Cache Coherence
-      Protocol}). Une description complète de cette architecture est disponible
-    sur le site du projet TSAR~\cite{tsar2008web}.
+    un NoC\nomenclature{NoC}{Network-On-Chip}
+    DSPIN\nomenclature{DSPIN}{Distributed Scalable Predictable Integrated
+      Network}. Chaque c\oe ur dispose de ses propres caches L1 indexés en
+    adresses physiques (données et instructions séparés) et d'une MMU. La
+    cohérence des caches de premier niveau de tous les c\oe urs ainsi que des
+    TLB est assurée par un protocole matériel nommé
+    DHCCP\nomenclature{DHCCP}{Distributed Hybrid Cache Coherence Protocol}. Une
+    description complète de cette architecture est disponible sur le site du
+    projet TSAR~\cite{tsar2008web}.
 
     \begin{figure}[ht]
       \centering \includegraphics[scale=0.241]{include/img/tsar.png}
@@ -44,6 +46,8 @@
         etc\ldots)~\citep{greiner2009tsar}.}
       \label{fig:tsar}
     \end{figure}
+    \nomenclature{TTy}{TeleTYpe} \nomenclature{ICU}{Interrupt Control Unit}
+    \nomenclature{NIC}{Network Interface Controller}
 
     Dans la suite de ce document, on considére la version TSAR-Leti comme étant
     l'architecture de référence. Celle-ci contient jusqu'à 1024 c\oe urs MIPS32
@@ -254,8 +258,9 @@
       \item assurer la création et la migration de processus mono-threads entre
         clusters
       \item ajouter le support du multi-threading
-      \item ré-implémenter le composant d'ALMOS appelé DQDT (Distributed
-        Quaternary Decision Tree), assurant la vision globale de l'occupation
-        des ressources matérielles de la plateforme, et par conséquent
-        reponsable du placement des ressources sur celle-ci.
+      \item ré-implémenter le composant d'ALMOS appelé
+        DQDT\nomenclature{DQDT}{Distributed Quaternary Decision Tree}, assurant
+        la vision globale de l'occupation des ressources matérielles de la
+        plateforme, et par conséquent reponsable du placement des ressources sur
+        celle-ci.
     \end{itemize}

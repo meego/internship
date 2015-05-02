@@ -18,19 +18,23 @@
   ressources.\\
 
   Dans ce stage, l'architecture matérielle considérée est l'architecture
-  TSAR~\citep{greiner2009tsar} développée au LIP6. TSAR est une architecture
-  NUMA (\textit{Non Uniform Memory Acces}) à mémoire partagée cohérente,
-  composée de 1024 c\oe urs 32 bits et 1To de mémoire physique (40 bits).  Les
-  c\oe urs sont répartis en clusters contenant chacun 4 c\oe urs et gérant un
-  segment de 4Go de mémoire physique. Le choix de c\oe urs 32 bits, et non
-  64bits, est assumé. C'est, selon les architectes, le meilleur compromis en
-  énergie dissipée par instruction et cela permet un meilleur usage des caches
-  car les pointeurs sont plus petits.  Un système d'exploitation nommé
-  ALMOS~\citep{almaless2011almos} a été spécialement développé pour TSAR. Ce
-  système est basé sur un noyau monolithique, tout comme Linux ou *BSD. ALMOS
-  signifie \textit{Advanced Locality Management Operating System}. En effet, son
-  but premier est le placement efficace des données dans les segments mémoires,
-  et des threads accédant à ces données sur les c\oe urs.\\
+  TSAR~\citep{greiner2009tsar}\nomenclature{TSAR}{Tera-Scale Architecture}
+  développée au LIP6\nomenclature{LIP6}{Laboratoire d'Informatique de Paris
+    6}. TSAR est une architecture NUMA\nomenclature{NUMA}{Non-Uniform Memory
+    Acces} à mémoire partagée cohérente, composée de 1024 c\oe urs 32 bits et
+  1To de mémoire physique (40 bits).  Les c\oe urs sont répartis en clusters
+  contenant chacun 4 c\oe urs et gérant un segment de 4Go de mémoire
+  physique. Le choix de c\oe urs 32 bits, et non 64bits, est assumé. C'est,
+  selon les architectes, le meilleur compromis en énergie dissipée par
+  instruction et cela permet un meilleur usage des caches car les pointeurs sont
+  plus petits.  Un système d'exploitation nommé
+  ALMOS~\citep{almaless2011almos}\nomenclature{ALMOS}{Advanced Locality
+    Management Operating System} a été spécialement développé pour TSAR. Ce
+  système est basé sur un noyau monolithique, tout comme Linux ou
+  *BSD\nomenclature{BSD}{Berkeley Software Distribution}. ALMOS signifie
+  \textit{Advanced Locality Management Operating System}. En effet, son but
+  premier est le placement efficace des données dans les segments mémoires, et
+  des threads accédant à ces données sur les c\oe urs.\\
 
   L'architecture TSAR utilisée lors du développement d'ALMOS n'était pas
   finalisée. Elle ne proposait que 4Go de mémoire physique (32 bits). Elle gère
