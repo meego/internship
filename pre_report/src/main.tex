@@ -38,6 +38,7 @@
 \usepackage[official]{eurosym}
 \usepackage{fancyhdr}
 \usepackage[sort, authoryear]{natbib}
+\usepackage{etoolbox}
 \usepackage{paralist} %% enumerate several elements on a single line like (i)
 %% this is an example, (ii) this is a second example
 
@@ -68,6 +69,10 @@
 {\renewcommand{\nomname}{List of Abbreviations}}
 \renewcommand*\rmdefault{ppl}
 \linespread{1.1}
+%% Prevents hyperref coloring \citeauthor
+\makeatletter
+\pretocmd{\NAT@citexnum}{\@ifnum{\NAT@ctype>\z@}{\let\NAT@hyper@\relax}{}}{}{}
+\makeatother
 
 \def \printed {no}
 \def \yes {yes}
