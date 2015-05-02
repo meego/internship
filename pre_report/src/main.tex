@@ -29,6 +29,7 @@
 \usepackage{lscape}
 \usepackage{setspace}
 \usepackage{titlesec}
+\usepackage{nomencl}
 \usepackage{sectsty}
 \usepackage{placeins}
 \usepackage{amsmath,amsfonts,amsthm}
@@ -61,6 +62,9 @@
 \newcommand{\horrule}[1]{\rule{\linewidth}{#1}}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
+\makenomenclature
+\ifr{\renewcommand{\nomname}{Liste des abréviations}}
+{\renewcommand{\nomname}{List of Abbreviations}}
 
 \def \printed {no}
 \def \yes {yes}
@@ -83,6 +87,8 @@
   \listoffigures
   \printversion
   \listoftables
+  \printversion
+  \printnomenclature[20em]
   \printversion
   \clearpage
 
