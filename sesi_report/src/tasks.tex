@@ -13,13 +13,13 @@
     pointeurs. Nous allons pour cela utiliser les numéros des pages physiques.
 
     Dans un second temps, nous allons appliquer ce même mécanisme aux régions
-    virtuelles partagées. Cette partie est néanmoins une option. Bien qu'imposée
-    par la norme POSIX, les régions partagées ne sont pas notre priorité. En
-    effet, les processus n'ont par défaut aucune zone partagée. En revanche,
-    nous voulons d'abord être capable de gérer les descripteurs de fichiers, qui
-    eux sont partagés par défaut : \texttt{stdin, stdout} et \texttt{stderr}
-    sont tous les trois des fichiers et sont ouverts par tous les processus en
-    permanence.
+    virtuelles partagées. Cette partie est néanmoins optionnelle. Bien
+    qu'imposée par la norme POSIX, les régions partagées ne sont pas notre
+    priorité. En effet, les processus n'ont par défaut aucune zone partagée. En
+    revanche, nous voulons d'abord être capable de gérer les descripteurs de
+    fichiers, qui eux sont partagés par défaut : \texttt{stdin, stdout} et
+    \texttt{stderr} sont tous les trois des fichiers et sont ouverts par tous
+    les processus en permanence.
 
     Ensuite, nous allons implémenter la fonction de migration qui sera appelée
     par la DQDT si celle-ci estime qu'une migration doit avoir lieu. Cette
@@ -27,8 +27,8 @@
     également implémenter une fonction permettant de migrer les processus en
     cours de création.
     
-    Enfin, nous allons modifier l'appel système \texttt{exec()} pour faire appel
-    à la fonction décrite précédemment.
+    Enfin, nous allons modifier l'appel système \texttt{exec()} pour appeler la
+    fonction décrite précédemment.
 
 
   \section{Processus multi-thread}
@@ -41,16 +41,17 @@
     soit leur emplacement sur la machine.
 
     La seconde étape, la plus délicate, sera l'implémentation du concept des
-    processus hybrides. Cette partie s'annonce assez difficile et complexe
-    puisqu'elle touche à la base même d'ALMOS, en particulier la gestion de la
-    table des pages au niveau des threads.
+    processus hybrides. Cette partie s'annonce assez difficile et complexe, en
+    particulier la gestion de la table des pages au niveau des threads,
+    puisqu'elle touche à la base même d'ALMOS.
 
 
   \section{La DQDT}  
 
     La fonction \texttt{dqdt\_update()} permet de mettre à jour les informations
     sur les taux d'utilisation des processeurs. Cette fonction est appelée
-    périodiquement pour assurer une vision correct de l'utilisation de la
-    machine. Nous allons devoir modifier cette fonction selon les présentées au
-    chapitre~\ref{chap:sol}, à savoir une méthode générique par passage de
-    messages, et une autre plus efficace mauis spécifique à notre architecture.
+    périodiquement pour assurer une vision correcte de l'utilisation de la
+    machine. Nous allons devoir modifier cette fonction selon les techniques
+    présentées au chapitre~\ref{chap:sol}, à savoir une méthode générique par
+    passage de messages, et une autre plus efficace mais spécifique à notre
+    architecture.

@@ -6,11 +6,11 @@
     Pour répondre à ces enjeux de passage à l'échelle et de consommation
     énergétique, l'équipe ALSOC du LIP6 participe à deux projets européens
     successifs: TSAR~\cite{tsar2008} et SHARP~\cite{sharp2012}. Ces projets,
-    pour le LIP6, ont pour but de fournir une architecture de processeurs, TSAR,
+    pour le LIP6, ont pour but de fournir une architecture de processeur, TSAR,
     de plusieurs centaines de c\oe urs, et un système d'exploitation pour gérer
     efficacement cette nouvelle architecture.
 
-    Notre travail portera sur ALMOS, donc l'architecture va évoluer vers celle
+    Notre travail portera sur ALMOS, dont l'architecture va évoluer vers celle
     d'un multi-noyau, et plus particulièrement sur la migration de tâches entre
     différentes instances du noyau. Nous allons dans un premier temps présenter
     l'architecture matérielle TSAR. L'étude de cette dernière est essentielle
@@ -32,7 +32,7 @@
       interconnectés par un NoC (\textit{Network-On-Chip}) DSPIN
       (\textit{Distributed, Scalable, Predictable, Integrated Network}). Chaque
       c\oe ur dispose de ses propres caches L1 indexés en adresses physiques
-      (données et instructions séparés) et d'une MMU (Memory Management
+      (données et instructions séparéess) et d'une MMU (Memory Management
       Unit). La cohérence des caches de premier niveau de tous les c\oe urs
       ainsi que des TLB est assurée par un protocole matériel nommé DHCCP
       (\textit{Distributed Hybrid Cache Coherence Protocol}). Une description
@@ -47,7 +47,7 @@
 
       Dans la suite de ce document, on considére la version TSAR-Leti comme
       étant l'architecture de référence. Celle-ci contient jusqu'à 1024 c\oe urs
-      MIPS32 réparti en 256 clusters de 4 c\oe eurs chacun. La mémoire physique
+      MIPS32 répartis en 256 clusters de 4 c\oe urs chacun. La mémoire physique
       adressable est de 1To, et chaque cluster gère un segment de 4Go
 
 
@@ -59,13 +59,13 @@
       depuis 2011. Sujet de thèse de Ghassan Almaless, le développement est
       maintenant à la charge de Mohamed Karaoui (système de fichiers) et Clément
       Devigne (exécution de machines virtuelles). Le but d'ALMOS est de répondre
-      à la problématique évoquée de la localité des accès mémoires dans les
-      machines cc-NUMA. Une des particularités dans les choix architecturaux
-      d'ALMOS est d'avoir choisi de développer un noyau monolithique. Il
-      respecte la norme POSIX~\cite{posix2013} et implémente différentes
-      libraires: \texttt{libpthread, mpi, openMP}\ldots Le but premier d'ALMOS
-      est de garantir un passage à l'échelle et une conservation de la localité
-      des accès mémoires. Pour cela, le noyau intègre trois nouveaux mécanismes:
+      à la problématique de la localité des accès mémoires dans les machines
+      cc-NUMA. Une des particularités dans les choix architecturaux d'ALMOS est
+      d'avoir développé un noyau monolithique. Il respecte la norme
+      POSIX~\cite{posix2013} et implémente différentes libraires:
+      \texttt{libpthread, mpi, openMP}\ldots Le but premier d'ALMOS est de
+      garantir un passage à l'échelle et une conservation de la localité des
+      accès mémoires. Pour cela, le noyau intègre trois nouveaux mécanismes:
       \benumline \item les clusters managers \item les réplica-noyau \item une
       nouvelle stratégie d'allocation mémoire (\textit{Auto-Next-Touch})
       \eenumline.
@@ -75,11 +75,11 @@
 
       Développé initialement sur une architecture avec 4Go de mémoire physique,
       le noyau ne peut pas supporter plus de 4Go de mémoire vive. L'objectif
-      visé n'était pas de supporter le téra-octet de mémoire de TSAR, mais de
+      visé n'était pas de supporter le tera-octet de mémoire de TSAR, mais de
       supporter le passage à l'échelle de plusieurs centaines de c\oe
       urs. Ainsi, un des premiers problèmes d'ALMOS est le mapping de l'espace
       virtuel. En effet, lors de la phase de boot, ce dernier cherche à mapper
-      le maximum de la mémoire physique du cluster de boot dans son espace
+      toute la mémoire physique du cluster de boot dans son espace
       virtuel. Contraitement aux noyaux ``classiques'', ALMOS s'accorde 2Go
       d'espace virtuel au lieu de 1. Donc, si ce cluster possède (au moins) 2Go
       de mémoire physique, l'ensemble du noyau est mappé dans ce seul
@@ -89,13 +89,12 @@
 
     \subsection{Contributions de François \citeauthor{guerret2014exploitation}}
 
-      La gestion d'une telle quantité de mémoire fut le sujet de stage de
+      La gestion d'une telle quantité de mémoire fût le sujet de stage de
       François~\citet{guerret2014exploitation} en 2014. Ce dernier proposa
-      différents changements pour ALMOS : \benumline \item réduire l'espace
-      virtuel noyau à 1Go \item répartir cet espace virtuel entre les
-      clusters \item sortir de l'espace virtuel les structures de données du
-      noyau de taille importante \eenumline. Ces changements sont représentés
-      par la figure~\ref{fig:almos-guerret}.
+      différents changements pour ALMOS (figure~\ref{fig:almos-guerret}) :
+      \benumline \item réduire l'espace virtuel noyau à 1Go \item répartir cet
+      espace virtuel entre les clusters \item sortir de l'espace virtuel les
+      structures de données du noyau de taille importante \eenumline.
 
       \begin{paragraph}{Répartition de l'espace d'adressage noyau:}
         Elle est calculée en fonction du nombre de clusters de l'architecture
@@ -107,7 +106,7 @@
       \begin{figure}[ht]
         \centering \includegraphics[scale=0.3]{include/img/almos-guerret}
         \caption{Répartition de l'espace virtuel du noyau tel que proposé par
-          Franćois \citet{guerret2014exploitation}.}
+          François \citet{guerret2014exploitation}.}
         \label{fig:almos-guerret}
       \end{figure}
 
@@ -129,19 +128,19 @@
         mémoire offert par TSAR, il est nécessaire d'utiliser 14Go de mémoire,
         soit 56Mo par cluster. Une fois de plus, il est impossible de stocker
         cette structure dans l'espace virtuel noyau. Celle-ci en a donc été
-        sortie et gérée en adressage physique.
+        sortie, et est gérée en adressage physique.
       \end{paragraph}
 
       \begin{paragraph}{Résultats:}
         Ce travail n'a malheureusement pas donné lieu à une solution
-        fonctionnelle. La gestion par des adresses physiques de ce deux
+        fonctionnelle. La gestion par des adresses physiques de ces deux
         structures s'est avérée être très compliquée et nécessitait de recoder
         une partie conséquente du noyau. Le principal inconvénient de ce choix
         est le parcours de listes: il est nécessaire de vérifier que chaque
-        élément n'est pas une structure gérée physiquement avant de pouvoir
-        l'accéder. Cela allourdi considérablement l'opération, cette solution
-        fût donc abandonnée. Néanmoins, elle a ouvert posée les bases de la
-        version suivante d'ALMOS.
+        élément n'est pas une structure gérée physiquement avant de pouvoir y
+        accéder. Cela allourdi considérablement l'opération, cette solution fût
+        donc abandonnée. Néanmoins, elle a posée les bases de la version
+        suivante d'ALMOS.
       \end{paragraph}
 
 
@@ -154,44 +153,39 @@
       totalement l'espace virtuel pour le noyau. Ce dernier fonctionne
       entièrement en adressage physique et de ce fait passe en mode multi-noyau,
       avec une instance de noyau par cluster. Ces changements permettent de
-      gérer toute la mémoire physique de la plateforme TSAR, puisque
+      gérer toute la mémoire physique de la plateforme TSAR, puisque:
       \benumline \item chaque cluster dispose de 4Go de mémoire physique \item
       on a un noyau par cluster \item le noyau peut gérer 4Go de
-      mémoire\eenumline. Ce changement permet également de laisser 4Go de
+      mémoire\eenumline. Ces changements permettent également de laisser 4Go de
       mémoire virtuelle\footnote{Modulo une page de petite taille (4Ko) pour
         faire le passage entre le mode utilisateur et le mode noyau} à
       l'utilisateur puisque le noyau ne l'utilise plus.\\
 
-    En revanche, cette solution possède une difficulté majeure. En choisissant
-    de clusteriser le noyau, on rend impossible la communication directe par
-    simples load-store à la mémoire des clusters voisins. En effet, avec un
-    noyau par cluster, les espaces d'adressage deviennent propres à ces
-    derniers, et la vision simple d'un espace d'adressage unique entre les
-    clusters n'existe plus. On ne peut donc plus accéder aux éléments des autres
-    clusters de manière directe et transparente. Il y a alors deux méthodes
-    complémentaires:\benumline \item utiliser une propriété du cache L1 de TSAR
-    permettant de former une adresse physique quelconque et \item utiliser le
-    passage de messages entre les instances du noyau\eenumline.\\
+      En revanche, cette solution soulève une difficulté majeure. En choisissant
+      de clusteriser le noyau, on rend impossible la communication directe par
+      simples load-store à la mémoire des clusters voisins. En effet, avec un
+      noyau par cluster, les espaces d'adressage deviennent propres à ces
+      derniers, et la vision simple d'un espace d'adressage unique entre les
+      clusters n'existe plus. On ne peut donc plus accéder aux éléments des
+      autres clusters de manière directe et transparente. Il existe alors deux
+      méthodes complémentaires:\benumline \item utiliser une propriété du cache
+      L1 de TSAR permettant de former une adresse physique quelconque ou \item
+      utiliser le passage de messages entre les instances du noyau\eenumline.\\
 
-    Une seconde conséquence de ce choix est d'avoir rendu non fonctionnelle la
-    migration de processus et de threads entre les clusters (la migration entre
-    c\oe urs d'un même cluster est toujours fonctionnelle). Dans la version
-    initiale d'ALMOS, cette migration se faisait\benumline \item en stoppant le
-    processus sur le c\oe ur concerné \item en l'ajoutant dans la liste des
-    processus du c\oe ur distant \item en relancant son exécution sur ce nouveau
-    c\oe ur\eenumline. L'ajout du processus dans cette liste est possible
-    uniquement parce que le noyau est en mémoire virtuelle. Il peut ainsip
-    accéder au \textit{core-manager} du cluster destinataire, sans se rendre
-    compte que celui-ci est distant, et lui ajouter la \texttt{struct task} du
-    processus à migrer. Les pages physiques du processus seront ensuite migrées
-    via la stratégie \textit{Auto-Next-Touch\footnote{Non détaillée dans ce
-        rapport. Voir~\citep{almaless2014universite}.}}.
-
-    En choisissant de passer ALMOS en mode multi-noyau, chaque cluster est géré
-    par un noyau différent. Les clusters ont par conséquent des espaces
-    d'adressage différents, ce qui modifie les mécanismes de migration de
-    processus ou de threads. C'est à cette problématique que nous répondons.
-
+      Une seconde conséquence de ce choix est d'avoir rendu non fonctionnelle la
+      migration de processus et de threads entre les clusters (la migration
+      entre c\oe urs d'un même cluster est toujours fonctionnelle). Dans la
+      version initiale d'ALMOS, cette migration se faisait:\benumline \item en
+      stoppant le processus sur le c\oe ur concerné puis \item en l'ajoutant
+      dans la liste des processus du c\oe ur distant et\item en relancant son
+      exécution sur ce nouveau c\oe ur\eenumline. L'ajout du processus dans
+      cette liste est possible uniquement parce que le noyau est en mémoire
+      virtuelle. Il peut ainsi accéder au \textit{core-manager} du cluster
+      destinataire sans se rendre compte que celui-ci est distant, et lui
+      ajouter la \texttt{struct task} du processus à migrer. Les pages physiques
+      du processus seront ensuite migrées via la stratégie
+      \textit{Auto-Next-Touch\footnote{Non détaillée dans ce
+          rapport. Voir~\citep{almaless2014universite}.}}.
 
     \subsection{Contributions}
 
