@@ -1,12 +1,11 @@
 \chapter{Contexte de travail}
 \label{sec:context}
 
-  Pour répondre à ces enjeux de passage à l'échelle et de consommation
-  énergétique, l'équipe ALSOC du LIP6 participe à deux projets européens
-  successifs: TSAR~\cite{tsar2008} et SHARP~\cite{sharp2012}. Ces projets, pour
-  le LIP6, ont pour but de fournir une architecture de processeur, TSAR, de
-  plusieurs centaines de c\oe urs, et un système d'exploitation pour gérer
-  efficacement cette nouvelle architecture.
+  Pour répondre aux enjeux du passage à l'échelle, l'équipe ALSOC du LIP6
+  participe à deux projets européens successifs: TSAR~\cite{tsar2008} et
+  SHARP~\cite{sharp2012}. Ces projets, pour le LIP6, ont pour but de fournir une
+  architecture de processeur, TSAR, de plusieurs centaines de c\oe urs, et un
+  système d'exploitation pour gérer efficacement cette nouvelle architecture.
   %%\nomenclature{SHARP}{TODO}
 
   Notre travail portera sur ALMOS, dont l'architecture va évoluer vers celle
@@ -14,8 +13,8 @@
   différentes instances du noyau. Nous allons dans un premier temps présenter
   l'architecture matérielle TSAR. L'étude de cette dernière est essentielle pour
   bien comprendre les enjeux pour ALMOS. Ensuite nous présenterons le noyau
-  ALMOS, et notamment son cycle de vie, et enfin nous concluerons sur le travail
-  que nous allons effectuer dans le cadre de ce stage.
+  d'ALMOS, et enfin nous concluerons sur le travail que nous allons effectuer
+  dans le cadre de ce stage.
   
 
   \section{L'architecture TSAR}
@@ -59,13 +58,13 @@
   \label{sec:almos}
 
     Le noyau ALMOS~\cite{almaless2011almos,almaless2014universite} est un noyau
-    monolithique expérimental developpé au LIP6 par l'équipe ALSOC depuis
-    2011. Sujet de thèse de Ghassan Almaless, le développement est maintenant à
-    la charge de Mohamed Karaoui (système de fichiers) et Clément Devigne
-    (exécution de machines virtuelles). Le but d'ALMOS est de répondre à la
-    problématique de la localité des accès mémoires dans les machines
-    cc-NUMA. Une des particularités dans les choix architecturaux d'ALMOS est
-    d'avoir développé un noyau monolithique. Il respecte la norme
+    monolithique expérimental developpé au LIP6 dans l'équipe ALSOC depuis 2011
+    dans le cadre de la thèse de Ghassan~\citeauthor{almaless2014universite}. Le
+    développement est maintenant à la charge de Mohamed Karaoui (système de
+    fichiers) et Clément Devigne (exécution de machines virtuelles). Le but
+    d'ALMOS est de répondre au problème de la localité des accès mémoires dans
+    les machines cc-NUMA. Une des particularités dans les choix architecturaux
+    d'ALMOS est d'avoir développé un noyau monolithique. Il respecte la norme
     POSIX~\cite{posix2013} et implémente différentes libraires:
     \texttt{libpthread, mpi, openMP}\ldots Le but premier d'ALMOS est de
     garantir un passage à l'échelle et une conservation de la localité des accès
@@ -107,15 +106,13 @@
       
     \subsection{Les réplicas noyau}
 
-      Comme nous l'avons vu précédemment, l'architecture TSAR offre au système
-      d'exploitation la notion de cluster.
-      
-      Dans l'espace d'adressage d'un processus, il y a un mapping sur certaines
-      pages du noyau. Néanmoins, si le code et les données du noyau sont situés
-      à un seul et unique endroit en mémoire physique, et que chaque processus
-      mappe ces pages dans son espace virtuel, alors on paiera le coût de
-      l'architecture NUMA à chaque appel système, puisque l'on devra accéder à
-      des pages distantes.
+      Comme nous l'avons vu précédemment, l'architecture TSAR est clusterisée.
+      Dans l'espace d'adressage d'un processus, il y a un mapping sur les pages
+      du noyau, de sorte que si le code et les données du noyau sont situés à un
+      seul et unique endroit en mémoire physique, et que chaque processus mappe
+      ces pages dans son espace virtuel, alors on paye le coût de l'architecture
+      NUMA à chaque appel système, puisque l'on doit accéder à des pages
+      distantes.
 
       Afin de résoudre ce problème, la notion de réplica noyau a été introduite
       au sein des \textit{clusters-manager}. Un réplica noyau consiste à
@@ -146,8 +143,8 @@
       
     \subsection{Contributions de François~\citeauthor{guerret2014exploitation}}
       
-      La gestion d'une mémoire physique de 1To fût le sujet de stage de
-      François~\citet{guerret2014exploitation} en 2014. Ce dernier proposa
+      La gestion d'une mémoire physique de 1To a été le sujet de stage de
+      François~\citet{guerret2014exploitation} en 2014. Ce dernier a proposé
       différents changements pour ALMOS (figure~\ref{fig:almos-guerret}):
       \benumline \item réduire l'espace virtuel du noyau à 1Go \item répartir
       cet espace virtuel entre les clusters \item sortir de l'espace virtuel les
@@ -172,11 +169,10 @@
         certaines structures de données ne pouvent plus être contenues dans un
         si petit espace, comme par exemple la table des pages d'un
         processus. Celle-ci, une fois pleine\footnote{Ce cas n'arrive jamais,
-          mais il est néanmoins théoriquement possible}, peut atteindre une
-        taille maximale de 8Mo. De plus, chaque processus dispose de sa propre
-        table des pages. Il est techniquement impossible de stocker 8Mo dans
-        4Mo, François a donc choisi de sortir cette structure de l'espace
-        virtuel.
+          mais il est néanmoins théoriquement possible}, peut atteindre jusqu'à
+        8Mo. De plus, chaque processus dispose de sa propre table des pages. Il
+        est techniquement impossible de stocker 8Mo dans 4Mo, François a donc
+        choisi de sortir cette structure de l'espace virtuel.
 
         La seconde structure de données problématique est la table des
         descripteurs de pages physiques. Les noyaux monolithiques, dont ALMOS,
@@ -192,12 +188,12 @@
         Ce travail n'a malheureusement pas donné lieu à une solution
         fonctionnelle. La gestion par des adresses physiques de ces deux
         structures s'est avérée être très compliquée et nécessitait de recoder
-        une partie conséquente du noyau. Le principal inconvénient de ce choix
-        est le parcours de listes: il est nécessaire de vérifier que chaque
-        élément n'est pas une structure gérée physiquement avant de pouvoir
-        y accéder. Cela allourdi considérablement l'opération, cette solution
-        fût donc abandonnée. Néanmoins, elle a posée les bases de la version
-        suivante d'ALMOS.
+        une partie conséquente du noyau. Le principal inconvénient est le
+        parcours de listes: il est nécessaire de vérifier que chaque élément
+        n'est pas une structure gérée physiquement avant de pouvoir y
+        accéder. Cela allourdi considérablement l'opération, cette solution a
+        donc été donc abandonnée. Néanmoins, elle a posée les bases de la
+        version suivante d'ALMOS.
       \end{paragraph}
 
       
@@ -238,8 +234,7 @@
     ainsi accéder au \textit{core-manager} du cluster destinataire sans se
     rendre compte que celui-ci est distant, et lui ajouter la \texttt{struct
       task} du processus à migrer. Les pages physiques du processus seront
-    ensuite migrées via la stratégie \textit{Auto-Next-Touch\footnote{Non
-        détaillée dans ce rapport. Voir~\citep{almaless2014universite}.}}.
+    ensuite migrées via la stratégie \textit{Auto-Next-Touch}.\\
 
     En choisissant de passer ALMOS en mode multi-noyau, chaque cluster est géré
     par un noyau différent. Les clusters ont par conséquent des espaces
