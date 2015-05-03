@@ -29,25 +29,26 @@
   \section{Gestion des espaces d'adressage}
   \label{sec:memory}    
 
-    L'architecture TSAR est une architecture à mémoire partagée. Elle dispose
-    d'1To de mémoire et cet espace est géré par différents clusters. Chaque
-    cluster gère de manière matérielle un segment de 4Go. Néanmoins, le système
-    voit des processeurs 32 bits et est donc limité à utiliser au maximum
-    4Go. Nous allons ici nous intéresser aux mécanismes permettant aux noyaux de
-    pouvoir profiter des espaces d'adressages supérieurs à leur espace virtuel.
+    L'architecture TSAR est une architecture massivement multi-c\oe urs à
+    mémoire partagée. Les c\oe urs sont regroupés en clusters interconnectés par
+    un NoC. Elle dispose d'1To de mémoire répartie entre les clusters. Chaque
+    cluster gère un segment de 4Go. Néanmoins, le système voit des c\oe urs 32
+    bits et est donc limité à utiliser au maximum 4Go. Nous allons ici nous
+    intéresser aux mécanismes permettant aux noyaux de pouvoir profiter des
+    espaces d'adressages supérieurs à leur espace virtuel.
 
     \subsection{Physical Address Extension}
 
       Avant l'apparition des architectures 64 bits s'est posée la question de la
-      gestion d'espaces d'adressage supérieurs à 4Go avec des processeurs 32
-      bits. Les premiers travaux ont été menés par Intel et ont débouché sur la
-      technologie PAE\nomenclature{PAE}{Physical Address Extension}
-      (\textit{Physical Address Extension})~\citep{patent6349380}. Celle-ci
-      permet d'utiliser des adresses physiques sur 36 bits au lieu de 32, et
-      donc d'exploiter jusqu'à 64Go de mémoire.
+      gestion d'espaces d'adressage supérieurs à 4Go avec des c\oe urs 32
+      bits. Les travaux menés par Intel~\citep{patent6349380} et
+      AMD~\citep{amd2000system} ont débouchés sur la technologie
+      PAE\nomenclature{PAE}{Physical Address Extension} (\textit{Physical
+        Address Extension}). Celle-ci permet d'utiliser des adresses physiques
+      sur 36 bits au lieu de 32, et donc d'exploiter jusqu'à 64Go de mémoire.
 
       \begin{figure}[ht]
-        \centering \includegraphics[scale=0.45]{paging-no-pae}
+        \centering \includegraphics[scale=0.55]{paging-no-pae}
         \caption{Exemple de traduction d'adresse par la MMU sans utiliser la
           technologie PAE}
         \label{fig:paging-no-pae}
@@ -57,50 +58,48 @@
       Ce mécanisme fût introduit en 1995 dans les premiers Pentium Pro, et
       fonctionne de la manière suivante. Considérons une MMU classique
       (figure~\ref{fig:paging-no-pae}) permettant de gérer des adresses de 32
-      bits. Celle-ci contient deux niveaux d'indirection, chacun ayant 1024
-      entrées de 4 octets. Lors d'une traduction, on utilise les
-      MSB\nomenclature{MSB}{Most Significant Bit} comme index dans chacune des
-      indirections, puis les LSB\nomenclature{LSB}{Least Significant Bit} pour
-      obtenir l'offset.
+      bits. Une adresse virtuelle est composée du numéro de page virtuelle, sur
+      20 bits, et de l'offset dans cette page, sur 12 bits. La MMU permet de
+      retrouver le numéro de page physique à partir du numéro de page virtuelle
+      grâce à la table des pages. Celle-ci contient deux niveaux d'indirection,
+      chacun ayant 1024 entrées de 4 octets.
 
-      Chaque processus a dans son espace virtuel un pointeur vers une adresse
-      physique. À cette adresse se trouve le \textit{Page Directory}. Les
-      entrées de ce tableau (appelées PDE\nomenclature{PDE}{Page Directory
-        Entry} sont indexées par les 10 premiers bits de l'adresse virtuelle que
-      l'on veut accéder. Elles sont stockées sur 32 bits, et le \textit{Page
-        Directory} contient 1024 entrées ($2^{10} = 1024$). Les PDE contiennent
-      le numéro de la page mémoire où est située la \textit{Page Table} du
-      processus. Ce numéro est appelé PFN\nomenclature{PFN}{Page Frame
-        Number}. Comme le \textit{Page Directory}, la \textit{Page Table} est
-      indexée par 10 bits. Elle a donc une profondeur de 1024, et les entrées
-      (PTE\nomenclature{PTE}{Page Table Entry}) sont stockées sur 32 bits. Ces
-      PTE contiennent le PFN de la page contennant la donnée que l'on cherche à
-      accéder. À partir de ce PFN, on peut retrouver l'adresse physique de la
-      page correspondante, puis on utilise les 12 bits d'offset restant pour se
-      déplacer et obtenir la donnée.
+      Chaque processus a dans son espace virtuel un pointeur vers l'adresse
+      physique de la table des pages. À cette adresse se trouve le \textit{Page
+        Directory}, un tableau contenant 1024 entrées de 32 bits. Les entrées de
+      ce tableau (appelées PDE\nomenclature{PDE}{Page Directory Entry} pour
+      \textit{Page Directory Entry}) sont indexées par les 10 premiers bits du
+      numéro de page virtuelle que l'on veut accéder. Elles contiennent le
+      numéro de la page mémoire où est située la \textit{Page Table} du
+      processus. La \textit{Page Table} est adressée par les 10 derniers bits du
+      numéro de page virtuelle, et contient 1024 entrées de 32 bits (les
+      PTE\nomenclature{PTE}{Page Table Entry}). Ces PTE contiennent le
+      PFN\nomenclature{PFN}{Page Frame Number} (\textit{Page Frame Number}) de
+      la page contennant la donnée que l'on cherche à accéder. À partir de ce
+      PFN, on peut retrouver l'adresse physique de la page correspondante, puis
+      on utilise les 12 bits d'offset restant pour se déplacer et obtenir la
+      donnée.
 
       \begin{paragraph}{Remarque:}
-        Le noyau Linux utilise quatre niveaux d'abstraction dans sa version
+        Le noyau Linux utilise quatre niveaux d'indirection dans sa version
         actuelle. Néanmoins, ils sont purement logiciels. La MMU continue de
         travailler avec deux niveaux d'indirection comme dans la
         figure~\ref{fig:paging-no-pae}.\\
       \end{paragraph}
       
-      L'activation du mode PAE dans la MMU permet de rajouter un troisième
-      niveau d'indirection, en diminuant le nombre de MSB utilisés
-      précédement. On voit sur la figure~\ref{fig:paging-pae} que les bits 30 et
-      31 sont maintenant réservés à une nouvelle table, la
+      L'activation du mode PAE dans la MMU permet d'ajouter un troisième niveau
+      d'indirection. On voit sur la figure~\ref{fig:paging-pae} que les bits 30
+      et 31 sont maintenant réservés à une nouvelle table, la
       PDPT\nomenclature{PDPT}{Page Directory Pointer Table} (\textit{Page
-        Directory Pointer Table}). Le mode PAE transforme également la taille
-      des entrées du \textit{Page Directory} et de la \textit{Page Table} en
-      entrées de 64 bits et non plus 32. Pour ce faire, on considére que le
-      nombre d'entrées dans ces tables est maintenant de 512, et que chaque
-      entrée est la concaténation de deux entrées de 4 octets. On obtient donc
-      des \textit{PDE} et des \textit{PTE} sur 8 octets contenant des
-      \textit{PFN} sur 64 bits.
+        Directory Pointer Table}). Le mode PAE transforme la taille des entrées
+      du \textit{Page Directory} et de la \textit{Page Table} en entrées de 64
+      bits et non plus 32. Le nombre d'entrées dans ces tables est maintenant de
+      512 ($2^{9}$), chaque entrée est la concaténation de deux entrées de 4
+      octets. On obtient donc des \textit{PDE} et des \textit{PTE} sur 8 octets
+      contenant des \textit{PFN} sur 64 bits.
 
       \begin{figure}[ht]
-        \centering \includegraphics[scale=0.45]{paging-pae}
+        \centering \includegraphics[scale=0.52]{paging-pae}
         \caption{Exemple de traduction d'adresse par la MMU avec la technologie
           PAE}
         \label{fig:paging-pae}
@@ -108,21 +107,10 @@
       
       Ce mécanisme permet donc à la MMU d'accéder à des adresses sur 64 bits, et
       ainsi de dépasser les 4Go imposés par les espaces d'adressages de 32
-      bits. Néanmoins, l'adressage physique est lui restreint à 36 bits, ce qui
-      implique une limite à 64Go ($2^{36}$).
-
-      \begin{paragraph}{Remarque:}
-        \begin{itemize}
-          \item Le mode PAE existe également dans les processeurs
-            AMD~\citep{amd2000system}
-          \item Microsoft a pour sa part développé
-            AWE~\citep{russinovich2012windows}\nomenclature{AWE}{Address
-              Windowing Extension}, qui est une
-            API\nomenclature{API}{Application Programming Interface} utilisateur
-            basée sur PAE. Cette API propose aux développeurs d'applications
-            d'exploiter eux aussi plus de 4Go de mémoire.
-        \end{itemize}
-      \end{paragraph}
+      bits. Néanmoins, l'adressage physique est restreint à 36 bits, ce qui
+      implique une limite à 64Go ($2^{36}$). Cette limitation est un choix
+      constructeur purement artificiel. Avec ce découpage, on peut théoriquement
+      manipuler $2^{64}$ entrées.
 
 
     \subsection{Large Physical Address Extension}
