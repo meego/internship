@@ -1,20 +1,5 @@
 \chapter{État de l’art}
 
-  La problématique du passage à l’échelle des noyaux n’est pas nouvelle. Dès les
-  années 90,~\citeauthor{unrau1995hierarchical} posent la question et apportent
-  des réponses avec le noyau Hurricane (détaillé en section
-  \ref{subsec:others}). D’autres essayent avec le modèle des micro-noyaux, comme
-  Minix, L4 ou Mach. Mais c'est finalement Linux qui s’impose comme le modèle de
-  référence, et les travaux se focalisent alors sur ce dernier.
-
-  Mais, aux alentours des années 2004/2005, un changement radical a été opéré de
-  la part des constructeurs tels qu’Intel ou AMD. En effet, ils ont choisi de
-  simplifier les processeurs\footnote{Avec la suppression des exécutions
-    \textit{out-of-order} par exemple.} pour minimiser l'énergie consommée, et
-  d'augmenter le nombre de c\oe urs et le nombre de processeurs sur les
-  puces. C'est le début du parallélisme massif~\citep{patterson2011parallel} et
-  de la remise en question des capacités de Linux à suivre cette évolution.\\
-
   Cet état de l'art est organisé comme suit. Dans un premier temps, nous nous
   intéresserons à la mémoire offerte par l'architecture TSAR. Celle-ci implique
   de gérer un espace d'adressage physique considérablement plus grand que
@@ -108,9 +93,8 @@
       Ce mécanisme permet donc à la MMU d'accéder à des adresses sur 64 bits, et
       ainsi de dépasser les 4Go imposés par les espaces d'adressages de 32
       bits. Néanmoins, l'adressage physique est restreint à 36 bits, ce qui
-      implique une limite à 64Go ($2^{36}$). Cette limitation est un choix
-      constructeur purement artificiel. Avec ce découpage, on peut théoriquement
-      manipuler $2^{64}$ entrées.
+      implique une limite à 64Go ($2^{36}$)\footnote{Cette limitation est un
+        choix des constructeurs.}.
 
 
     \subsection{Large Physical Address Extension}
@@ -119,12 +103,10 @@
       mécanisme, appelé
       LPAE~\citep{arm2012principles,marinas2011linux}\nomenclature{LPAE}{Large
         Physical Address Extension}, pour \textit{Large Physical Address
-        Extension}.
-
-      Sur le même principe que PAE, les processeurs proposent un découpage des
-      adresses virtuelles en trois niveaux d'indirection, chacun contenant des
-      entrées sur 64 bits. Le premier permet d'avoir des pages de 1Go, le second
-      de 2Mo, et le dernier de 4Ko.
+        Extension}. Sur le même principe que PAE, les processeurs proposent un
+      découpage des adresses virtuelles en trois niveaux d'indirection, chacun
+      contenant des entrées sur 64 bits. Le premier permet d'avoir des pages de
+      1Go, le second de 2Mo, et le dernier de 4Ko.
 
       ARM limite à 40 bits les adresse physiques pour supporter une mémoire de
       1To maximum. C'est plus que 64Go proposé par PAE. Malgré tout,
@@ -240,10 +222,12 @@
       \setlength{\tabcolsep}{6pt}
       \renewcommand{\arraystretch}{1.0}
 
-      Pour des raisons de performances, ALMOS évolue vers une taille de
-      descripteurs de page de 64 octets, soit une ligne complète pour le cache
-      de niveau L1. Cela a pour conséquence d'augmenter la place nécessaire pour
-      décrire la mémoire.
+      \begin{paragraph}{Remarque:}
+        Pour des raisons de performances, ALMOS évolue vers une taille de
+        descripteurs de page de 64 octets, soit une ligne complète pour le cache
+        de niveau L1. Cela a pour conséquence d'augmenter la place nécessaire
+        pour décrire la mémoire.
+      \end{paragraph}
 
 
     \subsection{Conclusion}
@@ -270,7 +254,7 @@
     TSAR est une architecture massivement multi-c\oe urs
     cc-NUMA\nomenclature{cc-NUMA}{Cache-Coherent Non-Uniform Memory Access} à
     mémoire partagée. Ainsi, en plus de disposer d'une grande mémoire, elle est
-    composée d'un grands nombre de c\oe urs, répartis en clusters. Ce découpage
+    composée d'un grand nombre de c\oe urs, répartis en clusters. Ce découpage
     implique que les accès mémoire se font à deux vitesses: si un processeur
     accède à la mémoire de son cluster, la réponse sera plus rapide que s'il
     veut accéder à la mémoire du cluster voisin. La localité de ces accès
@@ -316,7 +300,7 @@
         \item la machine considérée est composée de seulement 48 c\oe urs, ce qui
           est peu par rapport à la puissance des machines actuelles
         \item leur propre conclusion indique qu’il ne faut pas changer le design
-          des sytèmes d’exploitation `` pour l’instant''\\
+          des sytèmes d’exploitation ``pour l’instant''
       \end{itemize}
       Nous pensons qu’à présent, il est nécessaire de revoir cette organisation.
 
@@ -336,7 +320,7 @@
       différentes instances du noyau, et ces dernières communiquent uniquement
       par passage de messages~\citep{shelton2013popcorn}. Afin de garantir à
       l’utilisateur l’illusion d’un seul système en cours d'exécution, les
-      noyaux utilisent ces messages pour construire `` l’image disque unique''
+      noyaux utilisent ces messages pour construire ``l’image disque unique''
       (\textit{Single System Image}, figure~\ref{fig:popcorn-layers}). C'est
       cette abstraction qui est proposée à l'utilisateur, lui masquant
       entièrement l'aspect multi-noyau du système.
@@ -353,14 +337,14 @@
       Le partitionnement des ressources est fait selon la configuration donnée
       au boot du noyau, mais il est également possible de redéfinir
       l'attribution des ressources pendant l'exécution d'un noyau. Le premier
-      noyau qui est lancé, appelé `` noyau maître'', lance un processus de
+      noyau qui est lancé, appelé ``noyau maître'', lance un processus de
       reconnaissance du matériel. Ensuite, on précise aux noyaux secondaires,
       via des paramètres au boot, les ressources dont ils peuvent disposer. Une
       fois les noyaux lancés, ils ne partagent aucune données, exception faite
       de la table contenant les adresses d’écriture des buffers des autres
       noyaux, utilisée pour le passage de messages (voir
-      figure~\ref{fig:popcorn-buf}). Ces buffers sont de type ``
-      MWSR''\nomenclature{MWSR}{Multi Writer Single Reader} et utilisent un
+      figure~\ref{fig:popcorn-buf}). Ces buffers sont de type
+      ``MWSR''\nomenclature{MWSR}{Multi Writer Single Reader} et utilisent un
       système de ticket pour les écritures. Les lectures utilisent un mélange de
       deux techniques:\benumline \item le lecteur viendra consulter de manière
       régulière le contenu de son buffer (\textit{polling}) ou \item il ira lire
@@ -389,10 +373,10 @@
       tests n'ont pas montrés d'améliorations significatives des
       performances. Au contraire, il apparaît que Popcorn Linux est
       majoritairement mois efficace que Linux, sauf dans quelques
-      cas\footnote{L'utilisation de gmake pour la compilation noyau par
+      cas\footnote{L'utilisation de \texttt{gmake} pour la compilation noyau par
         exemple.}. Ce résultat est à relativiser, car une seule suite de
       benchmark a été utilisée ici. En revanche, ce projet ne s'attaque pas à la
-      problématique des très grands espaces d'adressages physiques sur des
+      problématique des très grands espaces d'adressage physiques sur des
       architectures 32 bits.
 
 
@@ -411,7 +395,7 @@
           le matériel et au contraire essayent de la masquer au maximum
         \item les machines sont construites comme des systèmes distribués,
           pourquoi ne pas appliquer le même modèle aux systèmes
-          d’exploitation~\citep{baumann2009your}.\\
+          d’exploitation~\citep{baumann2009your}.
       \end{itemize}
 
       Selon l’approche multi-noyau (voir figure~\ref{fig:barrelfish}),
@@ -421,13 +405,13 @@
       entre les différents systèmes se font par passage de messages. Le système
       utilise une variante des Remote Procedure Calls au niveau utilisateur
       (URPC). Chaque noyau dispose d’un serveur système en mode utilisateur
-      appelé Monitor. L’ensemble des moniteurs coordonne collectivement l’accès
-      à l’état global du système et maintient la cohérence des structures de
-      données répliquées par c\oe ur (les tables d’allocation mémoire et les
-      mappings des espaces d’adressages virtuels).\\
+      appelé \textit{Monitor}. L’ensemble des moniteurs coordonne collectivement
+      l’accès à l’état global du système et maintient la cohérence des
+      structures de données répliquées par c\oe ur (les tables d’allocation
+      mémoire et les mappings des espaces d’adressages virtuels).\\
 
       \begin{figure}[ht]
-        \centering \includegraphics[scale=0.3]{barrelfish}
+        \centering \includegraphics[scale=0.35]{barrelfish}
         \caption{L'architecture multi-noyau de
           Barrelfish~\citep{baumann2009multikernel}.}
         \label{fig:barrelfish}
@@ -435,19 +419,20 @@
 
       \citeauthor{baumann2009multikernel} ont ``stressé'' Barrelfish avec
       différents benchmarks. Les résultats sont montrés par la
-      figure~\ref{fig:barrelfish-bench}. On voit que Barrelfish comme Popcorn
-      Linux ne montre pas d'augmentation de performances
-      significative. Néanmoins, ce résultat est à relativiser. Il démontre que
-      Barrelfish, qui est un noyau jeune et construit \textit{from scratch},
-      peut obtenir des performances similaires voire supérieures à Linux.
+      figure~\ref{fig:barrelfish-bench}. On voit que Barrelfish, comme Popcorn
+      Linux, ne montre pas d'augmentation significative de performances.
 
       \begin{figure}[ht]
         \centering
         \includegraphics[scale=0.33]{barrelfish-bench}
-        \caption{Résultats de benchmark \textit{compute-band} sur une machine
+        \caption{Résultats de benchmarks \textit{compute-band} sur une machine
           AMD à 16 c\oe urs~\citep{baumann2009multikernel}.}
         \label{fig:barrelfish-bench}
       \end{figure}
+
+      Néanmoins, ce résultat est à relativiser. Il démontre que Barrelfish, qui
+      est un noyau jeune et construit \textit{from scratch}, peut obtenir des
+      performances similaires voire supérieures à Linux.
 
     \subsection{Autres travaux}
     \label{subsec:others}
@@ -592,9 +577,9 @@
     d'exploitation tout en maintenant le partage de ces données.
 
     Nous nous intéressons ici aux espaces mémoire, aux descripteurs de fichiers
-    et aux signaux. Ces deux dernier points représentent les données critiques
-    qui nous intéresse dans le cadre de la création distante ou de la migration
-    de processus/threads.
+    et aux signaux. Ces points représentent les informations critiques qui nous
+    intéresse dans le cadre de la création distante ou de la migration de
+    processus/threads.
 
     \subsection{Corey}
     \label{subsec:corey}
@@ -698,8 +683,8 @@
       \textit{Hybrid File Descriptor Tracking} (figure~\ref{fig:hare-fd}). Le
       principe est le suivant:
       \begin{itemize}
-        \item les serveurs maintiennent une table des compteurs de références
-          sur les inodes qu'ils gèrent
+        \item les serveurs maintiennent une table de compteurs de références sur
+          les inodes qu'ils gèrent
         \item lorsqu'un thread accède à un fichier, ce compteur est incrémenté.
         \item si celui-ci est inférieur ou égal à 1 (\textit{i.e,} le thread est
           le seul à accéder au fichier), le descripteur de fichier que lui
@@ -744,7 +729,7 @@
           \caption{Accélération de Hare comparée à Linux. On voit que Hare est
             bien plus efficace avec des microbenchmark.}
         \end{subfigure}
-        \caption{Résultats des benchmark et microbenchmark exécutés sur
+        \caption{Résultats des benchmarks et microbenchmarks exécutés sur
           Hare~\citep{gruenwald2014providing}.}
         \label{fig:hare-res}
       \end{figure}
@@ -782,7 +767,7 @@
     \subsection{Popcorn Linux}
 
       Nous allons maintenant étudier les réponses apportées
-      par~\citet{katz2013popcorn} pour la migration de processus ou de thread
+      par~\citet{katz2013popcorn} pour la migration de processus ou de threads
       dans un multi-noyau, à savoir: \benumline \item les \textit{shadow
         task} \item la définition des informations nécessaires à une
       migration \item la consistance des espaces d'adressages, virtuels comme
@@ -813,12 +798,13 @@
         ailleurs sur la machine, qui peuvent avoir besoin des informations de
         mapping qui ont été crées sur $N$.\\
 
-        Conserver ces structures à de nombreux avantages:\benumline \item
-        si la tâche revient s'exécuter sur le noyau, son redémarrage est
-        beaucoup plus rapide puisque l'on s'affranchi de l'allocation
-        mémoire \item cela permet de conserver les informations du thread
-        concernant les pages physiques occupées \item elles permettent de
-        relayer les signaux des processus entre les noyaux\eenumline.
+        Conserver ces structures à de nombreux avantages:\benumline \item si la
+        tâche revient s'exécuter sur le noyau, son redémarrage est beaucoup plus
+        rapide puisque l'on s'affranchi de l'allocation mémoire \item cela
+        permet de conserver les informations du thread concernant les pages
+        physiques occupées \item elles permettent de relayer les signaux des
+        processus entre les noyaux en suivant un modèle similaire aux
+        \textit{proxy} de Hare\eenumline.
 
       \end{paragraph}
 
@@ -877,7 +863,7 @@
           \item l'espace physique, qui doit être identique à 100\%, ou ne pas
             être du tout représenté
           \item les bits de protection
-          \item les pages spéciales : \textit{copy-on-write}, zero,\ldots\\
+          \item les pages spéciales : \textit{copy-on-write}, zero,~\ldots\\
         \end{itemize}
 
         L'espace virtuel d'un thread est maintenu cohérent car il est
@@ -926,7 +912,7 @@
       migré en dehors de son cluster. De plus, bien qu'identifié
       par~\citeauthor{katz2013popcorn} comme étant un point critique lors d'une
       migration, Popcorn Linux n'apporte pour l'instant aucune réponse quant à
-      la cohérence des descripteurs de fichiers~\citep[pageo
+      la cohérence des descripteurs de fichiers~\citep[page
         4]{katz2013popcorn}. Enfin, les tests de performances (figure
       ~\ref{fig:popcorn-bench}) ont montré un surcoût non négligeable liés au
       passage de messages et à l'acquisition de verrous pour les accès
@@ -934,7 +920,7 @@
 
       \begin{figure}[ht]
         \centering \includegraphics[scale=0.67]{popcorn-bench}
-        \caption{Temps de migration d'un thread sur Linux et sur Popcorn Linux
+        \caption{Temps de migration d'un thread sur Linux et sur Popcorn Linux:
           \itshape i) \upshape lors de la première migration \itshape ii)
           \upshape lors d'un retour sur un précédent
           noyau~\citep{katz2013popcorn}.}
