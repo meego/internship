@@ -274,9 +274,7 @@
     implique que les accès mémoire se font à deux vitesses: si un processeur
     accède à la mémoire de son cluster, la réponse sera plus rapide que s'il
     veut accéder à la mémoire du cluster voisin. La localité de ces accès
-    mémoire est au c\oe ur des problématiques des architectures NUMA. %%Nous
-    %% allons donc nous intéresser dans cette seconde partie aux différents
-    %% travaux qui adressent cette problématique.
+    mémoire est au c\oe ur des problématiques des architectures NUMA.
 
 
     \subsection{Scalabilité du noyau Linux}
@@ -531,15 +529,6 @@
         processeur massivement multi-c\oe urs et pour les infrastructures de
         Cloud Computing. Comme dans le cas de Barrelfish, chaque c\oe ur exécute
         une instance de système, basé sur un micro-noyau.
-        %% comme il est illustré par la figure~\ref{fig:fos}.
-
-        %% \begin{figure}[ht]
-        %%   \centering
-        %%   \includegraphics[scale=0.3]{fos}
-        %%   \caption{Apercu de la structure interne du noyau FoS et du schéma de
-        %%     communication.~\citep{wentzlaff2010operating}}
-        %%   \label{fig:fos}
-        %% \end{figure}
 
         FoS permet de spécifier aux différents noyaux en cours d'exécution
         quelles sont les ressources matérielles dont il peut disposer. En se
@@ -650,7 +639,6 @@
       également par le nombre de miss dans le cache L3
       (figure~\ref{fig:fd-solved-2}).
 
-      %% FIXME: figures alignement
       \begin{figure}[ht]
         \begin{subfigure}[b]{0.5\textwidth}
           \includegraphics[width=200px]{fd-solved-1}
@@ -945,6 +933,3 @@
           noyau~\citep{katz2013popcorn}.}
         \label{fig:popcorn-bench}
       \end{figure}
-
-
-      %% \subsection{DragonFly BSD}
