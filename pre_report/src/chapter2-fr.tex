@@ -40,7 +40,7 @@
     \begin{figure}[ht]
       \centering \includegraphics[scale=0.241]{include/img/tsar.png}
       \caption{Schéma global de l'architecture TSAR. Les clusters sont composés
-        de quatre processeurs connectés entre eux sur un interonnect local,
+        de quatre c\oe urs connectés entre eux sur un interonnect local,
         lui-même relié à différents périphériques (TTy, ICU, NIC,
         etc\ldots)~\citep{greiner2009tsar}.}
       \label{fig:tsar}
@@ -69,9 +69,9 @@
     \texttt{libpthread, mpi, openMP}\ldots Le but premier d'ALMOS est de
     garantir un passage à l'échelle et une conservation de la localité des accès
     mémoires. Pour cela, le noyau intègre trois nouveaux mécanismes:
-    \benumline \item les clusters managers \item les réplica-noyau \item une
-    nouvelle stratégie d'allocation mémoire (\textit{Auto-Next-Touch})
-    \eenumline.
+    \benumline \item les \textit{clusters-managers} \item les
+    réplica-noyau \item une stratégie d'allocation mémoire appelée
+    \textit{Auto-Next-Touch}\eenumline.
 
     
     \subsection{Les cluster-manager}
@@ -164,7 +164,7 @@
         \label{fig:almos-guerret}
       \end{figure}
 
-      \begin{paragraph}{Gestion en adressage physiques de structures de données:}
+      \begin{paragraph}{Gestion en adressage physique de structures de données:}
         Avec seulement 4Mo d'espace virtuel pour le noyau par clusters,
         certaines structures de données ne pouvent plus être contenues dans un
         si petit espace, comme par exemple la table des pages d'un
@@ -197,7 +197,7 @@
       \end{paragraph}
 
       
-  \section{Passage au mode multi-noyau}
+  \section{Passage en mode multi-noyau}
   \label{sec:multi-noyau}
 
     La version actuelle d'ALMOS proposée par Mohamed Karaoui supprime totalement
@@ -234,13 +234,11 @@
     ainsi accéder au \textit{core-manager} du cluster destinataire sans se
     rendre compte que celui-ci est distant, et lui ajouter la \texttt{struct
       task} du processus à migrer. Les pages physiques du processus seront
-    ensuite migrées via la stratégie \textit{Auto-Next-Touch}.\\
-
-    En choisissant de passer ALMOS en mode multi-noyau, chaque cluster est géré
-    par un noyau différent. Les clusters ont par conséquent des espaces
-    d'adressage différents, ce qui modifie les mécanismes de migration de
-    processus ou de threads. C'est à cette problématique que nous allons
-    répondre.
+    ensuite migrées via la stratégie \textit{Auto-Next-Touch}. En choisissant de
+    passer ALMOS en mode multi-noyau, chaque cluster est géré par un noyau
+    différent. Les clusters ont par conséquent des espaces d'adressage
+    différents, ce qui modifie les mécanismes de migration de processus ou de
+    threads. C'est à cette problématique que nous allons répondre.
 
 
   \section{Objectifs}
@@ -250,7 +248,7 @@
     définir et de mettre en place les mécanismes suivants:
 
     \begin{itemize}
-      \item assurer la création et la migration de processus mono-threads entre
+      \item assurer la création et la migration de processus mono-thread entre
         clusters
       \item ajouter le support du multi-threading
       \item ré-implémenter le composant d'ALMOS appelé
@@ -260,5 +258,5 @@
         celle-ci.
     \end{itemize}
 
-    %% Pour plus de détails sur la spécification du problème ainsi que son
-    %% implémentation, on peut se référer à~\citep{peneau2015todo}.
+    Pour plus de détails sur la spécification du problème ainsi que son
+    implémentation, on peut se référer à~\citep{peneau2015almos}.

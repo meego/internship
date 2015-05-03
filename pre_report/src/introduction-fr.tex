@@ -3,8 +3,8 @@
   Au milieu des années 2000, les fabricants de processeurs ont atteint une
   limite technique.  Au-delà de 100 Watts par boitier, il est difficile de
   refroidir les circuits à l'aide de simples ventilateurs. Les technologies
-  comme le water cooling~\citep{googleXXXXdatacenters} sont coûteuses et
-  énergivores.  Pour continuer l'augmentation de puissance des processeurs en
+  comme le \textit{water cooling}~\citep{googleXXXXdatacenters} sont coûteuses
+  et énergivores.  Pour continuer l'augmentation de puissance des processeurs en
   profitant de la loi de Moore, ils ont dû cesser de complexifier l'architecture
   des c\oe urs et d'augmenter leur fréquence de fonctionnement. Au contraire,
   ils ont simplifié les c\oe urs pour en mettre plusieurs par processeur.  De
@@ -21,13 +21,13 @@
   TSAR~\citep{greiner2009tsar}\nomenclature{TSAR}{Tera-Scale Architecture}
   développée au LIP6\nomenclature{LIP6}{Laboratoire d'Informatique de Paris
     6}. TSAR est une architecture NUMA\nomenclature{NUMA}{Non-Uniform Memory
-    Acces} à mémoire partagée cohérente, composée de 1024 c\oe urs 32 bits et
+    Access} à mémoire partagée cohérente, composée de 1024 c\oe urs 32 bits et
   1To de mémoire physique (40 bits).  Les c\oe urs sont répartis en clusters
   contenant chacun 4 c\oe urs et gérant un segment de 4Go de mémoire
-  physique. Le choix de c\oe urs 32 bits, et non 64bits, est assumé. C'est,
+  physique. Le choix de c\oe urs 32 bits, et non 64 bits, est assumé. C'est,
   selon les architectes, le meilleur compromis en énergie dissipée par
-  instruction et cela permet un meilleur usage des caches car les pointeurs sont
-  plus petits.  Un système d'exploitation nommé
+  instruction, et cela permet un meilleur usage des caches car les pointeurs
+  sont plus petits.  Un système d'exploitation nommé
   ALMOS~\citep{almaless2011almos}\nomenclature{ALMOS}{Advanced Locality
     Management Operating System} a été spécialement développé pour TSAR. Ce
   système est basé sur un noyau monolithique, tout comme Linux ou
@@ -39,7 +39,7 @@
   L'architecture TSAR utilisée lors du développement d'ALMOS n'était pas
   finalisée. Elle ne proposait que 4Go de mémoire physique (32 bits). Elle gère
   désormais 1To (40 bits). Le but de ce stage est de faire évoluer ALMOS pour
-  permettre la gestion de ce tera octet.\\
+  permettre la gestion de ce tera-octet.\\
 
   Nous faisons face à plusieurs problèmes. Le premier est que les c\oe urs 32
   bits sont limités à 4Go d'espace adressable virtuel. Le noyau doit gérer un
@@ -53,19 +53,19 @@
   leur mode d'accès. ALMOS va ainsi évoluer vers une structure semblable par
   certains aspects au multi-noyau~\citep{baumann2009multikernel}. Ainsi, le
   troisième problème est une conséquence du deuxième. Si certaines structures
-  sont répliquées, il faut que le système en garantisse la cohérence et ainsi
-  offre à l'utilisateur l'illusion d'un noyau monolithique. \\
+  sont répliquées, il faut que le système en garantisse la cohérence pour offrir
+  à l'utilisateur l'illusion d'un noyau monolithique. \\
 
   Pour ce stage, nous allons nous concentrer sur les structures partagées par
   les threads d'un processus, telles que les descripteurs de fichiers ou les
   zones mémoires partagées. \\
 
   Ce document est organisé de la manière suivante: en section~\ref{sec:memory}
-  nous nous intéressons à la gestion de grande quantité de mémoire sur des
-  architectures 32 bits. En section~\ref{sec:scalability} nous présentons les
+  nous nous intéresserons à la gestion de grande quantité de mémoire sur des
+  architectures 32 bits. En section~\ref{sec:scalability} nous présenterons les
   différents travaux de recherche adressant la problématique du passage à
   l'échelle des systèmes d'exploitation.  La section~\ref{sec:consistency} est
   relative aux problèmes de cohérence mémoire pour les structures de données des
   noyaux large échelle. La présentation du contexte de travail sera faite en
-  section~\ref{sec:context}. Enfin nous conclurons en
+  section~\ref{sec:context}. Enfin nous concluerons en
   section~\ref{sec:conclusion}.\newline
