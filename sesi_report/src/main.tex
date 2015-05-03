@@ -2,7 +2,9 @@
 \usepackage[frenchb]{babel}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[hidelinks]{hyperref}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=violet,
+  urlcolor=blue]{hyperref}
+\usepackage{xcolor}
 \usepackage{lettrine}
 \usepackage{palatino}
 \renewcommand*\rmdefault{ppl}
@@ -20,6 +22,7 @@
 \usepackage[sort, authoryear]{natbib}
 \usepackage{listings}
 \usepackage{placeins}
+\usepackage{etoolbox}
 
 %% Commands
 \bibpunct{[}{]}{,}{n}{,}{,}
@@ -91,7 +94,6 @@
 \setlength{\columnsep}{0.125in}
 \setlength{\columnseprule}{0.5pt}
 \setlength{\footskip}{0.7cm}
-\setlength{\headsep}{10pt}
 
 %% lst config
 \definecolor{mygreen}{rgb}{0,0.6,0}
@@ -138,6 +140,11 @@
 %%     sig_mgr_s, event_s, rwlock_s, vmm_s, pmm_s, vfs_node_s, vfs_file_s,
 %%     fd_info_s, metafs_s, wait_queue_s, mapper_s, vfs_stat_s, vfs_context_s,
 %%     vfs_node_s, vfs_file_s, vfs_node_op_s}, }
+
+%% Prevents hyperref coloring \citeauthor
+\makeatletter
+\pretocmd{\NAT@citexnum}{\@ifnum{\NAT@ctype>\z@}{\let\NAT@hyper@\relax}{}}{}{}
+\makeatother
 
 \sloppy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
