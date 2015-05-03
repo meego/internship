@@ -45,17 +45,16 @@
   bits sont limités à 4Go d'espace adressable virtuel. Le noyau doit gérer un
   espace mémoire physique supérieur à l'espace virtuel des processeurs. Pour
   résoudre ce problème, nous verrons que nous allons devoir répartir et souvent
-  répliquer toutes les structures du noyau dans chaque cluster. \todo{ALMOS,
-    dans sa version 32 bits, a déjà une organisation clusterisée pour gérer le
-    co-placement des threads et des données, mais cela n'interdit pas d'accéder
-    facilement à toute la mémoire, c'est désormais difficile.} Le deuxième
-  problème est donc de revoir la répartition ou réplication des structures du
-  noyau et leur mode d'accès. ALMOS va ainsi évoluer vers une structure
-  semblable par certains aspects au
-  multi-noyau~\citep{baumann2009multikernel}. Ainsi, le troisième problème est
-  une conséquence du deuxième. Si certaines structures sont répliquées, il faut
-  que le système en garantisse la cohérence et ainsi offre à l'utilisateur
-  l'illusion d'un noyau monolithique. \\
+  répliquer toutes les structures du noyau dans chaque cluster. ALMOS, dans sa
+  version 32 bits, a déjà une organisation clusterisée pour gérer le
+  co-placement des threads et des données, mais cela n'interdit pas d'accéder
+  facilement à toute la mémoire; c'est désormais difficile. Le deuxième problème
+  est donc de revoir la répartition ou réplication des structures du noyau et
+  leur mode d'accès. ALMOS va ainsi évoluer vers une structure semblable par
+  certains aspects au multi-noyau~\citep{baumann2009multikernel}. Ainsi, le
+  troisième problème est une conséquence du deuxième. Si certaines structures
+  sont répliquées, il faut que le système en garantisse la cohérence et ainsi
+  offre à l'utilisateur l'illusion d'un noyau monolithique. \\
 
   Pour ce stage, nous allons nous concentrer sur les structures partagées par
   les threads d'un processus, telles que les descripteurs de fichiers ou les
