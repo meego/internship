@@ -16,7 +16,7 @@
 \newcommand{\ifr}[2]{\iflanguage{frenchb}{#1}{#2}}
 
 %% PACKAGES %%
-\usepackage[top=2.3cm,bottom=2.7cm,left=2.3cm,right=2.3cm]{geometry}
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.3cm,right=2.3cm]{geometry}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -33,10 +33,12 @@
 \usepackage{sectsty}
 \usepackage{placeins}
 \usepackage{amsmath,amsfonts,amsthm}
-\usepackage[hidelinks]{hyperref}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=violet,
+  urlcolor=blue]{hyperref}
 \usepackage[official]{eurosym}
 \usepackage{fancyhdr}
 \usepackage[sort, authoryear]{natbib}
+\usepackage{etoolbox}
 \usepackage{paralist} %% enumerate several elements on a single line like (i)
 %% this is an example, (ii) this is a second example
 
@@ -47,7 +49,7 @@
 
 \fancyhead[C]{Ajout du mécanisme de migration de thread pour le multi-noyau\\
   ALMOS}
-\fancyhead[L,R]{{\color{red}Release Candidate 5}}
+\fancyhead[L,R]{{\color{red}Release Candidate 6}}
 \fancyfoot[L]{Université Pierre \& Marie Curie}
 \fancyfoot[C]{\thepage}
 \fancyfoot[R] {Pierre-Yves PÉNEAU}
@@ -57,6 +59,7 @@
 \newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
 \newcommand{\eenumline}{\end{inparaenum}}
 \setlength\parindent{0pt}
+\setlength{\footskip}{40pt}
 \titlespacing*{\chapter}{0pt}{0pt}{20pt}
 \titleformat{\chapter}[hang]{\bf\huge}{\thechapter}{2pc}{}
 \newcommand{\horrule}[1]{\rule{\linewidth}{#1}}
@@ -65,6 +68,12 @@
 \makenomenclature
 \ifr{\renewcommand{\nomname}{Liste des abréviations}}
 {\renewcommand{\nomname}{List of Abbreviations}}
+\renewcommand*\rmdefault{ppl}
+\linespread{1.1}
+%% Prevents hyperref coloring \citeauthor
+\makeatletter
+\pretocmd{\NAT@citexnum}{\@ifnum{\NAT@ctype>\z@}{\let\NAT@hyper@\relax}{}}{}{}
+\makeatother
 
 \def \printed {no}
 \def \yes {yes}
@@ -78,7 +87,7 @@
   \minput{src/titlepage-fr}
 
   \setcounter{page}{1}
-  \pagenumbering{roman}
+  \pagenumbering{Roman}
   \pagestyle{headings}
   \onehalfspacing
 
@@ -88,7 +97,7 @@
   \printversion
   \listoftables
   \printversion
-  \pagestyle{empty}
+  \pagestyle{plain}
   \printnomenclature[20em]
   \printversion
   \clearpage
@@ -111,8 +120,6 @@
   \pagestyle{plain}
   \bibliographystyle{plainnat}
   \bibliography{src/references}
-  \ifr {\addcontentsline{toc}{chapter}{Bibliographie}}
-       {\addcontentsline{toc}{chapter}{References}}
 }
 
 \bibpunct{[}{]}{,}{n}{,}{,}
