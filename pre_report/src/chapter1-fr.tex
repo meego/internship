@@ -599,14 +599,14 @@
     \subsection{Corey}
     \label{subsec:corey}
 
-      Comme nous l'avons vu précédemment, Corey permet de manipuler très
+      Comme nous l'avons dit précédemment, Corey permet de manipuler très
       précisément le partage des données des processus, et notamment celui des
       descripteurs de fichiers.~\citeauthor{boyd2008corey} ont identifié, via un
       simple microbenchmark, que ces derniers posent problème au fur et à mesure
-      que l'on augmente le nombre de c\oe urs. L'expérience est la suivante:
-      on initialise un certain nombre de threads pour un processus. Chaque
-      thread crée un descripteur de fichier, le clone via la fonction
-      \texttt{dup()}, puis le ferme avec \texttt{close()}. L'expérience montre
+      que l'on augmente le nombre de c\oe urs. L'expérience est la suivante: on
+      initialise un certain nombre de threads pour un processus. Chaque thread
+      crée un descripteur de fichier, le clone via la fonction \texttt{dup()},
+      puis le ferme avec \texttt{close()}. L'expérience montre
       (figure~\ref{fig:fd-problem}) que plus on augmente le nombre de c\oe urs
       disponibles (et donc la répartition des threads), plus le nombre
       d'opérations par unité de temps diminue.
@@ -671,9 +671,9 @@
       mécanisme client/serveur. Le système de fichiers est géré de manière
       distribuée par des serveurs qui sont eux aussi distribués. Certains noyaux
       ne possèdent pas de serveur. Lors d'un \texttt{open()} se faisant sur un
-      noyau n'ayant pas de serveur, le client doit dans un premier temp résoudre
-      le nom de celui qu'il doit contacter. Pour cela, la fonction suivante est
-      utilisée:
+      noyau n'ayant pas de serveur, le client doit dans un premier temps
+      résoudre le nom de celui qu'il doit contacter. Pour cela, la fonction
+      suivante est utilisée:
       \begin{center}
         \texttt{hash(dir, name) \% NSERVERS = server\_id}
       \end{center}
@@ -689,7 +689,7 @@
         \includegraphics[scale=0.24]{hare-design}
         \caption{Fonctionnement de Hare. Certains noyaux possèdent un serveur de
           fichiers et d'autres non. La communication se fait par passage de
-          messages. Les écritures se font dans le buffer-cache qui est
+          messages. Les écritures se font dans le buffer-cache
           partagé~\citep{gruenwald2014providing}.}
         \label{fig:hare-design}
       \end{figure}
@@ -709,6 +709,13 @@
           toutes les opérations sur le fichier devront se faire par passage de
           messages.
       \end{itemize}
+
+      \begin{paragraph}{Remarque:}
+        La récupération par le serveur de la gestion de l'offset se fait par un
+        message d'invalidation à destination du thread ayant ouvert le
+        fichier.\\
+      \end{paragraph}
+
       \begin{figure}[ht]
         \centering
         \includegraphics[scale=0.28]{hare-fd-2}
@@ -748,11 +755,11 @@
       la famille \texttt{exec()}. Celle-ci a été ré-implémentée dans le noyau
       et, dans le cas d'une migration, fonctionne comme un appel de fonction via
       RPC\nomenclature{RPC}{Remote Procedure Call}. Une fois déplacé, un
-      processus restera sur le même processeur jusqu'à sa libération. Pour
-      assurer la cohérence des descripteurs de fichiers entre processus,
-      l'initiateur du \texttt{exec()} sur le noyau source n'est pas détruit mais
-      est utilisé comme \textit{proxy}. C'est à lui que s'adressera le nouveau
-      processus s'il désire accéder à d'anciens descripteurs de fichiers. Le
+      processus restera sur le même c\oe ur jusqu'à sa libération. Pour assurer
+      la cohérence des descripteurs de fichiers entre processus, l'initiateur du
+      \texttt{exec()} sur le noyau source n'est pas détruit mais est utilisé
+      comme \textit{proxy}. C'est à lui que s'adressera le nouveau processus
+      s'il désire accéder à d'anciens descripteurs de fichiers. Le
       \textit{proxy} se charge de relayer les signaux qui sont destinés au
       processus.
       \enlargethispage{1mm} %% Ugly hack to avoid the final image on a single
@@ -785,7 +792,7 @@
 
         Popcorn Linux propose une nouvelle abstraction dans le noyau Linux :
         \textit{shadow task}. Celle-ci permet d'assurer le mécanisme de
-        consistence que nous verrons par la suite.
+        consistance que nous verrons par la suite.
 
         Lors de la migration d'un thread, la \texttt{struct task} qui le
         représente n'est pas libérée une fois la migration terminée. Le thread
