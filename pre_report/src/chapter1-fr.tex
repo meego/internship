@@ -115,84 +115,67 @@
 
     \subsection{Large Physical Address Extension}
 
-    Les processeurs ARM apparus dans les années 90 ont anticipé cette faible
-    limite de 64Go et ont proposé leur propre mécanisme, appelé
-    LPAE~\citep{arm2012principles,marinas2011linux}\nomenclature{LPAE}{Large
-      Physical Address Extension}, pour \textit{Large Physical Address
-      Extension}.
+      Les processeurs ARM apparus dans les années 90 ont proposé leur propre
+      mécanisme, appelé
+      LPAE~\citep{arm2012principles,marinas2011linux}\nomenclature{LPAE}{Large
+        Physical Address Extension}, pour \textit{Large Physical Address
+        Extension}.
 
-    Sur le même principe que PAE, les processeurs proposent un découpage des
-    adresses virtuelles en trois niveaux d'indirection, chacun contenant des
-    entrées sur 64 bits. Le premier permet d'avoir des pages de 1Go, le second
-    de 2Mo, et le dernier de 4Ko.
+      Sur le même principe que PAE, les processeurs proposent un découpage des
+      adresses virtuelles en trois niveaux d'indirection, chacun contenant des
+      entrées sur 64 bits. Le premier permet d'avoir des pages de 1Go, le second
+      de 2Mo, et le dernier de 4Ko.
 
-    L'extension à 40 bits permet de supporter une mémoire de 1To maximum, et non
-    plus 64Go comme le proposait PAE. Malgré tout, l'utilisation des processeurs
-    32 bits implique d'avoir un certain nombre d'informations stockées dans la
-    première portion de 4Go, et notamment:
+      ARM limite à 40 bits les adresse physiques pour supporter une mémoire de
+      1To maximum. C'est plus que 64Go proposé par PAE. Malgré tout,
+      l'utilisation des processeurs 32 bits implique d'avoir un certain nombre
+      d'informations stockées dans la première portion de 4Go, et notamment:
 
-    \begin{itemize}
-      \item le code de boot
-      \item un certaine quantité de RAM\nomenclature{RAM}{Random-Access Memory}
-        pour le noyau
-      \item les registres des périphériques\footnote{Notamment les périphériques
-        64 bits qui doivent être adressables par le noyau qui lui est 32 bits.}
-      %% \item les régions dynamiquement allouées pour les
-      %%   entrées/sorties\footnote{Il n'est pas obligatoire que ces régions
-      %%   soient toutes mappées dans les quatre premiers giga.}
-    \end{itemize}
+      \begin{itemize}
+        \item le code de boot
+        \item un certaine quantité de RAM\nomenclature{RAM}{Random-Access
+          Memory} pour le noyau
+        \item les registres des périphériques\footnote{Notamment les
+          périphériques 64 bits qui doivent être adressables par le noyau qui
+          lui est 32 bits.}
+      \end{itemize}
 
-    La figure~\ref{fig:arm-0-1024} nous montre comment l'espace mémoire est
-    découpé selon les limitations de 32, 36 et 40 bits.
+      La figure~\ref{fig:arm-0-1024} nous montre comment l'espace mémoire est
+      découpé selon les limitations de 32, 36 et 40 bits.
 
-    \begin{figure}[ht]
-      \begin{subfigure}[b]{0.37\textwidth}
-        \includegraphics[scale=0.24]{arm-0-4}
-        \caption{Découpage $0-4Go$}
-        \label{fig:arm-0-4}
-      \end{subfigure}
-      \begin{subfigure}[b]{0.37\textwidth}
-        \includegraphics[scale=0.24]{arm-4-64}
-        \caption{Découpage $4-64Go$}
-        \label{fig:arm-4-64}
-      \end{subfigure}
-      \begin{subfigure}[b]{0.23\textwidth}
-        \includegraphics[scale=0.24]{arm-64-1024}
-        \caption{Découpage $64-1024Go$}
-        \label{fig:arm-64-1024}
-      \end{subfigure}
-      \caption{Découpage de l'espace mémoire sur un processeur ARMv7 avec le
-        mécanisme LPAE~\citep{arm2012principles}.}
-      \label{fig:arm-0-1024}
-    \end{figure}
+      \begin{figure}[ht]
+        \begin{subfigure}[b]{0.37\linewidth}
+          \includegraphics[scale=0.24]{arm-0-4}
+          \caption{Découpage $0-4Go$}
+          \label{fig:arm-0-4}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.37\textwidth}
+          \includegraphics[scale=0.24]{arm-4-64}
+          \caption{Découpage $4-64Go$}
+          \label{fig:arm-4-64}
+        \end{subfigure}
+        \begin{subfigure}[b]{0.23\textwidth}
+          \includegraphics[scale=0.24]{arm-64-1024}
+          \caption{Découpage $64-1024Go$}
+          \label{fig:arm-64-1024}
+        \end{subfigure}
+        \caption{Découpage de l'espace mémoire sur un processeur ARMv7 avec le
+          mécanisme LPAE~\citep{arm2012principles}.}
+        \label{fig:arm-0-1024}
+      \end{figure}
 
-    On remarque sur les figures (b) et (c) deux ``trous'' mémoire pour un total
-    de 32Go. Ces derniers sont optionnels et peuvent être alloués pour des
-    données~\citep{arm2012principles}. On obtient le schéma suivant:
+      On remarque sur les figures (b) et (c) deux ``trous'' mémoire pour un
+      total de 32Go. Ces derniers sont optionnels et peuvent être alloués pour
+      des données~\citep{arm2012principles}. On obtient le schéma suivant:
 
-    \begin{itemize}
-      \item 512Go de données (extensible à 544Go)
-      \item 273Go pour les entrées/sorties
-      \item 204Go de réservés
-      \item 1Go (le premier) pour la ROM\nomenclature{ROM}{Read-Only Memory}, la
-        RAM et les périphériques adressables
-    \end{itemize}
+      \begin{itemize}
+        \item 512Go de données et instructions (extensible à 544Go)
+        \item 273Go pour les entrées/sorties
+        \item 204Go de réservés
+        \item 1Go (le premier) pour la ROM\nomenclature{ROM}{Read-Only Memory},
+          la RAM et les périphériques adressables
+      \end{itemize}
 
-    Les processeurs ARM étant des processeurs RISC 32 bits, ils remplissent
-    parfaitement les pré-requis nécessaires de l'architecture TSAR. De plus, ils
-    sont conçus de manière à avoir une (très) faible consommation électrique, ce
-    qui est idéal dans notre cas.
-
-    \begin{paragraph}{Remarque:}
-      L'extension LPAE supporte le mode \textit{Hypervisor} des processeurs ARM
-      permettant de gérer la para-virtualisation avec des outils comme
-      Xen~\cite{barham2003xen}. Bien qu'en dehors du cadre de ce stage, c'est
-      une caractéristique très intéressante pour le projet
-      TSUNAMY~\cite{tsunamy2013web} dans lequel l'équipe
-      ALSOC\nomenclature{ALSOC}{Architecture et Logiciels pour Systèmes On Chip}
-      est engagée.
-    \end{paragraph}
-    %%\nomenclature{TSUNAMY}{TODO}
 
     \subsection{Les noyaux monolithiques classiques (UNIX et NT)}
     \nomenclature{UNIX}{Uniplexed Information and Computing Service}
