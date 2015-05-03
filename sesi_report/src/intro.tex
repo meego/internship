@@ -3,8 +3,8 @@
   \hspace{1cm}Au milieu des années 2000, les fabricants de processeurs ont
   atteint une limite technique.  Au-delà de 100 Watts par boitier, il est
   difficile de refroidir les circuits à l'aide de simples ventilateurs. Les
-  technologies comme le water cooling~\citep{googleXXXXdatacenters} sont
-  coûteuses et énergivores.  Pour continuer l'augmentation de puissance des
+  technologies comme le \textit{water cooling}~\citep{googleXXXXdatacenters}
+  sont coûteuses et énergivores.  Pour continuer l'augmentation de puissance des
   processeurs en profitant de la loi de Moore, ils ont dû cesser de complexifier
   l'architecture des c\oe urs et d'augmenter leur fréquence de
   fonctionnement. Au contraire, ils ont simplifié les c\oe urs pour en mettre
@@ -23,9 +23,9 @@
   cohérente, composée de 1024 c\oe urs 32 bits et 1To de mémoire physique (40
   bits).  Les c\oe urs sont répartis en clusters contenant chacun 4 c\oe urs et
   gérant un segment de 4Go de mémoire physique. Le choix de c\oe urs 32 bits, et
-  non 64bits, est assumé. C'est, selon les architectes, le meilleur compromis en
-  énergie dissipée par instruction et cela permet un meilleur usage des caches
-  car les pointeurs sont plus petits.  Un système d'exploitation nommé
+  non 64 bits, est assumé. C'est, selon les architectes, le meilleur compromis
+  en énergie dissipée par instruction et cela permet un meilleur usage des
+  caches car les pointeurs sont plus petits.  Un système d'exploitation nommé
   ALMOS~\citep{almaless2011almos} a été spécialement développé pour TSAR. Ce
   système est basé sur un noyau monolithique, tout comme Linux ou *BSD. ALMOS
   signifie \textit{Advanced Locality Management Operating System}. En effet, son
@@ -50,7 +50,7 @@
   structure semblable par certains aspects au
   multi-noyau~\citep{baumann2009multikernel}. Ainsi, le troisième problème est
   une conséquence du deuxième. Si certaines structures sont répliquées, il faut
-  que le système en garantisse la cohérence et ainsi offre à l'utilisateur
+  que le système en garantisse la cohérence pour offrir à l'utilisateur
   l'illusion d'un noyau monolithique. \\
 
   \hspace{1cm}Pour ce stage, nous allons nous concentrer sur les structures
@@ -61,7 +61,7 @@
   \hspace{1cm}Ce document est organisé de la manière suivante: dans le
   chapitre~\ref{chap:subject}, nous présenterons le sujet du stage et la
   problématique. Le chapitre~\ref{chap:sol} expliquera la solution envisagée
-  pour ce répondre à la problématique. Ensuite, nous donnerons dans le
+  pour répondre à la problématique. Nous verrons ensuite dans le
   chapitre~\ref{chap:tasks} le découpage des tâches identifié. Enfin, nous
   donnerons dans le chapitre~\ref{chap:tests} la procédure de recette qui sera
   utilisée pour valider notre solution, et dans le chapitre~\ref{chap:sched}
