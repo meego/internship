@@ -10,7 +10,7 @@ IDX=makeindex
 BIB=bibtex
 PROJECT=main
 
-REPORT=main
+REPORT=peneau-biblio
 MAGIC_FILE=/usr/share/texlive/texmf-dist/makeindex/nomencl/nomencl.ist
 
 all: dir out
