@@ -2,10 +2,10 @@
 \label{chap:sol}
 
   Notre solution est découpée en trois étapes incrémentales. Dans un premier
-  temps, nous rétablissons le procédé de migration de processus
+  temps, nous remettons en place le procédé de migration de processus
   mono-thread. Dans un second temps, nous ajoutons le support du
-  multi-thread. Enfin, nous ré-implémentons un composant d'ALMOS appelé
-  DQDT, nécessaire pour la politique de migration dans le noyau.
+  multi-thread. Enfin, nous ré-implémentons un composant d'ALMOS appelé DQDT,
+  nécessaire pour la politique de migration dans le noyau.
 
   \begin{paragraph}{Remarque:}
     Dans la section~\ref{sec:mono}, le mot \textit{processus} est utilisé pour
@@ -21,15 +21,15 @@
     Cette première étape a pour but de mettre en place deux mécanismes:
     \benumline \item la migration de processus entre noyaux \item la création
     distante de processus\eenumline. Pour compléter ces deux objectifs, il est
-    nécessaire de définir l'ensemble des structures partagées par les processus,
-    lesquelles doivent nécessairement être maintenues cohérentes tout au long de
-    l'exécution.
+    nécessaire de définir l'ensemble des structures partagées par les processus
+    et lesquelles doivent nécessairement être maintenues cohérentes tout au long
+    de l'exécution.
 
     \subsection{Principes}
 
       \subsubsection{Rappels}
 
-        L'appel système \texttt{fork()} est la manière usuelle de créer un
+        L'appel système \texttt{fork()} est usuellement utilisé pour créer un
         processus dans un système. Lorsqu'un processus fait appel à cette
         fonction, un processus identique à l'appelant est créé. L'appelant est
         nommé \textit{père}, et le résultat est appelé \textit{fils}. Le fils
@@ -55,11 +55,11 @@
       \subsubsection{Migration}
 
         La migration de processus repose sur le mécanisme des RPC du
-        noyau. Cette opération consiste à déplacer un processus, pendant son
-        exécution, dans un nouveau noyau. Pour déplacer un processus, il faut
-        envoyer les informations nécessaires au noyau destinataire pour qu'il
-        puisse reconstruire l'espace virtuel du processus. On a notamment besoin
-        des adresses de début et de fin:
+        noyau. Cette opération consiste à déplacer un processus dans un nouveau
+        noya pendant son exécution. Pour déplacer un processus, il faut envoyer
+        les informations nécessaires au noyau destinataire afin qu'il puisse
+        reconstruire l'espace virtuel du processus. On a notamment besoin des
+        adresses de début et de fin:
         \begin{itemize}
           \item de la pile utilisateur
           \item du tas
@@ -67,8 +67,8 @@
           \item des arguments
           \item des données
         \end{itemize}
-        Pour l'identification et de l'exécution, il faut envoyer les
-        informations suivantes:
+        Pour l'identification et l'exécution, il faut envoyer les informations
+        suivantes:
         \begin{itemize}
           \item le \texttt{pid}
           \item l'identifiant du noyau d'origine
@@ -85,22 +85,22 @@
 
       \subsubsection{Création distante}
 
-        Migrer un processus pendant sa création, donc lors du \texttt{fork()}
+        Migrer un processus pendant sa création, donc lors du \texttt{fork()},
         est une hypothèse que nous avons écartée. En effet, après avoir déplacé
         toutes les données du fils sur le nouveau noyau, la probabilité que ce
         dernier fasse un \texttt{exec()} est très grande. Par cet appel, il
-        écrasera toutes les données que l'on aura déplacées juste avant. On aura
-        donc payé le coût de la migration pour rien.\\
+        écrase toutes les données que l'on a déplacées juste avant. On paye donc
+        le coût de la migration inutilement.\\
 
         Pour implémenter ce mécanisme, nous avons choisi de nous baser sur
         l'appel système \texttt{exec()}. Nous allons le modifier en ajoutant un
         appel aux fonctions de la DQDT. Si en retour le noyau s'aperçoit que le
         processus doit être migré, alors les informations citées précédemment
         seront envoyées. Ici, les données les plus importantes à transmettre
-        sont le chemin vers l'exécutable et les arguments qui sont spécifiés
-        dans l'appel \texttt{exec()} (voir Listing~\ref{lst:fork-exec}). En
-        effet, on veut que le processus qui sera créé exécute un nouveau code et
-        pas celui de son père.\\
+        sont le chemin vers l'exécutable et les arguments spécifiés dans l'appel
+        \texttt{exec()} (voir Listing~\ref{lst:fork-exec}). En effet, on veut
+        que le processus qui sera créé exécute un nouveau code et pas celui de
+        son père.\\
 
         Attendre un appel à \texttt{exec()} pour effectuer la migration permet
         de ne pas briser la localité spatiale des processus ayant un lien de
@@ -115,16 +115,16 @@
         expliqués précédemment seront alors activés.
 
         \begin{paragraph}{Remarque:}
-          Un appel à \texttt{exec()} ne migre pas forcément un
-          processus. Celle-ci se fait selon la politique de la DQDT.
+          Un appel à \texttt{exec()} ne migre pas forcément un processus. La
+          migration se fait selon la politique de la DQDT.
         \end{paragraph}
 
 
     \subsection{Maintien de cohérence}
 
       Comme nous l'avons vu précédemment, ces deux opérations représentent un
-      enjeux quant aux structures de données que contiennent les processus, en
-      particulier celle qu'ils partagent:
+      enjeu quant aux structures de données que contiennent les processus, en
+      particulier celles qu'ils partagent:
       \begin{itemize}
       \item les descripteurs de fichiers ouverts
       \item les zones mémoires partagées
@@ -132,12 +132,11 @@
 
       Les descripteurs de fichiers contiennent des données qui doivent être
       maintenues cohérentes\footnote{C'est une obligation de la norme
-        POSIX~\citep{posix2013}, norme que le noyau ALMOS a choisi de
-        respecter.}. Ces informations sont l'offset et le compteur de
-      référence\footnote{Uniquement dans le cas du multi-thread}. L'offset
-      indique la position à laquelle se trouve le processus dans un fichier. Le
-      compteur de référence permet de savoir combien de processus ont ouvert le
-      même fichier.
+        POSIX~\citep{posix2013} que le noyau ALMOS a choisi de respecter.}. Ces
+      informations sont l'offset et le compteur de référence\footnote{Uniquement
+        dans le cas du multi-thread.}. Le premier indique la position à laquelle
+      se trouve le processus dans un fichier. Le second permet de savoir combien
+      de processus ont ouvert le même fichier.
 
       Lorsqu'un processus ouvre un fichier puis crée un fils, les modifications
       du père doivent être visibles pour le fils, et inversement. Or, chaque
@@ -150,9 +149,8 @@
       de la mémoire en mode \texttt{SHARED}. Ainsi, deux processus peuvent se
       partager une certaine zone mémoire et ainsi échanger des
       informations. Pour des raisons évidentes, le contenu de ces zones mémoires
-      doit impérativement être cohérent entre les processus\footnote{On ne parle
-        pas de la structure représentant la zone mémoire, qui elle est propre
-        aux processus.}.
+      doit impérativement être cohérent\footnote{On ne parle pas de la structure
+        représentant la zone mémoire, qui elle est propre aux processus.}.
 
       %% \begin{paragraph}{Remarque:}
       %%   Tous les processus n'ont pas de zones mémoire partagées avec d'autres
@@ -166,14 +164,14 @@
 
     \subsection{Accélération de la migration}
 
-      Afin de faciliter le maintien de la cohérence et surtout accélérer la
+      Afin de faciliter le maintien de la cohérence et surtout d'accélérer la
       migration, nous devons redéfinir l'implémentation des descripteurs de
       fichiers et des zones mémoires. Il est nécessaire d'eliminer l'utilisation
       des pointeurs qui deviennent faux lorsqu'un processus change de noyau. En
       effet, une adresse dans un noyau $N$ n'est pas significative dans un noyau
-      $N'$. Un bon exemple pour illustrer notre cas est celui des processus
+      $N'$. Un exemple pour illustrer cela est celui des processus
       père/fils. Chaque processus doit savoir qui est son père, et possède un
-      pointeur en direction de la \texttt{struct task} de ce père. Si le fils
+      pointeur en direction de la \texttt{struct task} de ce dernier. Si le fils
       est migré sur un nouveau noyau, cette adresse n'est plus valable.
 
       Nous devons donc réduire au maximum le nombre de pointeurs, et notamment
@@ -182,34 +180,33 @@
       implique de devoir changer l'implémentation de la structure de données
       utilisée pour stocker toutes les informations. Nous devons utiliser des
       tableaux pour enregistrer les informations sur les fichiers ouverts par
-      les processus. Ces tableaux sont plus faciles à migrer puisqu'ils s'agit
-      seulement d'en faire une copie dans la mémoire du noyau destinataire.
+      les processus. Ces tableaux sont plus faciles à migrer puisqu'il s'agit
+      simplement d'en faire une copie dans la mémoire du noyau destinataire.
 
-      Nous avons actuellement deux solutions à l'étude et aucune n'a pour
-      l'instant été choisie:
+      Nous avons actuellement deux solutions à l'étude:
       \begin{itemize}
         \item utiliser une table de hachage par calcul
         \item utiliser une table de hachage chainée
       \end{itemize}
 
-      Quelque soit la solution envisagée, les entrées et sorties sont
-      similaires, ce qui nous permet de n'effectuer qu'une seule
-      spécification. Nous allons utiliser l'adresse virtuelle accédée comme
-      entré de la fonction de hash. En sortie, nous obtenons l'adresse physique
-      de la région virtuelle associée.
+      Aucune n'a pour l'instant été choisie. Néanmoins, quelque soit la solution
+      envisagée, les entrées et sorties sont similaires, ce qui nous permet de
+      n'effectuer qu'une seule spécification. Nous allons utiliser l'adresse
+      virtuelle accédée comme entré de la fonction de hash. En sortie, nous
+      obtenons l'adresse physique de la région virtuelle associée.
 
       \begin{center}
         \texttt{hash(v\_addr) = v\_reg\_addr}
       \end{center}
 
-      La première solution nous garanti de n'avoir qu'une table à
-      gérer. Néanmoins, cette gestion est assez difficile dans son
-      implémentation. À l'inverse, la table de hash chainée est plus simple à
-      mettre en \oe uvre mais les indirections que nous pensont utiliser en
-      feront un objet plus complexe que la précédente solution. Ces deux
-      possibilités n'ont pour l'instant pas été estimées en terme de coût pour
-      le système. Elles restent donc à l'état d'hypothèse jusqu'à ce que l'une
-      d'elle s'avère plus efficace.
+      La première solution nous garantie de n'avoir qu'une table à
+      gérer. Néanmoins, cette gestion est assez difficile à implémenter. À
+      l'inverse, la table de hash chainée est plus simple à mettre en \oe uvre
+      mais les indirections que nous pensons utiliser en feront un objet plus
+      complexe que la précédente solution. Ces deux possibilités n'ont pour
+      l'instant pas été estimées en terme de coût pour le système. Elles restent
+      donc à l'état d'hypothèse jusqu'à ce que l'une d'elle s'avère plus
+      efficace.
 
 
   \section{Ajout du multi-thread}
@@ -221,8 +218,8 @@
 
     Dans la section~\ref{sec:mono}, nous avons parlé des structures de données
     critiques pour les processus mono-thread. Nous allons à présent nous
-    intéresser au processus multi-thread. Après étude du problème, nous avons
-    principalement deux structures problématiques (en plus de celle vues en
+    intéresser aux processus multi-thread. Après étude du problème, nous avons
+    principalement deux structures qui posent problème (en plus de celle vues en
     ~\ref{sec:mono}):
     \begin{itemize}
       \item la table des pages
@@ -234,29 +231,27 @@
       Dans la thèse de Ghassan \citet{almaless2014universite}, on trouve un des
       concepts clé du noyau ALMOS: les processus hybrides. Partant du principe
       que la notion de thread n'est pas adaptée pour le traitement de la
-      localité des accès mémoire,\citeauthor{almaless2014universite} propose de
-      redéfinir la notion de processus et de thread. Un processus hybride
-      contient des threads qui ont leur propre espace virtuel qui n'est plus
-      accessible par les autres threads du processus. Le noyau maintien
+      localité des accès mémoire, Ghassan~\citeauthor{almaless2014universite}
+      propose de redéfinir la notion de processus et de thread. Un processus
+      hybride contient des threads qui ont leur propre espace virtuel qui n'est
+      plus accessible par les autres threads du processus. Le noyau maintient
       néanmoins la cohérence entre ces espaces. L'intérêt des processus hybride
       est double:
       \begin{itemize}
         \item on évite le goulot d'étranglement sur la table des pages
           (présentée ci-après)
         \item les espaces virtuels des threads ne sont plus stockés dans le
-          processus mais son indépendants, on a donc économiser de la place dans
+          processus mais sont indépendants, on a donc économisé de la place dans
           la mémoire virtuelle du processus
       \end{itemize}
 
       Par manque de temps, ce concept n'a pas été implémenté dans le noyau
       ALMOS. Nous allons donc devoir le mettre en place, avec dans un premier
       temps l'objectif d'avoir une table des pages distribuée entre les
-      threads.\\
-
-      La table des pages est la structure de données des processus contenant les
-      traductions des adresses virtuelles en adresses physiques. Chaque
-      processus possède sa propre table des pages. Tous les threads d'un
-      processus accèdent à cette table.
+      threads. La table des pages est la structure de données des processus
+      contenant les traductions des adresses virtuelles en adresses
+      physiques. Chaque processus possède sa propre table des pages. Tous les
+      threads d'un processus accèdent à cette table.
 
       Le problème de cette structure est qu'elle est accédée lors des miss TLB
       (le cache de traduction d'adresses virtuelles $\leftrightarrow$
@@ -282,7 +277,7 @@
         \caption{Organisation de la table des pages pour quatre threads d'un
           même processus. Deux threads sont placés sur un cluster $I$, et deux
           sur un cluster $J$. Les threads partagent certaines pages de données
-          et d'instruction, parfois entre clusters, mais ont également leur
+          et d'instructions, parfois entre clusters, mais ont également leurs
           pages privées~\citep{almaless2014universite}.}
         \label{fig:almos-page-table}
       \end{figure}
@@ -320,9 +315,9 @@
   \section{La DQDT}
   \label{sec:dqdt}
 
-    Cette partie du stage 8 ``optionnelle''. La réimplémentation de ce composant
-    est un besoin réel pour ALMOS, néanmoins cela implique que les étapes
-    présentées précédemment soient finalisées.
+    Cette partie du stage est ``optionnelle''. La réimplémentation de ce
+    composant est un besoin réel pour ALMOS, néanmoins cela implique que les
+    étapes présentées précédemment soient finalisées.
 
     La DQDT, pour \textit{Distributed Quaternary Decision Tree}, est le
     composant d'ALMOS assurant une vision cohérente et temps-réel\footnote{C'est
@@ -332,8 +327,8 @@
     c\oe urs). Dans la version de Ghassan~\citet{almaless2014universite}, la
     DQDT repose sur des serveurs répliqués dans tous les clusters. Chaque
     cluster physique représente une feuille de la DQDT. Ces serveurs récupèrent
-    les informations sur l'occupation des c\oe urs de la machine, et
-    construisent une moyenne d'utilisation pour chaque cluster. Cette
+    les informations sur l'occupation des c\oe urs de la machine (c\oe urs et
+    mémoire), et calculent une moyenne d'utilisation pour chaque cluster. Cette
     information est stockée dans un n\oe ud de l'arbre. Chaque étage de l'arbre
     représente un niveau d'abstraction. Comme le montre la
     figure~\ref{fig:dqdt-logical}, le premier niveau, en noir, est celui des
@@ -369,7 +364,7 @@
       \item avoir une solution portable sur n'importe quelle architecture
         matérielle : nous utilisons le passage de messages
       \item avoir une solution efficace sur l'architecture TSAR : nous profitons
-        des mécanismes matériels nous permettant d'accéder directement à la
+        de mécanismes matériels nous permettant d'accéder directement à la
         mémoire physique des clusters voisins.
     \end{itemize}
 
