@@ -796,7 +796,8 @@
       processus s'il désire accéder à d'anciens descripteurs de fichiers. Le
       \textit{proxy} se charge de relayer les signaux qui sont destinés au
       processus.
-
+      \enlargethispage{1mm} %% Ugly hack to avoid the final image on a single
+                            %% blank page
       Cette approche a des avantages et des inconvénients. Un avantage certain
       est de conserver la localité des accès mémoire pour les processus ``d'une
       même famille''. Nous considérons des processus d'une même famille comme
@@ -907,8 +908,8 @@
         d'exécution:
         \begin{itemize}
           \item l'espace virtuel
-          \item l'espace physique\footnote{Doit être identique à 100\%, ou ne
-            pas être du tout représenté}
+          \item l'espace physique, qui doit être identique à 100\%, ou ne pas
+            être du tout représenté
           \item les bits de protection
           \item les pages spéciales : \textit{copy-on-write}, zero,\ldots\\
         \end{itemize}
