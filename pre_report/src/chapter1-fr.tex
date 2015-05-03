@@ -181,43 +181,38 @@
     \nomenclature{UNIX}{Uniplexed Information and Computing Service}
 
       Les noyaux monolithiques ont exploité cette avancée matérielle en
-      supportant de manière logicielle le mode PAE. Pourtant, il existe des
-      contraintes très fortes lorsque l'on utilise ce mode d'adressage. Dans un
-      premier temps, on ne supporte que 64Go de RAM. Bien que conséquente en
-      1998, cette valeur nous paraît aujourd'hui trop petite, compte tenu de la
-      puissance à venir des machines de calcul.  Dans un second temps, cette
-      amélioration apporte un problème logiciel qui reste non résolu à ce jour:
-      la gestion des descripteurs de page.\\
+      supportant le mode PAE. Pourtant, il existe des contraintes très fortes
+      lorsque l'on utilise ce mode d'adressage. Dans un premier temps, on ne
+      supporte que 64Go de RAM. Bien que conséquente en 1998, cette valeur nous
+      paraît aujourd'hui trop petite, compte tenu du nombre de c\oe urs des
+      processeurs à venir. Dans un second temps, cette amélioration apporte un
+      problème logiciel qui reste non résolu à ce jour: la gestion des
+      descripteurs de page.\\
 
-      La mémoire est découpée de manière abstraite en pages. Ces pages peuvent
-      être de grande taille (2Mo ou 4Mo selon les systèmes), ou de petite taille
-      (4Ko). Pour adresser la mémoire, le noyau doit construire cette
-      abstraction via les descripteurs de pages, puis toutes les opérations en
-      mémoire physique passeront par ces descripteurs. Pour connaître en
-      permanence l'état global de la mémoire ou l'état d'une page en
-      particulier, le noyau doit décrire entièrement l'espace
-      adressable~\citep{cranor1999uvm, gorman2004understanding,
-        russinovich2012windows, dillon2000design, steldt2009memory,
-        steldtXXXXopenbsd}.
+      La mémoire est découpée en pages. Ces pages peuvent être de grande taille
+      (2Mo ou 4Mo selon les systèmes), ou de petite taille (4Ko). Pour adresser
+      la mémoire, le noyau doit construire cette abstraction via les
+      descripteurs de pages, puis toutes les opérations en mémoire physique
+      passeront par ces descripteurs. Pour connaître en permanence l'état global
+      de la mémoire ou l'état d'une page en particulier, le noyau doit décrire
+      entièrement l'espace adressable~\citep{cranor1999uvm,
+        gorman2004understanding, russinovich2012windows, dillon2000design,
+        steldt2009memory, steldtXXXXopenbsd}.
 
       Cette opération est effectuée au boot de la machine. Lorsque l’on dispose
       d’une grosse quantité de mémoire, l'espace physique occupé par ces
       descripteurs est conséquent. Sous Linux, un descripteur de pages fait 44
       octets. Pour décrire 1Go de mémoire, Linux a donc besoin de
-      11Mo\footnote{$0,044*1.10^6/4 = 11.10^3Ko = 11Mo$} de structure de données
-      représentant ces pages. Si l'on augmente à 16Go, Linux a maintenant besoin
-      de 176Mo pour décrire la mémoire. En sachant que le noyau ne s'accorde que
-      1Go de mémoire, et qu'il a besoin de ce giga-octet pour de multiple
-      opérations, on ne peut pousser trop loin l'utilisation de la technologie
-      PAE sans risquer de prendre trop de place en mémoire noyau et de voir des
-      chutes de performances, voire un crash total\footnote{Le noyau ne peut pas
-        swapper ses propres pages sans risquer de perdre des informations
-        vitales. S'il n'a plus de place, sa seule possibilité est de lancer un
-        \texttt{panic} et de s'arrêter.}. Cette valeur, bien qu’élevée, est
-      supérieure dans le noyau ALMOS, car les structures représentant les pages
-      sont plus volumineuses en mémoire que celle de Linux ou *BSD. En effet, un
-      descripteur de page fait 56 octets. Le noyau a donc besoin de 14Go pour
-      décrire les 1To de mémoire offerts par TSAR. Le
+      11Mo~\citep{gorman2004understanding} de structure de données représentant
+      ces pages. Si l'on augmente à 16Go, Linux a maintenant besoin de 176Mo
+      pour décrire la mémoire. En sachant que le noyau ne s'accorde que 1Go de
+      mémoire, et qu'il a besoin de ce giga-octet pour de multiple opérations,
+      on ne peut pas pousser trop loin l'utilisation de la technologie PAE ou
+      LPAE sans risquer de prendre trop de place en mémoire noyau. Cette valeur,
+      bien qu’élevée, est supérieure dans le noyau ALMOS, car les structures
+      représentant les pages sont plus volumineuses en mémoire que celle de
+      Linux ou *BSD. En effet, un descripteur de page fait 56 octets. Le noyau a
+      donc besoin de 14Go pour décrire les 1To de mémoire offerts par TSAR. Le
       tableau~\ref{tab:pages-desc} montre un comparatif de la place occupée par
       ces descripteurs dans Linux et ALMOS.
 
@@ -244,7 +239,12 @@
       %% Restore default parameters
       \setlength{\tabcolsep}{6pt}
       \renewcommand{\arraystretch}{1.0}
-      \FloatBarrier
+
+      Pour des raisons de performances, ALMOS évolue vers une taille de
+      descripteurs de page de 64 octets, soit une ligne complète pour le cache
+      de niveau L1. Cela a pour conséquence d'augmenter la place nécessaire pour
+      décrire la mémoire.
+
 
     \subsection{Conclusion}
 
