@@ -2,7 +2,9 @@
 \usepackage[frenchb]{babel}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[hidelinks]{hyperref}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=violet,
+  urlcolor=blue]{hyperref}
+\usepackage{xcolor}
 \usepackage{lettrine}
 \usepackage{palatino}
 \renewcommand*\rmdefault{ppl}
@@ -20,6 +22,7 @@
 \usepackage[sort, authoryear]{natbib}
 \usepackage{listings}
 \usepackage{placeins}
+\usepackage{etoolbox}
 
 %% Commands
 \bibpunct{[}{]}{,}{n}{,}{,}
@@ -72,11 +75,11 @@
 \fancyhead{}
 \fancyfoot{}
 \fancyhead[C]{Ajout du mécanisme de migration de thread pour le multi-noyau
-  ALMOS\\-\\{\color{red}Release Candidate 1}}
+  ALMOS\\-\\{\color{red}Release Candidate 2}}
 %% \fancyhead[L,R]{{\color{red}Draft version}}
-\fancyfoot[L]{11 Mai 2015}
+\fancyfoot[L]{Université Pierre \& Marie Curie}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R] {Pierre-Yves PÉNEAU\\Université Pierre \& Marie Curie}
+\fancyfoot[R] {Pierre-Yves PÉNEAU}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
@@ -90,7 +93,7 @@
 \setlength{\evensidemargin}{0cm}
 \setlength{\columnsep}{0.125in}
 \setlength{\columnseprule}{0.5pt}
-\setlength{\footskip}{0.7cm}
+\setlength{\footskip}{1cm}
 \setlength{\headsep}{10pt}
 
 %% lst config
@@ -138,6 +141,11 @@
 %%     sig_mgr_s, event_s, rwlock_s, vmm_s, pmm_s, vfs_node_s, vfs_file_s,
 %%     fd_info_s, metafs_s, wait_queue_s, mapper_s, vfs_stat_s, vfs_context_s,
 %%     vfs_node_s, vfs_file_s, vfs_node_op_s}, }
+
+%% Prevents hyperref coloring \citeauthor
+\makeatletter
+\pretocmd{\NAT@citexnum}{\@ifnum{\NAT@ctype>\z@}{\let\NAT@hyper@\relax}{}}{}{}
+\makeatother
 
 \sloppy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

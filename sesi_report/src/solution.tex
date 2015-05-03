@@ -231,14 +231,15 @@
 
     \subsection{Les processus hybrides}
 
-      Dans la thèse d'\citet{almaless2014universite}, on trouve un des concepts
-      clé du noyau ALMOS: les processus hybrides. Partant du principe que la
-      notion de thread n'est pas adaptée pour le traitement de la localité des
-      accès mémoire,\citeauthor{almaless2014universite} propose de redéfinir la
-      notion de processus et de thread. Un processus hybride contient des
-      threads qui ont leur propre espace virtuel qui n'est plus accessible par
-      les autres threads du processus. Le noyau maintien néanmoins la cohérence
-      entre ces espaces. L'intérêt des processus hybride est double:
+      Dans la thèse de Ghassan \citet{almaless2014universite}, on trouve un des
+      concepts clé du noyau ALMOS: les processus hybrides. Partant du principe
+      que la notion de thread n'est pas adaptée pour le traitement de la
+      localité des accès mémoire,\citeauthor{almaless2014universite} propose de
+      redéfinir la notion de processus et de thread. Un processus hybride
+      contient des threads qui ont leur propre espace virtuel qui n'est plus
+      accessible par les autres threads du processus. Le noyau maintien
+      néanmoins la cohérence entre ces espaces. L'intérêt des processus hybride
+      est double:
       \begin{itemize}
         \item on évite le goulot d'étranglement sur la table des pages
           (présentée ci-après)
@@ -309,10 +310,10 @@
       cluster\eenumline. L'application d'un masque sur le champ \texttt{pid}
       permettra alors d'obtenir l'information souhaitée.
 
-      Après une migration, un processus envera son nouveau \texttt{pid} au noyau
-      d'origine, qui le modifiera dans sa table des processus. Ainsi, le noyau
-      d'origine des processus connait en permanence la localisation de ses fils
-      sur la machine. Ce mécanisme nous permet de pouvoir transmettre les
+      Enfin, après une migration, un processus enverra sa nouvelle adresse au
+      noyau d'origine, qui le modifiera dans sa table des processus. Ainsi, le
+      noyau d'origine des processus connait en permanence la localisation de ses
+      fils sur la machine. Ce mécanisme nous permet de pouvoir transmettre les
       signaux.
 
 
