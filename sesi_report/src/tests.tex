@@ -1,7 +1,7 @@
 \chapter{Définition de la procédure de recette}
 \label{chap:tests}
 
-  Nous allons à présent donner les différentes procédures de recettes que nous
+  Nous allons à présent donner les différentes procédures de recette que nous
   allons utiliser pour valider nos solutions. Ces tests sont de simples
   microbenchmark nous permettant de valider le fonctionnement de notre solution.
 
@@ -61,11 +61,11 @@
     impliqué. En effet, les threads d'un processus peuvent être migrés à
     n'importe quel moment de leur exécution.\\
 
-    Un processus va créer $N$ threads, $N \in [2, 4, 6, 10, 24]$. Comme vu
-    précédemment, on va modifier la DQDT pour que $N-1$ threads\footnote{Le
-      thread initiateur ne sera pas migré.} soient migrés sur un cluster
-    différent des autres au bout d'un temps $T = 1s$. Les threads afficheront
-    régulierement le numéro de cluster et du c\oe ur d'exécution.
+    Un processus va créer $N$ threads, $N \in [2, 4, 6, 10, 24]$. Ici, on va
+    modifier la DQDT pour que $N-1$ threads\footnote{Le thread initiateur ne
+      sera pas migré.} soient migrés sur un cluster différent des autres au bout
+    d'un temps $T = 1s$. Les threads afficheront régulièrement le numéro de
+    cluster et du c\oe ur d'exécution.
 
 
   \section{Cohérence de données}
@@ -110,10 +110,12 @@
       un programme créant $N$ threads, $N \in [2, 4, 6, 10, 24]$, avec $N-1$
       threads migrés comme précédemment. Chaque thread appliquera un masque sur
       le signal \texttt{SIGUSR1}\footnote{Ce type de signal est réservé pour les
-        programmes utilisateurs.} permettant de redéfinir un handler pour ce
-      dernier. Ce handler affichera le numéro du cluster et du c\oe ur
-      courant. Ensuite, le thread initiateur enverra un signal \texttt{SIGUSR1}
-      au processus auquel il appartient.
+        programmes utilisateurs.} permettant de redéfinir un \textit{handler}
+      pour ce dernier. Ce \textit{handler} affichera le numéro du cluster et du
+      c\oe ur courant. Ensuite, le thread initiateur enverra un signal
+      \texttt{SIGUSR1} au processus auquel il appartient. Les threads migrés
+      appellerons alors le \textit{handler} et afficherons leur numéro de
+      cluster.
 
 
   \section{Tests de performance}
