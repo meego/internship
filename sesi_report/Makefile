@@ -9,7 +9,7 @@ TEX=pdflatex
 BIB=bibtex
 PROJECT=main
 
-REPORT=main
+REPORT=peneau-specification
 
 all: dir out
 
