@@ -19,13 +19,13 @@
 
   \hspace{1cm}Dans ce stage, l'architecture matérielle considérée est
   l'architecture TSAR~\citep{greiner2009tsar} développée au LIP6. TSAR est une
-  architecture NUMA (\textit{Non Uniform Memory Acces}) à mémoire partagée
-  cohérente, composée de 1024 c\oe urs 32 bits et 1To de mémoire physique (40
-  bits).  Les c\oe urs sont répartis en clusters contenant chacun 4 c\oe urs et
-  gérant un segment de 4Go de mémoire physique. Le choix de c\oe urs 32 bits, et
-  non 64 bits, est assumé. C'est, selon les architectes, le meilleur compromis
-  en énergie dissipée par instruction, et cela permet un meilleur usage des
-  caches car les pointeurs sont plus petits.  Un système d'exploitation nommé
+  architecture NUMA à mémoire partagée cohérente, composée de 1024 c\oe urs 32
+  bits et 1To de mémoire physique (40 bits). Les c\oe urs sont répartis en
+  clusters contenant chacun 4 c\oe urs et gérant un segment de 4Go de mémoire
+  physique. Le choix de c\oe urs 32 bits, et non 64 bits, est assumé. C'est,
+  selon les architectes, le meilleur compromis en énergie dissipée par
+  instruction, et cela permet un meilleur usage des caches car les pointeurs
+  sont plus petits.  Un système d'exploitation nommé
   ALMOS~\citep{almaless2011almos} a été spécialement développé pour TSAR. Ce
   système est basé sur un noyau monolithique, tout comme Linux ou *BSD. ALMOS
   signifie \textit{Advanced Locality Management Operating System}. En effet, son
@@ -66,3 +66,9 @@
   donnerons dans le chapitre~\ref{chap:tests} la procédure de recette qui sera
   utilisée pour valider notre solution, et dans le chapitre~\ref{chap:sched}
   l'échéancier retenu pour ce travail.
+
+  \nomenclature{TSAR}{Tera-Scale ARchitecture}
+  \nomenclature{LIP6}{Laboratoire d'Informatique de Paris 6}
+  \nomenclature{NUMA}{Non-Uniform Memory Access}
+  \nomenclature{ALMOS}{Advanced Locality Management Operating System}
+  \nomenclature{BSD}{Berkeley Software Distribution}

@@ -29,15 +29,12 @@
       industriels sont BULL, Philips et THALES, et dont les partenaires
       académiques sont le LIP6 et le CEA-Leti. La figure \ref{fig:tsar} est un
       aperçu global de l'architecture TSAR. Il s'agit d'un ensemble de clusters
-      interconnectés par un NoC (\textit{Network-On-Chip}) DSPIN
-      (\textit{Distributed, Scalable, Predictable, Integrated Network}). Chaque
-      c\oe ur dispose de ses propres caches L1 indexés en adresses physiques
-      (données et instructions séparéess) et d'une MMU (Memory Management
-      Unit). La cohérence des caches de premier niveau de tous les c\oe urs
-      ainsi que des TLB est assurée par un protocole matériel nommé DHCCP
-      (\textit{Distributed Hybrid Cache Coherence Protocol}). Une description
-      complète de cette architecture est disponible sur le site du projet
-      TSAR~\cite{tsar2008web}.
+      interconnectés par un NoC DSPIN. Chaque c\oe ur dispose de ses propres
+      caches L1 indexés en adresses physiques (données et instructions
+      séparéess) et d'une MMU. La cohérence des caches de premier niveau de tous
+      les c\oe urs ainsi que des TLBs est assurée par un protocole matériel
+      nommé DHCCP. Une description complète de cette architecture est disponible
+      sur le site du projet TSAR~\cite{tsar2008web}.
 
       \begin{figure}[ht]
         \centering \includegraphics[scale=0.2]{include/img/tsar.png}
@@ -194,3 +191,12 @@
       d'adressages différents, ce qui invalide les mécanismes de migration de
       processus ou de threads. C'est à cette problématique que nous allons
       répondre.
+
+
+  \nomenclature{cc-NUMA}{Cache Coherent Non-Uniform Memory Access}
+  \nomenclature{NoC}{Network on Chip}
+  \nomenclature{DSPIN}{Distributed Scalable Predictable Integrated Network}
+  \nomenclature{MMU}{Memory Management Unit}
+  \nomenclature{TLB}{Translation Lookaside Buffer}
+  \nomenclature{DHCCP}{Distributed Hybrid Cache Coherence Protocol}
+  \nomenclature{POSIX}{Portable Operating System Interface}
