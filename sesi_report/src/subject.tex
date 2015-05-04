@@ -15,8 +15,8 @@
     différentes instances du noyau. Nous allons dans un premier temps présenter
     l'architecture matérielle TSAR. L'étude de cette dernière est essentielle
     pour bien comprendre les enjeux pour ALMOS. Ensuite nous présenterons le
-    noyau ALMOS, et notamment son cycle de vie, et enfin nous concluerons sur le
-    travail que nous allons effectuer dans le cadre de ce stage.
+    noyau ALMOS, et enfin nous concluerons sur le travail que nous allons
+    effectuer dans le cadre de ce stage.
   
 
     \subsection{L'architecture TSAR}
@@ -64,8 +64,7 @@
       garantir un passage à l'échelle et une conservation de la localité des
       accès mémoires. Pour cela, le noyau intègre trois nouveaux mécanismes:
       \benumline \item les clusters managers \item les réplica-noyau \item une
-      nouvelle stratégie d'allocation mémoire (\textit{Auto-Next-Touch})
-      \eenumline.
+      nouvelle stratégie d'allocation mémoire\eenumline.
 
 
     \subsection{Limitations de la version initiale}
@@ -77,7 +76,7 @@
       urs. Ainsi, un des premiers problèmes d'ALMOS est le mapping de l'espace
       virtuel. En effet, lors de la phase de boot, ce dernier cherche à mapper
       toute la mémoire physique du cluster de boot dans son espace
-      virtuel. Contraitement aux noyaux ``classiques'', ALMOS s'accorde 2Go
+      virtuel. Contrairement aux noyaux ``classiques'', ALMOS s'accorde 2Go
       d'espace virtuel au lieu de 1. Donc, si ce cluster possède (au moins) 2Go
       de mémoire physique, l'ensemble du noyau est mappé dans ce seul
       cluster. Enfin, cela ne laisse que 2Go de mémoire virtuelle pour les
@@ -107,7 +106,7 @@
         \label{fig:almos-guerret}
       \end{figure}
 
-      \begin{paragraph}{Gestion en adressage physiques de structures de données:}
+      \begin{paragraph}{Gestion en adressage physique de structures de données:}
         Avec seulement 4Mo d'espace virtuel pour le noyau par clusters,
         certaines structures de données ne pouvent plus être contenues dans un
         si petit espace, comme par exemple la table des pages d'un
@@ -121,11 +120,13 @@
         La seconde structure de données problématique est la table des
         descripteurs de pages physiques. Les noyaux monolithiques, dont ALMOS,
         ont fait le choix de décrire dans une structure à plat toutes les pages
-        physiques qu'offre la mémoire. Ainsi, pour décrire le tera-octet de
-        mémoire offert par TSAR, il est nécessaire d'utiliser 14Go de mémoire,
-        soit 56Mo par cluster. Une fois de plus, il est impossible de stocker
-        cette structure dans l'espace virtuel noyau. Celle-ci en a donc été
-        sortie, et est gérée en adressage physique.
+        physiques qu'offre la mémoire~\citep{cranor1999uvm,
+          gorman2004understanding, russinovich2012windows, dillon2000design,
+          steldt2009memory, steldtXXXXopenbsd}. Ainsi, pour décrire le
+        tera-octet de mémoire offert par TSAR, il est nécessaire d'utiliser 14Go
+        de mémoire, soit 56Mo par cluster. Une fois de plus, il est impossible
+        de stocker cette structure dans l'espace virtuel noyau. Celle-ci en a
+        donc été sortie, et est gérée en adressage physique.
       \end{paragraph}
 
       \begin{paragraph}{Résultats:}
@@ -150,9 +151,9 @@
       totalement l'espace virtuel pour le noyau. Ce dernier fonctionne
       entièrement en adressage physique et de ce fait passe en mode multi-noyau,
       avec une instance de noyau par cluster. Ces changements permettent de
-      gérer toute la mémoire physique de la plateforme TSAR, puisque:
-      \benumline \item chaque cluster dispose de 4Go de mémoire physique \item
-      on a un noyau par cluster \item le noyau peut gérer 4Go de
+      gérer toute la mémoire physique de la plateforme TSAR,
+      puisque:\benumline \item chaque cluster dispose de 4Go de mémoire
+      physique \item on a un noyau par cluster \item le noyau peut gérer 4Go de
       mémoire\eenumline. Ces changements permettent également de laisser 4Go de
       mémoire virtuelle\footnote{Modulo une page de petite taille (4Ko) pour
         faire le passage entre le mode utilisateur et le mode noyau} à
@@ -174,15 +175,14 @@
       entre c\oe urs d'un même cluster est toujours fonctionnelle). Dans la
       version initiale d'ALMOS, cette migration se faisait:\benumline \item en
       stoppant le processus sur le c\oe ur concerné puis \item en l'ajoutant
-      dans la liste des processus du c\oe ur distant et\item en relancant son
+      dans la liste des processus du c\oe ur distant et \item en relancant son
       exécution sur ce nouveau c\oe ur\eenumline. L'ajout du processus dans
       cette liste est possible uniquement parce que le noyau est en mémoire
       virtuelle. Il peut ainsi accéder au \textit{core-manager} du cluster
       destinataire sans se rendre compte que celui-ci est distant, et lui
       ajouter la \texttt{struct task} du processus à migrer. Les pages physiques
-      du processus seront ensuite migrées via la stratégie
-      \textit{Auto-Next-Touch\footnote{Non détaillée dans ce
-          rapport. Voir~\citep{almaless2014universite}.}}.
+      du processus seront ensuite migrées via la nouvelle stratégie mémoire
+      d'ALMOS.
 
     \subsection{Contributions}
 
@@ -193,6 +193,7 @@
       répondre.
 
 
+  \nomenclature{ALSOC}{Architecture et Logiciels pour Systèmes On Chip}
   \nomenclature{cc-NUMA}{Cache Coherent Non-Uniform Memory Access}
   \nomenclature{NoC}{Network on Chip}
   \nomenclature{DSPIN}{Distributed Scalable Predictable Integrated Network}
