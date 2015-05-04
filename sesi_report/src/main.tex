@@ -32,6 +32,9 @@
 \newcommand{\todo}[1]{\textbf{\color{red}TODO: #1}}
 \newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
 \newcommand{\eenumline}{\end{inparaenum}}
+\renewcommand{\lstlistingname}{Algorithme}
+\renewcommand{\lstlistlistingname}{Liste des algorithmes}
+
 \newcommand{\frontmatter}{
   \input{src/titlepage}
   \printversion
@@ -44,6 +47,10 @@
   \tableofcontents
   \printversion
   \listoffigures
+  \printversion
+  \listoftables
+  \printversion
+  \lstlistoflistings
   \printversion
   \printnomenclature[20em]
   \printversion
@@ -77,8 +84,8 @@
 \setcounter{secnumdepth}{3}
 
 %% Header / Footer
-\fancyhead{} \fancyfoot{} \fancyhead[C]{ALMOS : migration de threads pour un
-  multi-noyau large échelle\\-\\{\color{red}Release Candidate 5}}
+\fancyhead{} \fancyfoot{} \fancyhead[C]{ALMOS-MK : migration de threads pour un
+  multi-noyau large échelle\\-\\{\color{red}Release Candidate 6}}
 %% \fancyhead[L,R]{{\color{red}Draft version}}
 \fancyfoot[L]{Université Pierre \& Marie Curie}
 \fancyfoot[C]{\thepage}

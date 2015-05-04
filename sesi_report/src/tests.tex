@@ -12,17 +12,13 @@
   bits basique.\\
 
   Pour prouver le fonctionnement de la migration mono et multi-thread, nous
-  allons modifier la DQDT pour qu'elle agisse en fonction de nos besoins et non
-  ceux du système. On peut se permettre cela car on cherche à prouver la
-  migration et non la politique de migration. De plus, la DQDT ne sera pas
-  entièrement opérationnelle lors de ces tests : sa vision de la machine sera
-  réduite à un cluster. Néanmoins, ces changement seront effacés lors des tests
-  de la DQDT, que nous verrons en section~\ref{sec:dqdt-test}.
+  allons modifier le mécanisme de migration présent dans ALMOS pour qu'il agisse
+  en fonction de nos besoins de test et non ceux du système. On peut se
+  permettre cela car on cherche à prouver la migration et non la politique de
+  migration. Néanmoins, ces changement seront effacés lors des tests de la DQDT,
+  que nous verrons en section~\ref{sec:dqdt-test}.
 
-  \section{Migration de processus mono et multi-threads}
-
-    On considère ici des processus mono ou multi-thread, les expériences étant
-    les mêmes dans les deux cas.
+  \section{Migration de processus mono-thread}
 
     \subsection{Migration basique}
 
@@ -41,15 +37,26 @@
       $N$ fils, puis chacun de ces fils affichera à intervalle régulier le
       numéro de cluster et le numero de c\oe ur sur lequel il s'exécute. La DQDT
       sera modifiée pour que la migration ne commence qu'à partir du moment où
-      $N$ sera atteint.
+      $N$ sera atteint, et pour que les fils soient tous migrés sur des clusters
+      différents.
+
+      On définit $N \in [2, 4, 6, 10, 24]$. Le simulateur étant plus lent qu'une
+      exécution réelle, nous ne pouvons pas tester pour des valeurs de $N$ trop
+      importantes. Néanmoins, si nous avons suffisamment de temps, nous
+      souhaitons lancer une exécution sur 240 clusters. Nous avons évalué la
+      durée de l'expérience entre 24 et 36 heures.
 
     \subsection{Migration en cours d'exécution}
 
       Enfin, pour tester la migration en cours d'exécution, nous allons modifier
-      la DQDT pour qu'au bout d'un certain temps $T$, le processus soit migré
-      sur un autre cluster. Ce dernier affichera à interval régulier les
-      informations sur son cluster et son c\oe ur d'exécution.
+      la DQDT pour qu'au bout d'un certain temps $T$, un processus soit migré
+      sur un autre cluster. Le programme exécuté par le processus sera une
+      boucle infinie où il affichera à intervalle régulier les informations sur
+      son cluster et son c\oe ur d'exécution. On fixe arbitrairement $T = 1s$.
 
+  \section{Migration de processus multi-threads}
+
+      \todo{}
 
   \section{Cohérence de données}
 
@@ -59,21 +66,47 @@
       \item le processus père ouvre un fichier
       \item il crée son fils via \texttt{fork()} et celui-ci est migré
       \item le père fait un \texttt{read()} de $N$ octets et modifie la tête de
-        lecture
+        lecture (on fixe $N = 91$)
       \item le fils, via \texttt{ftell()}\footnote{Fonction non POSIX néanmoins
         supportée par la \texttt{libc} d'ALMOS}, obtient la position de la tête
-        de lecture, qui doit être égale à $N$.
+        de lecture, qui doit être égale à $N$\\
+    \end{itemize}
+    La cohérence des zones mémoire partagée sera testée selon cette procédure:
+    \begin{itemize}
+      \item un processus $P1$ va demander l'allocation d'une région mémoire de 4
+        octets en mode \texttt{SHARED}
+      \item $P1$ écrit le nombre $N = 10$ dans cet espace 
+      \item un processus $P2$ mappe l'espace partagé de $P1$ dans son espace
+        virtuel
+      \item $P2$ lit la valeur contenue, qui doit être $N = 10$
+      \item Le processus $P2$ est migré sur un nouveau cluster
+      \item $P2$ change la valeur de $N$ : $N\leftarrow 8$
+      \item $P1$ lit la valeur de $N$, qui doit être $N = 8$
     \end{itemize}
 
 
-  \section{Tests de la DQDT}
+  \section{Tests de performance}
   \label{sec:dqdt-test}
 
     Nous allons devoir ``stresser'' le système avec de vraies applications, et
-    comparer les résultats avec ceux obtenus
-    par~\citeauthor{almaless2014universite} dans sa thèse. Pour cela, nous
-    utiliserons les mêmes benchmarks et nous étudierons les temps nécessaires à
-    la prise de décision et la migration.
+    comparer les résultats avec ceux obtenus par
+    Ghassan~\citeauthor{almaless2014universite} dans sa thèse. Pour cela, nous
+    utiliserons les mêmes benchmarks, FFT, LU et Radix~\citep{bailey1989ffts,
+      woo1994performance, blelloch1991comparison}, et nous étudierons les temps
+    nécessaires à la prise de décision et la migration.
 
+    FFT implémente une version à une dimension de la transformation de Fourrier
+    en six étapes. LU implémente une version dite ``contiguë'' d’une
+    factorisation de matrice dense en produit de deux matrices
+    triangulaires. Radix implémente un tris de nombres entiers basé sur
+    l’utilisation d’un arbre radix. Ces applications sont toutes écrites en C,
+    relèvent du domaine HPC et expriment le parallélisme de threads.\\
+
+    Si la DQDT n'est pas totalement opérationnelle à ce stade, nous pourrons
+    tout de même tester la performance en sachant que les résultats seront
+    mauvais. En effet, ALMOS n'appliquera pas une politique de migration
+    optimale.
 
   \nomenclature{ALMOS-MK}{ALMOS Multi-Kernel}
+  \nomenclature{FFT}{Fast Fourrier Transformation}
+  \nomenclature{LU}{Lower Upper}
