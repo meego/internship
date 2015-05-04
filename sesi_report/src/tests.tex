@@ -1,7 +1,7 @@
 \chapter{Définition de la procédure de recette}
 \label{chap:tests}
 
-  Nous allons à présent donner les différentes procédures de recettes que nous
+  Nous allons à présent donner les différentes procédures de recette que nous
   allons utiliser pour valider nos solutions. Ces tests sont de simples
   microbenchmark nous permettant de valider le fonctionnement de notre solution.
 
@@ -54,35 +54,68 @@
       boucle infinie où il affichera à intervalle régulier les informations sur
       son cluster et son c\oe ur d'exécution. On fixe arbitrairement $T = 1s$.
 
-  \section{Migration de processus multi-threads}
+  \section{Support du multi-thread}
 
-      \todo{}
+    On se place ici dans le cadre des threads d'un même processus. Cela change
+    le paradigme de migration puisque l'appel système \texttt{exec()} n'est plus
+    impliqué. En effet, les threads d'un processus peuvent être migrés à
+    n'importe quel moment de leur exécution.\\
+
+    Un processus va créer $N$ threads, $N \in [2, 4, 6, 10, 24]$. Ici, on va
+    modifier la DQDT pour que $N-1$ threads\footnote{Le thread initiateur ne
+      sera pas migré.} soient migrés sur un cluster différent des autres au bout
+    d'un temps $T = 1s$. Les threads afficheront régulièrement le numéro de
+    cluster et du c\oe ur d'exécution.
+
 
   \section{Cohérence de données}
 
-    La cohérence des fichiers ouverts pourra être testée selon la procédure
-    suivante:
-    \begin{itemize}
-      \item le processus père ouvre un fichier
-      \item il crée son fils via \texttt{fork()} et celui-ci est migré
-      \item le père fait un \texttt{read()} de $N$ octets et modifie la tête de
-        lecture (on fixe $N = 91$)
-      \item le fils, via \texttt{ftell()}\footnote{Fonction non POSIX néanmoins
-        supportée par la \texttt{libc} d'ALMOS}, obtient la position de la tête
-        de lecture, qui doit être égale à $N$\\
-    \end{itemize}
-    La cohérence des zones mémoire partagée sera testée selon cette procédure:
-    \begin{itemize}
-      \item un processus $P1$ va demander l'allocation d'une région mémoire de 4
-        octets en mode \texttt{SHARED}
-      \item $P1$ écrit le nombre $N = 10$ dans cet espace 
-      \item un processus $P2$ mappe l'espace partagé de $P1$ dans son espace
-        virtuel
-      \item $P2$ lit la valeur contenue, qui doit être $N = 10$
-      \item Le processus $P2$ est migré sur un nouveau cluster
-      \item $P2$ change la valeur de $N$ : $N\leftarrow 8$
-      \item $P1$ lit la valeur de $N$, qui doit être $N = 8$
-    \end{itemize}
+    \subsection{Les descripteurs de fichiers ouverts}
+
+      La cohérence des fichiers ouverts pourra être testée selon la procédure
+      suivante:
+      \begin{itemize}
+        \item le processus père ouvre un fichier
+        \item il crée son fils via \texttt{fork()} et celui-ci est migré
+        \item le père fait un \texttt{read()} de $N$ octets et modifie la tête
+          de lecture (on fixe $N = 91$)
+        \item le fils, via \texttt{ftell()}\footnote{Fonction non POSIX
+          néanmoins supportée par la \texttt{libc}~\citep{vonleitner2001diet}
+          d'ALMOS}, obtient la position de la tête de lecture, qui doit être
+          égale à $N$\\
+      \end{itemize}
+
+
+    \subsection{Les zones mémoires partagées}
+
+      La cohérence des zones mémoire partagées sera testée selon cette
+      procédure:
+      \begin{itemize}
+        \item un processus $P1$ va demander l'allocation d'une région mémoire de
+          4 octets en mode \texttt{SHARED}
+        \item $P1$ écrit le nombre $N = 10$ dans cet espace
+        \item un processus $P2$ mappe l'espace partagé de $P1$ dans son espace
+          virtuel
+        \item $P2$ lit la valeur contenue, qui doit être $N = 10$
+        \item Le processus $P2$ est migré sur un nouveau cluster
+        \item $P2$ change la valeur de $N$ : $N\leftarrow 8$
+        \item $P1$ lit la valeur de $N$, qui doit être $N = 8$
+      \end{itemize}
+
+
+    \subsection{La distribution des signaux}
+
+      Pour assurer que les signaux sont distribués à tous les threads d'un
+      processus, nous allons définir la procédure suivante. Nous allons lancer
+      un programme créant $N$ threads, $N \in [2, 4, 6, 10, 24]$, avec $N-1$
+      threads migrés comme précédemment. Chaque thread appliquera un masque sur
+      le signal \texttt{SIGUSR1}\footnote{Ce type de signal est réservé pour les
+        programmes utilisateurs.} permettant de redéfinir un \textit{handler}
+      pour ce dernier. Ce \textit{handler} affichera le numéro du cluster et du
+      c\oe ur courant. Ensuite, le thread initiateur enverra un signal
+      \texttt{SIGUSR1} au processus auquel il appartient. Les threads migrés
+      appellerons alors le \textit{handler} et afficherons leur numéro de
+      cluster.
 
 
   \section{Tests de performance}
