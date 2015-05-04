@@ -226,34 +226,14 @@
       \item les signaux
     \end{itemize}  
 
-    \subsection{Les processus hybrides}
+    \subsection{La table des pages}
 
-      Dans la thèse de Ghassan \citet{almaless2014universite}, on trouve un des
-      concepts clé du noyau ALMOS: les processus hybrides. Partant du principe
-      que la notion de thread n'est pas adaptée pour le traitement de la
-      localité des accès mémoire, Ghassan~\citeauthor{almaless2014universite}
-      propose de redéfinir la notion de processus et de thread. Un processus
-      hybride contient des threads qui ont leur propre espace virtuel qui n'est
-      plus accessible par les autres threads du processus. Le noyau maintient
-      néanmoins la cohérence entre ces espaces. L'intérêt des processus hybride
-      est double:
-      \begin{itemize}
-        \item on évite le goulot d'étranglement sur la table des pages
-          (présentée ci-après)
-        \item les espaces virtuels des threads ne sont plus stockés dans le
-          processus mais sont indépendants, on a donc économisé de la place dans
-          la mémoire virtuelle du processus
-      \end{itemize}
+      La table des pages est la structure de données des processus permettant
+      les traductions des adresses virtuelles en adresses physiques. Chaque
+      processus possède sa propre table des pages, et tous les threads d'un
+      processus accèdent à cette table.
 
-      Par manque de temps, ce concept n'a pas été implémenté dans le noyau
-      ALMOS. Nous allons donc devoir le mettre en place, avec dans un premier
-      temps l'objectif d'avoir une table des pages distribuée entre les
-      threads. La table des pages est la structure de données des processus
-      contenant les traductions des adresses virtuelles en adresses
-      physiques. Chaque processus possède sa propre table des pages. Tous les
-      threads d'un processus accèdent à cette table.
-
-      Le problème de cette structure est qu'elle est accédée lors des miss TLB
+      Le problème de cette structure sont les accès fréquents lors des miss TLB
       (le cache de traduction d'adresses virtuelles $\leftrightarrow$
       physiques). Si l'on migre un thread du processus sur un autre noyau, ce
       dernier accèdera par passage de messages à la table, ce qui n'est pas
@@ -265,27 +245,43 @@
       rapidement.
 
       Pour répondre à cette problématique, nous allons intégrer le concept des
-      processus hybrides introduit par
-      Ghassan~\citeauthor{almaless2014universite}. Chaque table contiendra des
-      pages communes avec les autres threads du processus, mais aura également
-      ses propres pages locales. Le mécanisme proposé est illustré par la
-      figure~\ref{fig:almos-page-table}.
+      processus hybrides~\citep{almaless2014universite}. Un processus hybride
+      contient des threads qui ont leur propre espace virtuel qui n'est plus
+      accessible par les autres threads du processus. Le noyau maintient
+      néanmoins la cohérence entre ces espaces. De plus, chaque thread possède
+      sa table des pages, qui contient des pages communes avec les autres
+      threads du processus, mais également ses propres pages locales. Le
+      mécanisme proposé est illustré par la figure~\ref{fig:almos-page-table}.
 
       \begin{figure}[ht]
         \centering
         \includegraphics[width=\textwidth]{almos-page-table}
         \caption{Organisation de la table des pages pour quatre threads d'un
-          même processus. Deux threads sont placés sur un cluster $I$, et deux
-          sur un cluster $J$. Les threads partagent certaines pages de données
+          même processus. Deux threads sont placés sur un cluster $i$, et deux
+          sur un cluster $j$. Les threads partagent certaines pages de données
           et d'instructions, parfois entre clusters, mais ont également leurs
           pages privées~\citep{almaless2014universite}.}
         \label{fig:almos-page-table}
       \end{figure}
 
+      L'intérêt des processus hybride est double:
+
+      \begin{itemize}
+        \item on évite le goulot d'étranglement sur la table des pages
+        \item les espaces virtuels des threads ne sont plus stockés dans le
+          processus mais sont indépendants, on a donc économisé de la place dans
+          la mémoire virtuelle du processus
+      \end{itemize}
+
       Cette solution permet de minimiser le coût de la cohérence entre tous les
       réplicas des tables et permet également d'alléger les accès atomiques. En
       effet, une application massivement parallèle minimisera les dépendances de
-      données entres threads, et donc les pages communes.
+      données entres threads, et donc les pages communes.\\
+
+      Par manque de temps, ce concept n'a pas été implémenté dans le noyau
+      ALMOS. Nous allons donc devoir le mettre en place, avec dans un premier
+      temps l'objectif d'avoir une table des pages distribuée entre les
+      threads.
 
 
     \subsection{Les signaux}
@@ -375,3 +371,5 @@
     \nomenclature{DQDT}{Distributed Quaternary Decision Tree}
     \nomenclature{RPC}{Remote Procedure Call}
     \nomenclature{UNIX}{Uniplexed Information and Computing Service}
+    \nomenclature{PDIR}{Page DIRectory}
+    \nomenclature{PTE}{Page Table Entry}
