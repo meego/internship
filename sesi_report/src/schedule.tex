@@ -1,7 +1,50 @@
 \chapter{Échéancier}
 \label{chap:sched}
 
-  Nous allons découper notre travail selon l'ordre des tâches présenté au
-  chapitre~\ref{chap:tasks}.
+  %% Nous allons découper notre travail selon l'ordre des tâches présenté au
+  %% chapitre~\ref{chap:tasks}.
 
-  \todo{}
+  %% \todo{}
+
+  À compter du 11 Mai 2015, date de la présentation orale, il restera 55 jours
+  de stage. Nous devons réaliser les trois tâches présentées dans les chapitre
+  précédents, plus une phase de tests. En découpant équitablement le temps
+  restant, cela donne environ 13 jours pour chaque tâche. Néanmoins, nous allons
+  répartir le temps comme suit.\\
+
+  L'ajout de la migration de processus mono-thread n'est pas une opération
+  lourde en soi. Néanmoins, nous allons appréhender le noyau ALMOS lors de sa
+  réalisation. C'est pourquoi nous avons découpé équitablement le temps de
+  réalisation de cette étape avec celle du multi-threading, qui est elle plus
+  compliquée, mais qui se fera en ayant une meilleure connaissance du
+  noyau. Ainsi, nous avons fixé une durée de 16 jours par chacune de des
+  tâches.\\
+
+  La modification de la DQDT est une opération plus simple que les deux
+  précédente. Nous estimons qu'elle peut être réalisée en 10 jours.\\
+
+  Enfin, les tests représentent une partie non négligeable, nous accordons donc
+  13 jours à cette étape finale.  Ces derniers sont très importants puisqu'ils
+  vont nous permettre de valider notre solution, ou à l'inverse, de montrer que
+  la voie choisie n'est pas la bonne.\\
+
+  %% Change space between rows and columns
+  \setlength{\tabcolsep}{20pt}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{@{}llll@{}}
+      \toprule
+      Étape                & \multicolumn{1}{l}
+                            {Début}     & Fin        & Total    \\ \midrule
+      support mono-thread  & 11 Mai     & 3 Juin     & 16 jours \\
+      support multi-thread & 4 Juin     & 25 Juin    & 16 jours \\
+      DQDT                 & 26 Juin    & 9 Juillet  & 10 jours \\
+      tests                & 10 Juillet & 30 Juillet & 13 jours \\
+                           &            &            &          \\ \hline
+      Total                &            &            & 55 jours \\
+    \end{tabular}
+  \end{table}
+  %% Restore default parameters
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.0}
