@@ -56,7 +56,7 @@
 
         La migration de processus repose sur le mécanisme des RPC du
         noyau. Cette opération consiste à déplacer un processus dans un nouveau
-        noya pendant son exécution. Pour déplacer un processus, il faut envoyer
+        noyau pendant son exécution. Pour déplacer un processus, il faut envoyer
         les informations nécessaires au noyau destinataire afin qu'il puisse
         reconstruire l'espace virtuel du processus. On a notamment besoin des
         adresses de début et de fin:
@@ -98,9 +98,9 @@
         processus doit être migré, alors les informations citées précédemment
         seront envoyées. Ici, les données les plus importantes à transmettre
         sont le chemin vers l'exécutable et les arguments spécifiés dans l'appel
-        \texttt{exec()} (voir Listing~\ref{lst:fork-exec}). En effet, on veut
-        que le processus qui sera créé exécute un nouveau code et pas celui de
-        son père.\\
+        \texttt{exec()} (voir l'algorithme~\ref{lst:fork-exec}). En effet, on
+        veut que le processus qui sera créé exécute un nouveau code et pas celui
+        de son père.\\
 
         Attendre un appel à \texttt{exec()} pour effectuer la migration permet
         de ne pas briser la localité spatiale des processus ayant un lien de
@@ -133,10 +133,15 @@
       Les descripteurs de fichiers contiennent des données qui doivent être
       maintenues cohérentes\footnote{C'est une obligation de la norme
         POSIX~\citep{posix2013} que le noyau ALMOS a choisi de respecter.}. Ces
-      informations sont l'offset et le compteur de référence\footnote{Uniquement
-        dans le cas du multi-thread.}. Le premier indique la position à laquelle
-      se trouve le processus dans un fichier. Le second permet de savoir combien
-      de processus ont ouvert le même fichier.
+      informations sont l'offset et le compteur de référence. Le premier indique
+      la position à laquelle se trouve le processus dans un fichier. Le second
+      permet de savoir combien de processus ont ouvert le même fichier.
+
+      \begin{paragraph}{Remarque:}
+        Cette cohérence s'applique également dans le cadre d'un processus ayant
+        plusieurs threads : chaque action de l'un doit être visible des
+        autres.\\
+      \end{paragraph}
 
       Lorsqu'un processus ouvre un fichier puis crée un fils, les modifications
       du père doivent être visibles pour le fils, et inversement. Or, chaque
@@ -152,21 +157,12 @@
       doit impérativement être cohérent\footnote{On ne parle pas de la structure
         représentant la zone mémoire, qui elle est propre aux processus.}.
 
-      %% \begin{paragraph}{Remarque:}
-      %%   Tous les processus n'ont pas de zones mémoire partagées avec d'autres
-      %%   par défaut. Ainsi, la cohérence de ces dernières n'est pas la priorité
-      %%   ici. Nous voulons d'abord être capable de gérer les descripteurs de
-      %%   fichiers, qui sont partagés par défaut \texttt{stdin, stdout} et
-      %%   \texttt{stderr} sont tous les trois des fichiers et sont ouverts par
-      %%   tous les processus en permanence.
-      %% \end{paragraph}
-
 
     \subsection{Accélération de la migration}
 
       Afin de faciliter le maintien de la cohérence et surtout d'accélérer la
       migration, nous devons redéfinir l'implémentation des descripteurs de
-      fichiers et des zones mémoires. Il est nécessaire d'eliminer l'utilisation
+      fichiers et des zones mémoires. Il est nécessaire d'éliminer l'utilisation
       des pointeurs qui deviennent faux lorsqu'un processus change de noyau. En
       effet, une adresse dans un noyau $N$ n'est pas significative dans un noyau
       $N'$. Un exemple pour illustrer cela est celui des processus
@@ -192,7 +188,7 @@
       Aucune n'a pour l'instant été choisie. Néanmoins, quelque soit la solution
       envisagée, les entrées et sorties sont similaires, ce qui nous permet de
       n'effectuer qu'une seule spécification. Nous allons utiliser l'adresse
-      virtuelle accédée comme entré de la fonction de hash. En sortie, nous
+      virtuelle accédée comme entrée de la fonction de hash. En sortie, nous
       obtenons l'adresse physique de la région virtuelle associée.
 
       \begin{center}
@@ -273,10 +269,10 @@
           la mémoire virtuelle du processus
       \end{itemize}
 
-      Cette solution permet de minimiser le coût de la cohérence entre tous les
-      réplicas des tables et permet également d'alléger les accès atomiques. En
-      effet, une application massivement parallèle minimisera les dépendances de
-      données entres threads, et donc les pages communes.\\
+      Cette solution permet de minimiser le coût de la cohérence des tables
+      entre tous les réplicas et permet également d'alléger les accès
+      atomiques. En effet, une application massivement parallèle minimisera les
+      dépendances de données entres threads, et donc les pages communes.\\
 
       Par manque de temps, ce concept n'a pas été implémenté dans le noyau
       ALMOS. Nous allons donc devoir le mettre en place, avec dans un premier
@@ -289,10 +285,7 @@
       Dans cette partie, nous allons devoir mettre en place des mécanismes pour
       la transmission des signaux lorsque les threads sont distribués sur
       plusieurs noyaux. En effet, la norme POSIX stipule que la portée des
-      signaux est un processus dans son ensmble\footnote{Extrait de \texttt{man
-          7 signal} : ``The signal disposition is a per-process attribute: in a
-        multithreaded application, the disposition of a particular signal is the
-        same for all threads.''}.
+      signaux est un processus dans son ensemble~\citep{man2015signal}.
 
       Pour cela, il faudra redéfinir la notion de \texttt{pid}. Un \texttt{pid}
       sera découpé en deux parties \benumline \item la partie haute indiquera la
@@ -311,7 +304,7 @@
   \section{La DQDT}
   \label{sec:dqdt}
 
-    Cette partie du stage est ``optionnelle''. La réimplémentation de ce
+    Cette partie du stage est ``optionnelle''. La ré-implémentation de ce
     composant est un besoin réel pour ALMOS, néanmoins cela implique que les
     étapes présentées précédemment soient finalisées.
 
@@ -319,20 +312,19 @@
     composant d'ALMOS assurant une vision cohérente et temps-réel\footnote{C'est
       un abus de langage qui est fait ici. Nous voulons simplement montrer que
       la DQDT permet d'avoir en permanence les taux d'utilisation des 4096
-      processeurs de la plateforme.} de l'utilisation des ressources (mémoire et
-    c\oe urs). Dans la version de Ghassan~\citet{almaless2014universite}, la
-    DQDT repose sur des serveurs répliqués dans tous les clusters. Chaque
-    cluster physique représente une feuille de la DQDT. Ces serveurs récupèrent
-    les informations sur l'occupation des c\oe urs de la machine (c\oe urs et
-    mémoire), et calculent une moyenne d'utilisation pour chaque cluster. Cette
-    information est stockée dans un n\oe ud de l'arbre. Chaque étage de l'arbre
-    représente un niveau d'abstraction. Comme le montre la
-    figure~\ref{fig:dqdt-logical}, le premier niveau, en noir, est celui des
-    clusters physiques. Le second niveau, en bleu, regroupe 4 clusters. C'est un
-    cluster logique de niveau 1. Le dernier, en rouge, regroupe quatre clusters
-    logiques de niveau 1 dans un cluster logique de niveau 2. Ces niveaux sont
-    matérialisés par les étages de l'arbre, comme le montre la
-    figure~\ref{fig:dqdt-tree}.\\
+      processeurs de la plateforme.} de l'utilisation des ressources. Dans la
+    version de Ghassan~\citet{almaless2014universite}, la DQDT repose sur des
+    serveurs répliqués dans tous les clusters. Chaque cluster physique
+    représente une feuille de la DQDT. Ces serveurs récupèrent les informations
+    sur l'occupation de la machine (c\oe urs et mémoire), et calculent une
+    moyenne d'utilisation pour chaque cluster. Cette information est stockée
+    dans un n\oe ud de l'arbre. Chaque étage de l'arbre représente un niveau
+    d'abstraction. Comme le montre la figure~\ref{fig:dqdt-logical}, le premier
+    niveau, en noir, est celui des clusters physiques. Le second niveau, en
+    bleu, regroupe 4 clusters. C'est un cluster logique de niveau 1. Le dernier,
+    en rouge, regroupe quatre clusters logiques de niveau 1 dans un cluster
+    logique de niveau 2. Ces niveaux sont matérialisés par les étages de
+    l'arbre, comme le montre la figure~\ref{fig:dqdt-tree}.\\
 
     \begin{figure}[ht]
       \begin{subfigure}[b]{0.5\textwidth}
@@ -350,7 +342,7 @@
 
     La DQDT, comme la plupart des composants noyaux d'ALMOS, repose sur le
     mécanisme de la mémoire virtuelle répartie entre les clusters. Si l'on
-    change ALMOS en mode multi-noyau, les serveurs de la DQDT ne peuvent plus
+    change ALMOS en multi-noyau, les serveurs de la DQDT ne peuvent plus
     communiquer grâce à la mémoire virtuelle. Ils sont obligés d'utiliser le
     passage de messages entre les noyaux.
 
