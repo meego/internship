@@ -1,8 +1,9 @@
 \chapter{Contexte de travail}
 \label{sec:context}
 
-  Pour répondre aux enjeux du passage à l'échelle, l'équipe ALSOC du LIP6
-  participe à deux projets européens successifs: TSAR~\cite{tsar2008} et
+  Pour répondre aux enjeux du passage à l'échelle, l'équipe
+  ALSOC\nomenclature{ALSOC}{Architecture et Logiciels pour Systèmes On Chip} du
+  LIP6 participe à deux projets européens successifs: TSAR~\cite{tsar2008} et
   SHARP~\cite{sharp2012}. Ces projets, pour le LIP6, ont pour but de fournir une
   architecture de processeur, TSAR, de plusieurs centaines de c\oe urs, et un
   système d'exploitation pour gérer efficacement cette nouvelle architecture.
@@ -134,7 +135,7 @@
       urs. Ainsi, un des premiers problèmes d'ALMOS est le mapping de l'espace
       virtuel. En effet, lors de la phase de boot, ce dernier cherche à mapper
       toute la mémoire physique du cluster de boot dans son espace
-      virtuel. Contraitement aux noyaux ``classiques'', ALMOS s'accorde 2Go
+      virtuel. Contrairement aux noyaux ``classiques'', ALMOS s'accorde 2Go
       d'espace virtuel au lieu de 1. Donc, si ce cluster possède (au moins) 2Go
       de mémoire physique, l'ensemble du noyau est mappé dans ce seul
       cluster. Enfin, cela ne laisse que 2Go de mémoire virtuelle pour les
@@ -204,7 +205,7 @@
     l'espace virtuel pour le noyau. Ce dernier fonctionne entièrement en
     adressage physique et de ce fait passe en mode multi-noyau, avec une
     instance de noyau par cluster. Ces changements permettent de gérer toute la
-    mémoire physique de la plateforme TSAR, puisque: \benumline \item chaque
+    mémoire physique de la plateforme TSAR, puisque:\benumline \item chaque
     cluster dispose de 4Go de mémoire physique \item on a un noyau par
     cluster \item le noyau peut gérer 4Go de mémoire\eenumline. Ces changements
     permettent également de laisser 4Go de mémoire virtuelle\footnote{Modulo une
