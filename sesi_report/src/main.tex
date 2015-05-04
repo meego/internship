@@ -24,8 +24,10 @@
 \usepackage{placeins}
 \usepackage{etoolbox}
 \usepackage{booktabs}
+\usepackage{nomencl}
 
 %% Commands
+\makenomenclature
 \bibpunct{[}{]}{,}{n}{,}{,}
 \newcommand{\todo}[1]{\textbf{\color{red}TODO: #1}}
 \newcommand{\benumline}{\begin{inparaenum}[\itshape i\upshape)]}
@@ -42,6 +44,8 @@
   \tableofcontents
   \printversion
   \listoffigures
+  \printversion
+  \printnomenclature[20em]
   \printversion
 
   \clearpage
