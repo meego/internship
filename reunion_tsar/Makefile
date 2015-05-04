@@ -10,6 +10,7 @@ PDF=$(INC)/pdf
 TEX=pdflatex
 PROJECT=main
 REPORT=reunion_tsar
+INK=inkscape
 
 all: folder svg
 
@@ -17,7 +18,7 @@ all: folder svg
 					-jobname $(REPORT) $(SRC)/$(PROJECT).tex
 
 svg: folder
-	@inkscape -D -z --file=$(INC)/img/ghassan_version.svg \
+	$(INK) -D -z --file=$(INC)/img/ghassan_version.svg \
 		  --export-pdf=$(INC)/img/ghassan_version.pdf --export-latex
 	$(MV) $(INC)/img/*pdf* $(PDF)/
 
