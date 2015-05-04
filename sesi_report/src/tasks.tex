@@ -21,9 +21,9 @@
     \texttt{stderr} sont tous les trois des fichiers et sont ouverts par tous
     les processus en permanence.
 
-    Ensuite, nous allons implémenter la fonction de migration qui sera appelée
-    par la DQDT si celle-ci estime qu'une migration doit avoir lieu. Cette
-    fonction est spécifique aux processus déjà en cours d'exécution. Nous allons
+    Ensuite, nous souhaitons implémenter la fonction de migration qui utilisant
+    la DQDT si celle-ci indique qu'une migration doit avoir lieu. Cette fonction
+    est spécifique aux processus déjà en cours d'exécution. Nous souhaitons
     également implémenter une fonction permettant de migrer les processus en
     cours de création.
     
@@ -54,4 +54,11 @@
     machine. Nous allons devoir modifier cette fonction selon les techniques
     présentées au chapitre~\ref{chap:sol}, à savoir une méthode générique par
     passage de messages, et une autre plus efficace mais spécifique à notre
-    architecture.
+    architecture.\\
+
+    Nous pouvons noter que si la DQDT n'est pas opérationnelle, nous pouvons
+    quand même valider la migration de processus mono-thread et l'exécution de
+    processus multi-thread sur plusieurs clusters. Toutefois, le choix des
+    ressources ne sera pas pertinent et les performances seront dégradées, mais
+    ce n'est pas important ici. C'est la raison pour laquelle la fonction
+    \texttt{dqdt\_update()} est une tâche optionnelle.
