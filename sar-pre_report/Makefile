@@ -19,11 +19,11 @@ out:
 	BUILDTEX= $(TEX) -output-directory $(BIN) \
 		-jobname $(REPORT) $(SRC)/$(PROJECT)
 
-bib: out
+bib: all
 	$(LN) $(SRC)/references.bib $(BIN)
 	$(BIB) $(BIN)/$(REPORT)
 
-idx: out
+idx: all
 	$(IDX) $(BIN)/$(REPORT).nlo -s $(MAGIC_FILE) -o $(BIN)/$(REPORT).nls
 
 dir:
