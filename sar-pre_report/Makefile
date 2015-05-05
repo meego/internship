@@ -31,3 +31,6 @@ dir:
 
 clean:
 	$(RM) $(BIN)/*
+
+mrproper:
+	$(RM) -r $(BIN)
