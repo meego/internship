@@ -8,10 +8,17 @@
   nécessaire pour la politique de migration dans le noyau.
 
   \begin{paragraph}{Remarque:}
-    Dans la section~\ref{sec:mono}, le mot \textit{processus} est utilisé pour
-    désigner un processus composé d'un seul thread. Dans la suite de ce
-    chapitre, à partir de la section~\ref{sec:multi}, on considère que les
-    processus ont plusieurs threads.
+    \begin{itemize}
+      \item dans la section~\ref{sec:mono}, le mot \textit{processus} est
+        utilisé pour désigner un processus composé d'un seul thread. Dans la
+        suite de ce chapitre, à partir de la section~\ref{sec:multi}, on
+        considère que les processus ont plusieurs threads.
+      \item lorsque nous utilisons la nomination \texttt{fork()}, nous faisons
+        référence à la famille de fonctions de création: \texttt{vfork(),
+          rfork(), clone(),} etc~\ldots
+      \item il en est de même pour les fonctions \texttt{execve(), execvp(),
+        execle(),} etc~\ldots, réunies sous la dénomination \texttt{exec()}
+    \end{itemize}
   \end{paragraph}
 
 
@@ -30,27 +37,27 @@
       \subsubsection{Rappels}
 
         L'appel système \texttt{fork()} est usuellement utilisé pour créer un
-        processus dans un système. Lorsqu'un processus fait appel à cette
-        fonction, un processus identique à l'appelant est créé. L'appelant est
-        nommé \textit{père}, et le résultat est appelé \textit{fils}. Le fils
-        étant une copie de son père, son exécution commence juste après l'appel
+        processus dans un système\footnote{Voir \texttt{posix\_spawn()} pour une
+          alternative.}. Lorsqu'un processus fait appel à cette fonction, un
+        processus identique à l'appelant est créé. L'appelant est nommé
+        \textit{père}, et le résultat est appelé \textit{fils}. Le fils étant
+        une copie de son père, son exécution commence juste après l'appel
         système \texttt{fork()}.
 
         Pour qu'un fils exécute un autre programme que celui du père, il faut
         utiliser l'appel système \texttt{exec()}. C'est lui qui permet de
-        remplacer le code exécuté par un processus.\\
+        remplacer le code exécuté par un processus. Dans la très grande majorité
+        des cas, un appel à \texttt{fork()} est suivit d'un appel à
+        \texttt{exec()}. C'est la principale manière de lancer des applications
+        différentes dans un système. Un exemple d'utilisation de ces deux
+        fonctions est donné par l'algorithme~\ref{lst:fork-exec}.
 
-        Dans la très grande majorité des cas, un appel à \texttt{fork()} est
-        suivit d'un appel à \texttt{exec()}. C'est la principale manière de
-        lancer des applications différentes dans un système\footnote{Voir
-          \texttt{posix\_spawn()} pour une alternative.}. Un exemple
-          d'utilisation de ces deux fonctions est donné par le
-          Listing~\ref{lst:fork-exec}.
-
-        \lstinputlisting[label={lst:fork-exec}, caption=Utilisation de
-          \texttt{fork()/exec()}. La valeur de retour de \texttt{fork()} permet
-          de différencier si le processus en cours d'exécution est le père ou le
-          fils.]{include/code/example.c} \FloatBarrier
+        \begin{figure}[ht]
+          \lstinputlisting[label={lst:fork-exec}, caption=Utilisation de
+            \texttt{fork()/exec()}. La valeur de retour de \texttt{fork()}
+            permet de différencier si le processus en cours d'exécution est le
+            père ou le fils.]{include/code/example.c}
+        \end{figure}
 
       \subsubsection{Migration}
 
@@ -252,7 +259,8 @@
       \begin{figure}[ht]
         \centering
         \includegraphics[width=\textwidth]{almos-page-table}
-        \caption{Organisation de la table des pages pour quatre threads d'un
+        \caption[Organisation de la tables des pages d'un processus
+          hybride]{Organisation de la table des pages pour quatre threads d'un
           même processus. Deux threads sont placés sur un cluster $i$, et deux
           sur un cluster $j$. Les threads partagent certaines pages de données
           et d'instructions, parfois entre clusters, mais ont également leurs
